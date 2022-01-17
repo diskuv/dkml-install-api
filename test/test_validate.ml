@@ -4,10 +4,10 @@ open More_testables
 let test_uppercase () =
   Alcotest.(check (result unit string_starts_with))
     "result starts with"
-    (Result.error "[19c415af]: ")
+    (Result.error "[19c415af]")
     (Private.validate
        (module struct
-         let plugin_name = "UPPERCASE"
+         let component_name = "UPPERCASE"
        end))
 
 let test_lowercase () =
@@ -15,16 +15,16 @@ let test_lowercase () =
     "result starts with" (Result.ok ())
     (Private.validate
        (module struct
-         let plugin_name = "lowercase"
+         let component_name = "lowercase"
        end))
 
 let test_underscore () =
   Alcotest.(check (result unit string_starts_with))
     "result starts with"
-    (Result.error "[19c415af]: ")
+    (Result.error "[19c415af]")
     (Private.validate
        (module struct
-         let plugin_name = "lower_case"
+         let component_name = "lower_case"
        end))
 
 let test_dash () =
@@ -32,7 +32,7 @@ let test_dash () =
     "result starts with" (Result.ok ())
     (Private.validate
        (module struct
-         let plugin_name = "lower-case"
+         let component_name = "lower-case"
        end))
 
 let () =

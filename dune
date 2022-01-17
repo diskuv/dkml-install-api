@@ -1,0 +1,3 @@
+; Exclude contributors/ folder, especially its Conda ./envs folder and custom Makefile _build folder
+; which should speed up Dune.
+(dirs :standard \ contributors)

@@ -13,11 +13,12 @@
 
 (package
  (name dkml-install-api)
- (synopsis "API for Diskuv OCaml (DKML) installation plugins")
+ (synopsis "API for Diskuv OCaml (DKML) installation components")
  (description
-  "All DKML installation plugins implement the interfaces exposed in this API.")
+  "All DKML installation components implement the interfaces exposed in this API.")
  (depends
   (alcotest (and (>= 1.4.0) :with-test))
+  (odoc (and (>= 1.5.3) :with-doc))
   (dune (>= 2.9))
   (fmt (>= 0.8.9))
   (astring (>= 0.8.5))))

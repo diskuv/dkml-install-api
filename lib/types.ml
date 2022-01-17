@@ -1,8 +1,5 @@
-(** Each plugin must have a configuration module defined with the
-    module type [Plugin_config].
-  *)
-module type Plugin_config = sig
-  (** [plugin_name] is the name of the plugin. It must be lowercase
+module type Component_config = sig
+  (** [component_name] is the name of the component. It must be lowercase
       alphanumeric; dashes (-) are allowed. *)
-  val plugin_name : string
+  val component_name : string
 end

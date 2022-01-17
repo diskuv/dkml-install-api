@@ -69,7 +69,7 @@ Finally, after you have *at least one* prerelease:
 with-dkml make release-complete
 ```
 
-## IDE Integration
+## Rapid Development
 
 In Visual Studio Code the following is a good template for your
 ``.vscode/settings.json`` file:
@@ -79,6 +79,19 @@ In Visual Studio Code the following is a good template for your
     "restructuredtext.confPath": "${workspaceFolder}/contributors",
     "python.pythonPath": "${workspaceFolder}/contributors/envs"
 }
+```
+
+You may have more rapid development if you continually run the tests and the
+documentation; run the following in a background terminal in Windows PowerShell:
+
+```powershell
+with-dkml sh -c 'X=$(cygpath -au "$DiskuvOCamlHome"); PATH="$X/tools/apps:$PATH"; while true; do ALCOTEST_VERBOSE=1 dune build @runtest @doc --watch;  done'
+```
+
+or in Unix:
+
+```bash
+ALCOTEST_VERBOSE=1 dune build @runtest @doc --watch
 ```
 
 ## Writing Code

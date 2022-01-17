@@ -96,7 +96,7 @@ fi
 
 # Define which files and directories go into the assets archive
 # TODO: For now we are just packaging up the lib/ directory; that is useless.
-# TODO: Eventually tools needed by plugins should make it in here.
+# TODO: Eventually tools needed by components should make it in here.
 ARCHIVE_MEMBERS=(LICENSE README.md lib)
 
 # Make _build/assets.zip
