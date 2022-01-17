@@ -1,0 +1,3 @@
+(library
+ (name dkml_install_api)
+ (libraries astring fmt))

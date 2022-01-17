@@ -1,0 +1,3 @@
+(tests
+ (names validate)
+ (libraries dkml_install_api alcotest))

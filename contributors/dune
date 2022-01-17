@@ -1,0 +1,3 @@
+; Exclude Conda ./envs folder and custom Makefile _build folder which speeds
+; up Dune.
+(dirs :standard \ envs _build)
