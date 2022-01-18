@@ -33,6 +33,7 @@ jobs:
       - name: Build Sphinx
         run: |
           conda info
+          git status
           cd contributors
           make publish-prepare-docs
       - name: OCaml 4.12.x
