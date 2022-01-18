@@ -7,6 +7,7 @@ Getting Started with the DKML Install API
 
    self
    doc/Design
+   doc/StandardComponents
 
 Indices and tables
 ==================
