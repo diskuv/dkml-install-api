@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design &mdash; DKML Install API  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Usage for Component Authors" href="StandardComponents.html" />
+    <link rel="prev" title="Getting Started with the DKML Install API" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #3347A9" >
+            <a href="../index.html" class="icon icon-home"> DKML Install API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started with the DKML Install API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#goals">Goals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#terms">Terms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#packaging-flow">Packaging Flow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-the-installer-package">Creating the installer package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#user-runs-the-installer">User runs the installer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="StandardComponents.html">Usage for Component Authors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #3347A9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DKML Install API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Design</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/doc/Design.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="design">
+<h1>Design<a class="headerlink" href="#design" title="Permalink to this headline"></a></h1>
+<div class="section" id="goals">
+<h2>Goals<a class="headerlink" href="#goals" title="Permalink to this headline"></a></h2>
+<ol class="arabic simple">
+<li><p>Re-use existing installation software when it is available.</p></li>
+<li><p>Avoid lock-in to any existing installation software.</p></li>
+<li><p>Use OCaml as much as possible.</p></li>
+</ol>
+</div>
+<div class="section" id="terms">
+<h2>Terms<a class="headerlink" href="#terms" title="Permalink to this headline"></a></h2>
+<dl>
+<dt>Packaging</dt><dd><p>The procedure for taking source code, doing some compiling and other
+translations, and ending up with an installable package (ex. setup.exe on
+Windows)</p>
+</dd>
+<dt>Component</dt><dd><p>A logical piece of software that can be selected or deselected during
+installation. Components can depend on other components.</p>
+<p>Each component has a concrete instantation as an Opam package
+<code class="docutils literal notranslate"><span class="pre">dkml-component-&lt;COMPONENTNAME&gt;</span></code>.</p>
+</dd>
+<dt>Installer</dt><dd><p>A single-file executable (ex. <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code>) or a single-file installation
+bundle (ex. <code class="docutils literal notranslate"><span class="pre">package-name.msi</span></code>, <code class="docutils literal notranslate"><span class="pre">package-name.rpm</span></code>, etc.) that, when
+used by the end-user, will install all selected components.</p>
+<p>Each installer has a concreate instantation as an Opam package
+<code class="docutils literal notranslate"><span class="pre">dkml-installer-&lt;INSTALLERNAME&gt;</span></code>.</p>
+</dd>
+<dt>Component API</dt><dd><p>A collection of OCaml modules and module types that Component authors
+use to register their component.</p>
+</dd>
+<dt>Installer API</dt><dd><p>A collection of OCaml modules and module types that that provide low-level
+boilerplate to create an installer for Installer authors.</p>
+</dd>
+<dt>Component OPAM_BUILD Phase</dt><dd><p>When Opam runs the <a class="reference external" href="https://opam.ocaml.org/doc/Manual.html#opamfield-build">build: [instructions …]</a>
+for a component, we’ll be calling that the OPAM_BUILD phase</p>
+</dd>
+<dt>Component OPAM_INSTALL Phase</dt><dd><p>When Opam runs the <a class="reference external" href="https://opam.ocaml.org/doc/Manual.html#opamfield-install">install: [instructions …]</a>
+for a component, we’ll be calling that the OPAM_INSTALL Phase</p>
+</dd>
+</dl>
+</div>
+<div class="section" id="packaging-flow">
+<h2>Packaging Flow<a class="headerlink" href="#packaging-flow" title="Permalink to this headline"></a></h2>
+<div class="section" id="creating-the-installer-package">
+<h3>Creating the installer package<a class="headerlink" href="#creating-the-installer-package" title="Permalink to this headline"></a></h3>
+<ol class="arabic">
+<li><p>The GitHub Actions workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> is run for
+<code class="docutils literal notranslate"><span class="pre">dkml-installer-&lt;INSTALLERNAME&gt;</span></code> (hereafter we’ll just say
+installer <code class="docutils literal notranslate"><span class="pre">I</span></code>) whenever a commit or a tag is pushed to <code class="docutils literal notranslate"><span class="pre">I</span></code>.
+The workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> first does the equivalent of:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>opam switch create installer-<span class="nv">$INSTALLERNAME</span> <span class="m">4</span>.12.1
+opam install --switch installer-<span class="nv">$INSTALLERNAME</span> ./dkml-installer-<span class="nv">$INSTALLERNAME</span>.opam --deps-only
+</pre></div>
+</div>
+<p>Specifically:</p>
+<ol class="arabic">
+<li><p>Each component <code class="docutils literal notranslate"><span class="pre">C</span></code> listed in <code class="docutils literal notranslate"><span class="pre">I</span></code>’s <code class="docutils literal notranslate"><span class="pre">dkml-installer-&lt;INSTALLERNAME&gt;.opam</span></code>
+dependencies will go through its OPAM_BUILD and OPAM_INSTALL phases using the
+instructions in <code class="docutils literal notranslate"><span class="pre">C</span></code>’s <code class="docutils literal notranslate"><span class="pre">dkml-component-&lt;C&gt;.opam</span></code>.</p>
+<p>A component may choose to expose an <code class="docutils literal notranslate"><span class="pre">dkml-component-&lt;C&gt;-api.opam</span></code>
+if there are any OCaml types, constants and functions which
+need to be shared with the consumers of that component.</p>
+<p>The OPAM_INSTALL phase of <code class="docutils literal notranslate"><span class="pre">dkml-component-&lt;C&gt;.opam</span></code> is responsible for:</p>
+<ul class="simple">
+<li><p>Placing files in <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/static-files/</span></code> where
+<a class="reference external" href="https://opam.ocaml.org/doc/Manual.html#installfield-share">&lt;share&gt;</a>
+is <code class="docutils literal notranslate"><span class="pre">&lt;opamswitch&gt;/share/&lt;C&gt;/</span></code>. These files will be used in the
+USER_DEPLOY_INITIAL phase.</p></li>
+<li><p>Placing executables and files in <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code> where
+<a class="reference external" href="https://opam.ocaml.org/doc/Manual.html#installfield-share">&lt;share&gt;</a>
+is <code class="docutils literal notranslate"><span class="pre">&lt;opamswitch&gt;/share/&lt;C&gt;/</span></code>. These files will be used in the
+USER_INSTALL phase</p></li>
+</ul>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Relocatable requirements</p>
+<p>Anything inside <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/static-files/</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code>
+must be <strong>relocatable</strong>
+to a different location on the end-user’s hard drive. As of January
+2022, many executables like <code class="docutils literal notranslate"><span class="pre">ocamlc</span></code> and <code class="docutils literal notranslate"><span class="pre">ocamlbuild</span></code> are <em>not</em>
+relocatable.</p>
+<p>Instead the only native executable should be
+<code class="docutils literal notranslate"><span class="pre">ocamlrun</span></code> (provided by <code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlrun.opam</span></code>).</p>
+</div>
+</li>
+</ol>
+</li>
+<li><p>The workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> then <strong>merges</strong> together the
+<code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/static-files/</span></code> directories. It does the equivalent of
+the following for all components <code class="docutils literal notranslate"><span class="pre">C</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</span>/static-files/ <span class="se">\</span>
+     <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$I</span>/static-files/
+</pre></div>
+</div>
+</li>
+<li><p>The workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> then <strong>side-by-side copies</strong> all the
+<code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code> directories. It does the equivalent of
+the following for all components <code class="docutils literal notranslate"><span class="pre">C</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</span>/staging-files/ <span class="se">\</span>
+     <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$I</span>/staging-files/<span class="nv">$C</span>/
+</pre></div>
+</div>
+</li>
+<li><p>The workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> will create a
+<a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site plugin loader</a>
+executable named <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> that will perform the steps in
+<a class="reference internal" href="#userphases"><span class="std std-ref">User runs the installer</span></a></p></li>
+<li><p>The last step of the workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> depends on what type of installer
+has been configured. <em>As of Jan 2022 only the text archive installer is
+available, and no configuration is needed. But regardless of which installer
+is available, the Component packages should not change.</em></p>
+<dl>
+<dt>Text Archiver Installer</dt><dd><p>This installer will produce a &lt;I&gt;.zip file or a &lt;I&gt;.tar.gz file.</p>
+<p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/static-files/</span></code> will go
+into the root of the &lt;I&gt;.zip archive.</p>
+<p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/staging-files/</span></code> will go
+into the <code class="docutils literal notranslate"><span class="pre">_work</span></code> top-level folder of the &lt;I&gt;.zip archive.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> executable will be placed in the root of the
+&lt;I&gt;.zip archive.</p>
+</dd>
+<dt>Future Possibility: 0install</dt><dd><p>If no component needs administrative permission then
+<a class="reference external" href="https://opam.ocaml.org/packages/0install/">0install</a> would be a good
+choice for a cross-platform installer.</p>
+</dd>
+<dt>Future Possibility: cpack</dt><dd><p><a class="reference external" href="https://cmake.org/cmake/help/latest/module/CPack.html/">cpack</a> would
+be a good choice for generating a variety of installers across many
+platforms (<code class="docutils literal notranslate"><span class="pre">.rpm</span></code>, <code class="docutils literal notranslate"><span class="pre">.msi</span></code>, etc.), although it is much harder to
+configure than 0install.</p>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+<div class="section" id="user-runs-the-installer">
+<span id="userphases"></span><h3>User runs the installer<a class="headerlink" href="#user-runs-the-installer" title="Permalink to this headline"></a></h3>
+<ol class="arabic">
+<li><p>Load all the components with
+<a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site’s</a>
+<code class="docutils literal notranslate"><span class="pre">Sites.Plugins.Plugins.load_all</span> <span class="pre">()</span></code>:</p>
+<ul class="simple">
+<li><p>When a component (plugin) <code class="docutils literal notranslate"><span class="pre">C</span></code> is loaded, it will register itself
+with the <code class="docutils literal notranslate"><span class="pre">dkml-install-api</span></code> registry.</p></li>
+</ul>
+</li>
+<li><p>After all the components are registered, the components are
+topologically sorted based on their dependencies.</p></li>
+<li><p>Ask end-user which components to install. Some components may have
+configuration that lets them display text (ex. license) or ask more
+questions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is a underspecified spot in the design; a tiny embedded DSL would
+be best here. The DSL would be translated to command line options for
+the <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> when using the Text Archiver Installer, but
+also be translated to UI configuration for graphical installers.</p>
+</div>
+</li>
+<li><p><strong>USER_DEPLOY_INITIAL phase</strong>: Copy everything from the archive to the
+&lt;end_user_installation_prefix&gt; except the <code class="docutils literal notranslate"><span class="pre">_work</span></code> folder.</p></li>
+<li><p><strong>USER_INSTALL phase</strong>:</p>
+<ol class="arabic">
+<li><p>Copy the <code class="docutils literal notranslate"><span class="pre">_work</span></code> folder into a temporary folder</p></li>
+<li><p>Check if there are any components that needs administrative/root
+privileges. The check will be like:</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Component</span><span class="p">.</span><span class="n">needs_admin</span> <span class="s2">&quot;&lt;end_user_installation_prefix&gt;&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>If there are any components that needs administrative/root privileges,
+spawn an escalated process in Windows PowerShell:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">Start-Process</span> <span class="n">powershell</span> <span class="n">-ArgumentList</span> <span class="s1">&#39;&amp; dkml-runner.exe --admin&#39;</span> <span class="n">-verb</span> <span class="n">RunAs</span>
+</pre></div>
+</div>
+<p>or in Unix:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dkml-runner --admin
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">--admin</span></code> mode will in topological order call each component:</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Component</span><span class="p">.</span><span class="n">run_as_admin</span> <span class="s2">&quot;&lt;end_user_installation_prefix&gt;&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>In topological order call each component like:</p>
+<div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Component</span><span class="p">.</span><span class="n">run_as_user</span> <span class="s2">&quot;&lt;end_user_installation_prefix&gt;&quot;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Getting Started with the DKML Install API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="StandardComponents.html" class="btn btn-neutral float-right" title="Usage for Component Authors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Diskuv, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
