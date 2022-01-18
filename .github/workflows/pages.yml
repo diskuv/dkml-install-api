@@ -35,6 +35,7 @@ jobs:
       - name: Install graphviz
         run: sudo apt install graphviz
       - name: Build Sphinx
+        shell: bash -l {0}
         run: |
           conda info
           conda list
