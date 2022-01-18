@@ -1,2 +1,8 @@
+# Conda manually created in README.md
 /envs/
+
+# Build directory
 /_build/
+
+# Ignore https://github.com/marketplace/actions/setup-miniconda created files
+setup-miniconda-patched-environment.yml

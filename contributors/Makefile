@@ -106,27 +106,12 @@ html: Makefile
 
 .PHONY: publish-prepare-docs
 publish-prepare-docs:
-	@if test -n "$$(git status --porcelain)"; then echo "FATAL: The working directory must be clean! All changes have to be commited to git or removed."; exit 1; fi
+	@if test -n "$$(git status --porcelain)"; then echo "FATAL: The working directory must be clean! All changes have to be committed to git or removed."; exit 1; fi
 	@$(MAKE) clean
 
 	@$(CMAKE) -E echo Building Sphinx html twice so that Sphinx cross-references work ...
 	@$(MAKE) html
 	@$(MAKE) html O="-W"
-
-.PHONY: publish-github-docs
-publish-github-docs: publish-prepare-docs
-	@$(CMAKE) -E echo Cloning current GitHub Pages git repository inside a work folder ...
-	@git rev-parse gh-pages >/dev/null 2>&1 || git branch gh-pages origin/gh-pages
-	@git clone --branch gh-pages "file://$$PWD/../.git" $(PUBLISHDOCS_WORKDIR)/
-	@$(CMAKE) -E copy_directory _build/html/ $(PUBLISHDOCS_WORKDIR)/docs
-	@$(CMAKE) -E touch $(PUBLISHDOCS_WORKDIR)/docs/.nojekyll
-	@git -C $(PUBLISHDOCS_WORKDIR) add -A
-	@GIT_AUTHOR_EMAIL=publish-docs.diskuv@example.net GIT_COMMITTER_EMAIL=publish-docs.diskuv@example.net git -C $(PUBLISHDOCS_WORKDIR) commit -m "Updated site"
-
-	@$(CMAKE) -E echo Trying to open a web browser so you can review the final result ...
-	@$(CMAKE) -E echo "Once you are finished the review, use 'git -C $$PWD/$(PUBLISHDOCS_WORKDIR) push && git push origin gh-pages' to publish the changes"
-	@wslview _build/.publishdocs/docs/index.html || open _build/.publishdocs/docs/index.html || explorer '_build\.publishdocs\docs\index.html' || \
-		$(CMAKE) -E echo "Cannot find a browser. Please review the web site at _build/.publishdocs/docs/index.html"
 
 .PHONY: view-docs
 view-docs: publish-prepare-docs
