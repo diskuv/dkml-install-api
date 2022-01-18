@@ -1,0 +1,12 @@
+name: sphinx-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - sphinx
+  - sphinx_rtd_theme
+  - rstcheck
+  - python-language-server
+  - bump2version
+  - docutils=0.16
+  - python=3

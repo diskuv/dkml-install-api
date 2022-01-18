@@ -1,0 +1,56 @@
+name: Publish GitHub Pages
+
+on:
+  push:
+    branches:
+      - 'to-squash'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Cache conda
+        uses: actions/cache@v2
+        env:
+          # Increase this value to reset cache if contributors/environment.yml
+          # has not changed
+          CACHE_NUMBER: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
+            hashFiles('contributors/environment.yml') }}
+      - name: Setup Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          python-version: 3.7
+          environment-file: contributors/environment.yml
+          auto-activate-base: false
+          activate-environment: sphinx-env
+          use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+      - name: Install graphviz
+        run: sudo apt install graphviz
+      - name: Build Sphinx
+        shell: bash -l {0}
+        run: cd contributors && make publish-prepare-docs
+      - name: OCaml 4.12.x
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 4.12.x
+          dune-cache: true
+      - name: Install Opam dependencies
+        run: opam install . --deps-only --with-doc
+      - name: Build odoc
+        run: opam exec -- dune build @doc
+      - name: Copy odoc into Sphinx site
+        run: |
+          cmake -E copy_directory _build/default/_doc/_html contributors/_build/html/odoc
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./contributors/_build/html
