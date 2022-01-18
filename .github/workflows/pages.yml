@@ -9,19 +9,39 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Cache conda
+        uses: actions/cache@v2
+        env:
+          # Increase this value to reset cache if contributors/environment.yml
+          # has not changed
+          CACHE_NUMBER: 0
+        with:
+          path: ~/conda_pkgs_dir
+          key:
+            ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
+            hashFiles('contributors/environment.yml') }}
+      - name: Setup Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          mamba-version: "*"
+          channels: conda-forge,defaults
+          python-version: 3.7
+          environment-file: contributors/environment.yml
+          activate-environment: sphinx-env
+      - name: Build Sphinx
+        run: |
+          conda info
+          cd contributors
+          make publish-prepare-docs
       - name: OCaml 4.12.x
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: 4.12.x
           dune-cache: true
-      - name: Checkout code
-        uses: actions/checkout@v2          
-      - name: Build Sphinx
-        run: |
-          cd contributors
-          make publish-prepare-docs
       - name: Deploy odoc to GitHub Pages
-        uses: ocaml/setup-ocaml/deploy-doc@v2      
+        uses: ocaml/setup-ocaml/deploy-doc@v2
         with:
           destination-dir: odoc
       - name: Deploy Sphinx to GitHub Pages
