@@ -1,0 +1,31 @@
+name: Publish GitHub Pages
+
+on:
+  push:
+    branches:
+      - 'to-squash'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: OCaml 4.12.x
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 4.12.x
+          dune-cache: true
+      - name: Checkout code
+        uses: actions/checkout@v2          
+      - name: Build Sphinx
+        run: |
+          cd contributors
+          make publish-prepare-docs
+      - name: Deploy odoc to GitHub Pages
+        uses: ocaml/setup-ocaml/deploy-doc@v2      
+        with:
+          destination-dir: odoc
+      - name: Deploy Sphinx to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./contributors/_build/html
