@@ -29,11 +29,15 @@ jobs:
           channels: conda-forge,defaults
           python-version: 3.7
           environment-file: contributors/environment.yml
+          auto-activate-base: false
           activate-environment: sphinx-env
+          use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
+      - name: Install graphviz
+        run: sudo apt install graphviz
       - name: Build Sphinx
         run: |
           conda info
-          git status
+          conda list
           cd contributors
           make publish-prepare-docs
       - name: OCaml 4.12.x
