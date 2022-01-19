@@ -104,6 +104,11 @@ used by the end-user, will install all selected components.</p>
 <p>Each installer has a concreate instantation as an Opam package
 <code class="docutils literal notranslate"><span class="pre">dkml-installer-&lt;INSTALLERNAME&gt;</span></code>.</p>
 </dd>
+<dt>Installer Generator</dt><dd><p>A program that can create a customized installer that you can configure
+with your own installation instructions or an installation manifest.
+Examples include <a class="reference external" href="https://0install.net/">0install</a>
+and <a class="reference external" href="https://cmake.org/cmake/help/latest/module/CPack.html">cpack</a>.</p>
+</dd>
 <dt>Component API</dt><dd><p>A collection of OCaml modules and module types that Component authors
 use to register their component.</p>
 </dd>
@@ -122,16 +127,25 @@ for a component, we’ll be calling that the OPAM_INSTALL Phase</p>
 <h2>Packaging Flow<a class="headerlink" href="#packaging-flow" title="Permalink to this headline"></a></h2>
 <div class="section" id="creating-the-installer-package">
 <h3>Creating the installer package<a class="headerlink" href="#creating-the-installer-package" title="Permalink to this headline"></a></h3>
-<ol class="arabic">
-<li><p>The GitHub Actions workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> is run for
-<code class="docutils literal notranslate"><span class="pre">dkml-installer-&lt;INSTALLERNAME&gt;</span></code> (hereafter we’ll just say
-installer <code class="docutils literal notranslate"><span class="pre">I</span></code>) whenever a commit or a tag is pushed to <code class="docutils literal notranslate"><span class="pre">I</span></code>.
-The workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> first does the equivalent of:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>opam switch create installer-<span class="nv">$INSTALLERNAME</span> <span class="m">4</span>.12.1
-opam install --switch installer-<span class="nv">$INSTALLERNAME</span> ./dkml-installer-<span class="nv">$INSTALLERNAME</span>.opam --deps-only
+<p>The installer can be generated directly using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>opam switch create installer-<span class="nv">$INSTALLERNAME</span> --empty
+opam install --switch installer-<span class="nv">$INSTALLERNAME</span> ./dkml-installer-<span class="nv">$INSTALLERNAME</span>.opam
 </pre></div>
 </div>
-<p>Specifically:</p>
+<p>The generated installer will be available in the Opam switch’s
+<code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$INSTALLERNAME/dist/</span></code> folder.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There is an GitHub Actions workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> that is run for
+<code class="docutils literal notranslate"><span class="pre">dkml-installer-&lt;INSTALLERNAME&gt;</span></code>
+whenever a commit or a tag is pushed. It does the same
+<code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">switch</span> <span class="pre">create</span></code> and <code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">install</span></code> as above.</p>
+</div>
+<p>From now on we’ll just say installer <code class="docutils literal notranslate"><span class="pre">$INSTALLERNAME</span></code> is <code class="docutils literal notranslate"><span class="pre">I</span></code>.
+Here is what the <code class="docutils literal notranslate"><span class="pre">opam</span> <span class="pre">install</span> <span class="pre">...</span></code> step does in detail:</p>
+<ol class="arabic">
+<li><p>Opam builds and install the Opam dependencies. Specifically Opam does the
+equivalent of:</p>
 <ol class="arabic">
 <li><p>Each component <code class="docutils literal notranslate"><span class="pre">C</span></code> listed in <code class="docutils literal notranslate"><span class="pre">I</span></code>’s <code class="docutils literal notranslate"><span class="pre">dkml-installer-&lt;INSTALLERNAME&gt;.opam</span></code>
 dependencies will go through its OPAM_BUILD and OPAM_INSTALL phases using the
@@ -164,7 +178,7 @@ relocatable.</p>
 </li>
 </ol>
 </li>
-<li><p>The workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> then <strong>merges</strong> together the
+<li><p><strong>Merges</strong> together the
 <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/static-files/</span></code> directories. It does the equivalent of
 the following for all components <code class="docutils literal notranslate"><span class="pre">C</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</span>/static-files/ <span class="se">\</span>
@@ -172,7 +186,7 @@ the following for all components <code class="docutils literal notranslate"><spa
 </pre></div>
 </div>
 </li>
-<li><p>The workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> then <strong>side-by-side copies</strong> all the
+<li><p><strong>Side-by-side copies</strong> all the
 <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code> directories. It does the equivalent of
 the following for all components <code class="docutils literal notranslate"><span class="pre">C</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</span>/staging-files/ <span class="se">\</span>
@@ -180,22 +194,24 @@ the following for all components <code class="docutils literal notranslate"><spa
 </pre></div>
 </div>
 </li>
-<li><p>The workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> will create a
+<li><p>Create a
 <a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site plugin loader</a>
 executable named <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> that will perform the steps in
 <a class="reference internal" href="#userphases"><span class="std std-ref">User runs the installer</span></a></p></li>
-<li><p>The last step of the workflow <code class="docutils literal notranslate"><span class="pre">package</span></code> depends on what type of installer
-has been configured. <em>As of Jan 2022 only the text archive installer is
-available, and no configuration is needed. But regardless of which installer
-is available, the Component packages should not change.</em></p>
+<li><p>The last step depends on what type of installer
+generator has been configured. <em>As of Jan 2022 only the CLI Archive
+installer generator is available, and no configuration is needed. But
+regardless of which installer generator is available, the Component packages
+should not change.</em></p>
 <dl>
-<dt>Text Archiver Installer</dt><dd><p>This installer will produce a &lt;I&gt;.zip file or a &lt;I&gt;.tar.gz file.</p>
+<dt>CLI Archive Installer Generator</dt><dd><p>This installer will produce a <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/dist/$I.zip</span></code>
+file or a <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/dist/$I.tar.gz</span></code> file.</p>
 <p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/static-files/</span></code> will go
-into the root of the &lt;I&gt;.zip archive.</p>
+into the root of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 <p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/staging-files/</span></code> will go
-into the <code class="docutils literal notranslate"><span class="pre">_work</span></code> top-level folder of the &lt;I&gt;.zip archive.</p>
+into the <code class="docutils literal notranslate"><span class="pre">_work</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> executable will be placed in the root of the
-&lt;I&gt;.zip archive.</p>
+<code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 </dd>
 <dt>Future Possibility: 0install</dt><dd><p>If no component needs administrative permission then
 <a class="reference external" href="https://opam.ocaml.org/packages/0install/">0install</a> would be a good
@@ -230,7 +246,7 @@ questions.</p>
 <p class="admonition-title">Note</p>
 <p>This is a underspecified spot in the design; a tiny embedded DSL would
 be best here. The DSL would be translated to command line options for
-the <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> when using the Text Archiver Installer, but
+the <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> when using the CLI Archive Installer, but
 also be translated to UI configuration for graphical installers.</p>
 </div>
 </li>
