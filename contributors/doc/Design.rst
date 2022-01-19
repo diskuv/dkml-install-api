@@ -31,6 +31,12 @@ Installer
     Each installer has a concreate instantation as an Opam package
     ``dkml-installer-<INSTALLERNAME>``.
 
+Installer Generator
+    A program that can create a customized installer that you can configure
+    with your own installation instructions or an installation manifest.
+    Examples include `0install <https://0install.net/>`_
+    and `cpack <https://cmake.org/cmake/help/latest/module/CPack.html>`_.
+
 Component API
     A collection of OCaml modules and module types that Component authors
     use to register their component.
@@ -53,17 +59,27 @@ Packaging Flow
 Creating the installer package
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1.  The GitHub Actions workflow ``package`` is run for
-    ``dkml-installer-<INSTALLERNAME>`` (hereafter we'll just say
-    installer ``I``) whenever a commit or a tag is pushed to ``I``.
-    The workflow ``package`` first does the equivalent of:
-    
-    .. code:: bash
+The installer can be generated directly using:
 
-        opam switch create installer-$INSTALLERNAME 4.12.1
-        opam install --switch installer-$INSTALLERNAME ./dkml-installer-$INSTALLERNAME.opam --deps-only
-    
-    Specifically:
+.. code:: bash
+
+    opam switch create installer-$INSTALLERNAME --empty
+    opam install --switch installer-$INSTALLERNAME ./dkml-installer-$INSTALLERNAME.opam
+
+The generated installer will be available in the Opam switch's
+``$OPAM_SWITCH_PREFIX/share/$INSTALLERNAME/dist/`` folder.
+
+.. note::
+    There is an GitHub Actions workflow ``package`` that is run for
+    ``dkml-installer-<INSTALLERNAME>``
+    whenever a commit or a tag is pushed. It does the same
+    ``opam switch create`` and ``opam install`` as above.
+
+From now on we'll just say installer ``$INSTALLERNAME`` is ``I``.
+Here is what the ``opam install ...`` step does in detail:
+
+1.  Opam builds and install the Opam dependencies. Specifically Opam does the
+    equivalent of:
 
     1. Each component ``C`` listed in ``I``'s ``dkml-installer-<INSTALLERNAME>.opam``
        dependencies will go through its OPAM_BUILD and OPAM_INSTALL phases using the
@@ -96,7 +112,7 @@ Creating the installer package
            Instead the only native executable should be
            ``ocamlrun`` (provided by ``dkml-component-ocamlrun.opam``).
         
-2. The workflow ``package`` then **merges** together the
+2. **Merges** together the
    ``<share>/static-files/`` directories. It does the equivalent of
    the following for all components ``C``:
 
@@ -105,7 +121,7 @@ Creating the installer package
        rsync -a $OPAM_SWITCH_PREFIX/share/$C/static-files/ \
             $OPAM_SWITCH_PREFIX/share/$I/static-files/
 
-3. The workflow ``package`` then **side-by-side copies** all the
+3. **Side-by-side copies** all the
    ``<share>/staging-files/`` directories. It does the equivalent of
    the following for all components ``C``:
 
@@ -114,27 +130,29 @@ Creating the installer package
        rsync -a $OPAM_SWITCH_PREFIX/share/$C/staging-files/ \
             $OPAM_SWITCH_PREFIX/share/$I/staging-files/$C/
 
-4. The workflow ``package`` will create a
+4. Create a
    `dune_site plugin loader <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_
    executable named ``dkml-runner.exe`` that will perform the steps in
    :ref:`UserPhases`
  
-5. The last step of the workflow ``package`` depends on what type of installer
-   has been configured. *As of Jan 2022 only the text archive installer is
-   available, and no configuration is needed. But regardless of which installer
-   is available, the Component packages should not change.*
+5. The last step depends on what type of installer
+   generator has been configured. *As of Jan 2022 only the CLI Archive
+   installer generator is available, and no configuration is needed. But
+   regardless of which installer generator is available, the Component packages
+   should not change.*
 
-   Text Archiver Installer
-        This installer will produce a <I>.zip file or a <I>.tar.gz file.
+   CLI Archive Installer Generator
+        This installer will produce a ``$OPAM_SWITCH_PREFIX/share/$I/dist/$I.zip``
+        file or a ``$OPAM_SWITCH_PREFIX/share/$I/dist/$I.tar.gz`` file.
 
         All of the ``$OPAM_SWITCH_PREFIX/share/$I/static-files/`` will go
-        into the root of the <I>.zip archive.
+        into the root of the ``$I.zip`` archive.
 
         All of the ``$OPAM_SWITCH_PREFIX/share/$I/staging-files/`` will go
-        into the ``_work`` top-level folder of the <I>.zip archive.
+        into the ``_work`` top-level folder of the ``$I.zip`` archive.
 
         The ``dkml-runner.exe`` executable will be placed in the root of the
-        <I>.zip archive.
+        ``$I.zip`` archive.
 
    Future Possibility: 0install
         If no component needs administrative permission then
@@ -168,7 +186,7 @@ User runs the installer
        
         This is a underspecified spot in the design; a tiny embedded DSL would
         be best here. The DSL would be translated to command line options for
-        the ``dkml-runner.exe`` when using the Text Archiver Installer, but
+        the ``dkml-runner.exe`` when using the CLI Archive Installer, but
         also be translated to UI configuration for graphical installers.
 4. **USER_DEPLOY_INITIAL phase**: Copy everything from the archive to the
    <end_user_installation_prefix> except the ``_work`` folder.
