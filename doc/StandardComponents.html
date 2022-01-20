@@ -42,7 +42,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage for Component Authors</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#standard-components">Standard Components</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ocamlrun">ocamlrun</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#compiler">compiler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ocamlcompiler">ocamlcompiler</a></li>
 </ul>
 </li>
 </ul>
@@ -99,15 +99,15 @@ all the details of spawning ocamlrun on the <strong>bytecode executable</strong>
 into <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/work-files/</span></code>, especially the handling of the relocation of Stdlib.</p></li>
 </ol>
 </div>
-<div class="section" id="compiler">
-<h3>compiler<a class="headerlink" href="#compiler" title="Permalink to this headline"></a></h3>
-<p>In the USER_INSTALL phase you can use the <code class="docutils literal notranslate"><span class="pre">dkml-component-compiler.opam</span></code>
+<div class="section" id="ocamlcompiler">
+<h3>ocamlcompiler<a class="headerlink" href="#ocamlcompiler" title="Permalink to this headline"></a></h3>
+<p>In the USER_INSTALL phase you can use the <code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlcompiler.opam</span></code>
 provided <code class="docutils literal notranslate"><span class="pre">ocamlopt.opt</span></code> by doing the following:</p>
 <ol class="arabic simple">
-<li><p>Declare an Opam dependency on <code class="docutils literal notranslate"><span class="pre">dkml-component-compiler-api</span></code></p></li>
-<li><p>Declare a Dune <code class="docutils literal notranslate"><span class="pre">(libraries</span> <span class="pre">...)</span></code> dependency on <code class="docutils literal notranslate"><span class="pre">dkml-component-compiler-api</span></code></p></li>
+<li><p>Declare an Opam dependency on <code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlcompiler-api</span></code></p></li>
+<li><p>Declare a Dune <code class="docutils literal notranslate"><span class="pre">(libraries</span> <span class="pre">...)</span></code> dependency on <code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlcompiler-api</span></code></p></li>
 <li><p>Declare a component <code class="docutils literal notranslate"><span class="pre">let</span> <span class="pre">components</span> <span class="pre">=</span> <span class="pre">[...])</span></code> dependency on
-<code class="docutils literal notranslate"><span class="pre">dkml-component-compiler</span></code>. <em>Do not declare the component dependency on the API!</em></p></li>
+<code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlcompiler</span></code>. <em>Do not declare the component dependency on the API!</em></p></li>
 <li><p>Use the XXX function (TODO: provide link to odoc documentation) which will handle
 all the details of spawning ocamlc on the <strong>OCaml source code</strong> you installed
 into <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/work-files/</span></code>.</p></li>
