@@ -7,7 +7,7 @@ let test_uppercase () =
     (Result.error "[19c415af]")
     (Private.validate
        (module struct
-         include Dkml_install_api.Noop_component_config
+         include Dkml_install_api.Default_component_config
 
          let component_name = "UPPERCASE"
        end))
@@ -17,7 +17,7 @@ let test_lowercase () =
     "result starts with" (Result.ok ())
     (Private.validate
        (module struct
-         include Dkml_install_api.Noop_component_config
+         include Dkml_install_api.Default_component_config
 
          let component_name = "lowercase"
        end))
@@ -28,7 +28,7 @@ let test_underscore () =
     (Result.error "[19c415af]")
     (Private.validate
        (module struct
-         include Dkml_install_api.Noop_component_config
+         include Dkml_install_api.Default_component_config
 
          let component_name = "lower_case"
        end))
@@ -38,7 +38,7 @@ let test_dash () =
     "result starts with" (Result.ok ())
     (Private.validate
        (module struct
-         include Dkml_install_api.Noop_component_config
+         include Dkml_install_api.Default_component_config
 
          let component_name = "lower-case"
        end))

@@ -1,5 +1,7 @@
 open Dkml_install_api
 
+let ( >>= ) = Result.bind
+
 type t = (string, (module Component_config)) Hashtbl.t
 
 let global_registry : t = Hashtbl.create 17
@@ -43,12 +45,21 @@ let toposort reg =
 
 let eval_each ~f lst =
   List.fold_left
-    (fun acc cfg -> Result.bind acc (fun () -> f cfg))
-    (Result.ok ()) lst
+    (fun acc cfg ->
+      acc >>= fun v ->
+      match f cfg with
+      | Ok v2 -> Result.ok (v2 :: v)
+      | Error e -> Result.error e)
+    (Result.ok []) lst
 
-let eval reg ~f = Result.bind (Result.map (eval_each ~f) (toposort reg)) Fun.id
+let eval reg ~f =
+  Result.map (eval_each ~f) (toposort reg) >>= fun res ->
+  Result.map List.rev res
 
 let reverse_eval reg ~f =
-  Result.bind
-    (Result.map (eval_each ~f) (Result.map List.rev (toposort reg)))
-    Fun.id
+  Result.map (eval_each ~f) (Result.map List.rev (toposort reg)) >>= fun res ->
+  Result.map List.rev res
+
+module Private = struct
+  let reset () = Hashtbl.clear global_registry
+end

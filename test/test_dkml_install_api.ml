@@ -7,9 +7,9 @@ let test_add_once () =
     (let reg = Component_registry.get () in
      Component_registry.add_component reg
        (module struct
-         include Dkml_install_api.Noop_component_config
+         include Dkml_install_api.Default_component_config
 
-         let component_name = "add_once"
+         let component_name = "add-once"
        end))
 
 let test_add_twice () =
@@ -20,16 +20,16 @@ let test_add_twice () =
      let ( >>= ) = Result.bind in
      Component_registry.add_component reg
        (module struct
-         include Dkml_install_api.Noop_component_config
+         include Dkml_install_api.Default_component_config
 
-         let component_name = "add_twice"
+         let component_name = "add-twice"
        end)
      >>= fun () ->
      Component_registry.add_component reg
        (module struct
-         include Dkml_install_api.Noop_component_config
+         include Dkml_install_api.Default_component_config
 
-         let component_name = "add_twice"
+         let component_name = "add-twice"
        end))
 
 let () =
