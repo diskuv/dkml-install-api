@@ -1,16 +1,3 @@
-Usage for Component Authors
-===========================
-
-As a Component author you should **only create bytecode executables**
-in your OPAM_BUILD phase. Build them with 32-bit compilers on Windows for
-maximum portability.
-
-You can have :ref:`StandardComponents` available to you in the USER_INSTALL
-phase so you can run any bytecode executables you have placed in
-``<share>/staging-files/``, or compile new native executables on the end-users
-machine. Just declare a dependency on them using the instructions in their
-documentation.
-
 .. _StandardComponents:
 
 Standard Components

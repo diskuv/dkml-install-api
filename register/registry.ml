@@ -1,9 +1,8 @@
 open Dkml_install_api
 
-let global_registry : (string, (module Component_config)) Hashtbl.t =
-  Hashtbl.create 17
-
 type t = (string, (module Component_config)) Hashtbl.t
+
+let global_registry : t = Hashtbl.create 17
 
 let get () = global_registry
 

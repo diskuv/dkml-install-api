@@ -7,7 +7,9 @@
         open Dkml_install_api
 
         module Component : Component_config = struct
-            (** Fill this in *)
+          include Noop_component_config
+          let component_name = "...the..component..name..."
+          (** Redefine any other values you want to override *)
         end
         let reg = Component_registry.get ()
         let run = function Ok () -> () | Error str -> failwith str
