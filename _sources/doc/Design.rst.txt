@@ -34,8 +34,7 @@ Installer
 Installer Generator
     A program that can create a customized installer that you can configure
     with your own installation instructions or an installation manifest.
-    Examples include `0install <https://0install.net/>`_
-    and `cpack <https://cmake.org/cmake/help/latest/module/CPack.html>`_.
+    Examples include `0install`_ and `cpack`_.
 
 Component API
     A collection of OCaml modules and module types that Component authors
@@ -156,11 +155,11 @@ Here is what the ``opam install ...`` step does in detail:
 
    Future Possibility: 0install
         If no component needs administrative permission then
-        `0install <https://opam.ocaml.org/packages/0install/>`_ would be a good
+        `0install`_ would be a good
         choice for a cross-platform installer.
 
    Future Possibility: cpack
-        `cpack <https://cmake.org/cmake/help/latest/module/CPack.html/>`_ would
+        `cpack`_ would
         be a good choice for generating a variety of installers across many
         platforms (``.rpm``, ``.msi``, etc.), although it is much harder to
         configure than 0install.
@@ -224,3 +223,6 @@ User runs the installer
       .. code:: ocaml
 
           Component.run_as_user "<end_user_installation_prefix>"
+
+.. _0install: https://opam.ocaml.org/packages/0install
+.. _cpack: https://cmake.org/cmake/help/latest/module/CPack.html
