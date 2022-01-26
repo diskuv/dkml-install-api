@@ -1,3 +1,11 @@
+(* Load dkml-install-api module so that Dynlink access control
+   does not prohibit plugins (components) from loading it by
+   raising a Dynlink.Unavailable_unit error.
+   
+   Confer:
+   https://ocaml.org/api/Dynlink.html#1_Accesscontrol "set_allowed_units" *)
+let _ : string = Dkml_install_api.Noop_component_config.component_name
+
 (* Load all the available components *)
 let () = Sites.Plugins.Plugins.load_all ()
 
