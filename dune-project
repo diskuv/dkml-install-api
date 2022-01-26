@@ -17,11 +17,11 @@
  (synopsis "API and registry for Diskuv OCaml (DKML) installation components")
  (description
   "All DKML installation components implement the interfaces exposed in this API.")
- (sites (lib plugins))
  (depends
   (alcotest (and (>= 1.4.0) :with-test))
   (odoc (and (>= 1.5.3) :with-doc))
   (dune (>= 2.9))
+  (dune-site (>= 2.9))
   (fmt (>= 0.8.9))
   (astring (>= 0.8.5))))
 
@@ -30,9 +30,13 @@
  (synopsis "Runner executable for Diskuv OCaml (DKML) installation")
  (description
   "The runner executable is responsible for loading and running all DKML installation components.")
+ (sites
+  ; <section> <name>
+  (lib plugins))
  (depends
   (alcotest (and (>= 1.4.0) :with-test))
   (odoc (and (>= 1.5.3) :with-doc))
+  (dkml-install (= :version))
   (dune (>= 2.9))
   (dune-site (>= 2.9))
   (fmt (>= 0.8.9))
