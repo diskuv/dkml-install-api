@@ -1,0 +1,4 @@
+(library
+ (name dkml_install_register)
+ (public_name dkml-install.register)
+ (libraries astring fmt dkml-install.api))

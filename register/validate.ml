@@ -1,4 +1,4 @@
-open Types
+open Dkml_install_api
 open Astring
 
 let validate (module Cfg : Component_config) =

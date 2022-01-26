@@ -1,0 +1,45 @@
+{0 DKML Install API}
+
+Please visit
+{{: https://diskuv.github.io/dkml-install-api/index.html} the central documentation site}
+for comprehensive documentation.
+
+What follows is the OCaml library documentation when you pull in the
+Opam module {e dkml-install} using something similar to the following in
+your {e *.opam} file:
+
+{v
+opam-version: "2.0"
+depends: [
+  "dkml-install" {>= "0.1.0"}
+  (* ... *)
+]
+v}
+
+{1 Library dkml-install.register}
+
+In your Dune file {e dune} you can include the library as follows:
+
+{v
+ (library
+  (public_name your-component)
+  (name your_component)
+  (libraries dkml-install.register))
+v}
+
+The entry point of this library is the module:
+{!module-Dkml_install_register}.
+
+{1 Library dkml-install.api}
+
+Typically you get {e dkml-install.api} automatically when you
+pull in {e dkml-install.register}. If you need the API library
+by itself, in your Dune file {e dune} you can include the library as follows:
+
+{v
+ (library
+  (libraries dkml-install.api))
+v}
+
+The entry point of this library is the module:
+{!module-Dkml_install_api}.

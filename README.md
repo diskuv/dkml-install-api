@@ -32,6 +32,7 @@ On Windows with Diskuv OCaml:
 ```powershell
 with-dkml opam install . --with-test --with-doc --deps-only
 with-dkml dune build
+with-dkml dune build `@doc
 ```
 
 On Unix:
@@ -39,6 +40,7 @@ On Unix:
 ```bash
 opam install .--with-test --with-doc --deps-only
 dune build
+dune build @doc
 ```
 
 ## Contributing

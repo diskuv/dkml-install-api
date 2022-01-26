@@ -1,14 +1,6 @@
-(** Each component must have a configuration module defined with the
-    module type [Component_config].
-  *)
-module type Component_config = sig
-  include Types.Component_config
-  (** @inline *)
-end
-
 (** The [Component_registry] is a global registry of all components that have been
     registered until now.
-    
+
     Component authors should follow this sequence:
 
     {[
@@ -29,5 +21,6 @@ end
 
 (** The module [Private] is meant for internal use only. *)
 module Private : sig
-  val validate : (module Types.Component_config) -> (unit, string) result
+  val validate :
+    (module Dkml_install_api.Component_config) -> (unit, string) result
 end

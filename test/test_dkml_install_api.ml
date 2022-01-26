@@ -1,4 +1,4 @@
-open Dkml_install_api
+open Dkml_install_register
 open More_testables
 
 let test_add_once () =

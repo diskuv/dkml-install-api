@@ -1,0 +1,16 @@
+(generate_sites_module
+ (module sites)
+ (plugins (dkml-install plugins)))
+
+(executable
+ (public_name dkml-install-runner)
+ (name main)
+ (package dkml-install-runner)
+ (modules sites main)
+ (libraries dkml-install.register dune-site dune-site.plugins))
+
+; (library
+;  (public_name c.register)
+;  (name c_register)
+;  (modules c_register))
+

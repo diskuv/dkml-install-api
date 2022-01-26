@@ -1,6 +1,0 @@
-(library
- (name dkml_install_api)
- (public_name dkml-install-api)
- (libraries astring fmt))
-
-(documentation)
