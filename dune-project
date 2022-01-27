@@ -23,7 +23,9 @@
   (dune (>= 2.9))
   (dune-site (>= 2.9))
   (fmt (>= 0.8.9))
-  (astring (>= 0.8.5))))
+  (astring (>= 0.8.5))
+  (tsort (>= 2.1.0))
+  (cmdliner (>= 1.0.4))))
 
 (package
  (name dkml-install-runner)
@@ -41,5 +43,5 @@
   (dune-site (>= 2.9))
   (fmt (>= 0.8.9))
   (astring (>= 0.8.5))
-  (tsort (>= 2.1.0))
+  (cmdliner (>= 1.0.4))
   (logs (>= 0.7.0))))
