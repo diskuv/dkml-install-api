@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Writing Components &mdash; DKML Install API  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Standard Components" href="StandardComponents.html" />
+    <link rel="prev" title="Component Authors" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #3347A9" >
+            <a href="../../index.html" class="icon icon-home"> DKML Install API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Getting Started with the DKML Install API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Component Authors</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html">Component Authors</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Writing Components</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-module">Configuration Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#staging-files">Staging Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#static-files">Static Files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="StandardComponents.html">Standard Components</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Design.html">Design</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #3347A9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DKML Install API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Component Authors</a> &raquo;</li>
+      <li>Writing Components</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/doc/components/WritingComponents.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="writing-components">
+<span id="writingcomponents"></span><h1>Writing Components<a class="headerlink" href="#writing-components" title="Permalink to this headline"></a></h1>
+<p>Every installation uses a <code class="docutils literal notranslate"><span class="pre">dkml-install-runner.exe</span></code> executable customized
+to an installer. The component you write will be linked into
+<code class="docutils literal notranslate"><span class="pre">dkml-install-runner.exe</span></code> at installation time.</p>
+<p>A component has a <a class="reference internal" href="#configurationmodule"><span class="std std-ref">Configuration Module</span></a> that configures values and methods
+used in the installation lifecycle and in the installer generators.</p>
+<p>For example, when the following configuration values are defined:</p>
+<p>the <code class="docutils literal notranslate"><span class="pre">dkml-install-runner.exe</span></code> executable will be generated so that
+the following can occur:</p>
+<p>A component can also have <a class="reference internal" href="#stagingfiles"><span class="std std-ref">Staging Files</span></a>
+that will be available during installation (but not after), and can also have
+<a class="reference internal" href="#staticfiles"><span class="std std-ref">Static Files</span></a> that will be installed directly to the final end-user
+installation folder.</p>
+<p>As a component author you will need to write a <a class="reference internal" href="#configurationmodule"><span class="std std-ref">Configuration Module</span></a>
+with methods like <code class="docutils literal notranslate"><span class="pre">install_user_subcommand</span></code> that will <code class="docutils literal notranslate"><span class="pre">execute</span></code> at
+installation time.</p>
+<dl>
+<dt>Copy Scenario</dt><dd><p>You may want to simply copy some files from your component’s build directories
+into your end-user’s installation folder without modification.</p>
+<p>In your <code class="docutils literal notranslate"><span class="pre">dune</span></code> file you would use:</p>
+<p>Your <code class="docutils literal notranslate"><span class="pre">execute</span></code> should do nothing (ex. <code class="docutils literal notranslate"><span class="pre">let</span> <span class="pre">execute</span> <span class="pre">()</span> <span class="pre">=</span> <span class="pre">()</span> <span class="pre">in</span></code>).</p>
+</dd>
+<dt>Transform Scenario</dt><dd><p>You may want to copy <em>and transform</em> files from your component’s build
+directories into your end-user’s installation folder. For example, you
+may want to replace all <code class="docutils literal notranslate"><span class="pre">&#64;&#64;INSTALL_PLACEHOLDER_EXAMPLE&#64;&#64;</span></code> placeholders
+in all files with the end-user installation directory.</p>
+<p>In your <code class="docutils literal notranslate"><span class="pre">dune</span></code> files you would copy the original files into staging:</p>
+<p>Then in your <code class="docutils literal notranslate"><span class="pre">execute</span></code> you would use the <code class="docutils literal notranslate"><span class="pre">bos</span></code> package to copy
+from staging into static with something like the following:</p>
+</dd>
+<dt>Compute Scenario</dt><dd><p>You may want to compute or generate files into your end-user’s installation
+folder. For example, you may want to compile a native code binary at
+installation time and place it in your end-users’ installation folder.</p>
+<p>In your <code class="docutils literal notranslate"><span class="pre">dune</span></code> files you would copy the raw materials (if any) into
+staging, and generate a bytecode executable that can do the computations.
+For compilation the raw materials are the source code you will compile on
+the end-user’s machine, and the bytecode executable will invoke the
+compiler on the end-user’s machine.</p>
+<p>Then in your <code class="docutils literal notranslate"><span class="pre">execute</span></code> you would use the <code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlrun-api</span></code>
+package to invoke your bytecode executable:</p>
+<p>You would also add a dependency in your <code class="docutils literal notranslate"><span class="pre">.opam</span></code> file to include
+<code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlrun</span></code>.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Most of the heavy work should be done in your bytecode executables.</p>
+<p>You may think that you can run OCaml code directly in your configuration
+functions like <code class="docutils literal notranslate"><span class="pre">install_user_subcommand</span></code>, but configuration functions
+have only limited access to external OCaml libraries. See
+<a class="reference internal" href="#configurationmodule"><span class="std std-ref">Configuration Module</span></a> for more details.</p>
+</div>
+</dd>
+</dl>
+<div class="section" id="configuration-module">
+<span id="configurationmodule"></span><h2>Configuration Module<a class="headerlink" href="#configuration-module" title="Permalink to this headline"></a></h2>
+<p>Configuration functions can only access:
+* the OCaml Stdlib
+* the other conventional OCaml libraries like <code class="docutils literal notranslate"><span class="pre">unix</span></code>, <code class="docutils literal notranslate"><span class="pre">str</span></code> and <code class="docutils literal notranslate"><span class="pre">bigarray</span></code>
+* the <code class="docutils literal notranslate"><span class="pre">dkml-install-api</span></code> package
+* the <code class="docutils literal notranslate"><span class="pre">bos</span></code> (Basic Operating System) package, version <code class="docutils literal notranslate"><span class="pre">0.2.1</span></code></p>
+<p>Any call to a library outside of the above list will result in a
+<code class="docutils literal notranslate"><span class="pre">Dynlink.Unavailable_unit</span></code> error. Instead just generate a bytecode executable
+and place it in the <a class="reference internal" href="#stagingfiles"><span class="std std-ref">Staging Files</span></a>. You will be able to use Dune to
+bundle as many libraries as you need into the single bytecode executable file.
+You also have no restrictions on what versions of the libraries you bundle.</p>
+<p>You can have <a class="reference internal" href="StandardComponents.html#standardcomponents"><span class="std std-ref">Standard Components</span></a> available to you in the USER_INSTALL
+phase so you can run any bytecode executables you have placed in
+<code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code>, or compile new native executables on the end-users
+machine. Just declare a dependency on them using the instructions in their
+documentation.</p>
+</div>
+<div class="section" id="staging-files">
+<span id="stagingfiles"></span><h2>Staging Files<a class="headerlink" href="#staging-files" title="Permalink to this headline"></a></h2>
+<p>As a Component author you should <strong>only create bytecode executables</strong>
+in your OPAM_BUILD phase. Build them with 32-bit compilers on Windows for
+maximum portability.</p>
+</div>
+<div class="section" id="static-files">
+<span id="staticfiles"></span><h2>Static Files<a class="headerlink" href="#static-files" title="Permalink to this headline"></a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Component Authors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="StandardComponents.html" class="btn btn-neutral float-right" title="Standard Components" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Diskuv, Inc..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

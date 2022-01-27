@@ -3,21 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usage for Component Authors &mdash; DKML Install API  documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>Standard Components &mdash; DKML Install API  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
+    <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-    <script src="../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Design" href="Design.html" /> 
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Design" href="../Design.html" />
+    <link rel="prev" title="Writing Components" href="WritingComponents.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -25,10 +26,10 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #3347A9" >
-            <a href="../index.html" class="icon icon-home"> DKML Install API
+            <a href="../../index.html" class="icon icon-home"> DKML Install API
           </a>
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -37,16 +38,19 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started with the DKML Install API</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Design.html">Design</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Usage for Component Authors</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#standard-components">Standard Components</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Getting Started with the DKML Install API</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Component Authors</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html">Component Authors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="WritingComponents.html">Writing Components</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Standard Components</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ocamlrun">ocamlrun</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ocamlcompiler">ocamlcompiler</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="index.html#indices-and-tables">Indices and tables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Design.html">Design</a></li>
 </ul>
 
         </div>
@@ -55,17 +59,18 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #3347A9" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">DKML Install API</a>
+          <a href="../../index.html">DKML Install API</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Usage for Component Authors</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Component Authors</a> &raquo;</li>
+      <li>Standard Components</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/doc/StandardComponents.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/doc/components/StandardComponents.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -73,20 +78,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="usage-for-component-authors">
-<h1>Usage for Component Authors<a class="headerlink" href="#usage-for-component-authors" title="Permalink to this headline"></a></h1>
-<p>As a Component author you should <strong>only create bytecode executables</strong>
-in your OPAM_BUILD phase. Build them with 32-bit compilers on Windows for
-maximum portability.</p>
-<p>You can have <a class="reference internal" href="#standardcomponents"><span class="std std-ref">Standard Components</span></a> available to you in the USER_INSTALL
-phase so you can run any bytecode executables you have placed in
-<code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code>, or compile new native executables on the end-users
-machine. Just declare a dependency on them using the instructions in their
-documentation.</p>
-<div class="section" id="standard-components">
-<span id="standardcomponents"></span><h2>Standard Components<a class="headerlink" href="#standard-components" title="Permalink to this headline"></a></h2>
+  <div class="section" id="standard-components">
+<span id="standardcomponents"></span><h1>Standard Components<a class="headerlink" href="#standard-components" title="Permalink to this headline"></a></h1>
 <div class="section" id="ocamlrun">
-<h3>ocamlrun<a class="headerlink" href="#ocamlrun" title="Permalink to this headline"></a></h3>
+<h2>ocamlrun<a class="headerlink" href="#ocamlrun" title="Permalink to this headline"></a></h2>
 <p>In the USER_INSTALL phase you can use the <code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlrun.opam</span></code>
 provided <code class="docutils literal notranslate"><span class="pre">ocamlrun</span></code> by doing the following:</p>
 <ol class="arabic simple">
@@ -100,7 +95,7 @@ into <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/
 </ol>
 </div>
 <div class="section" id="ocamlcompiler">
-<h3>ocamlcompiler<a class="headerlink" href="#ocamlcompiler" title="Permalink to this headline"></a></h3>
+<h2>ocamlcompiler<a class="headerlink" href="#ocamlcompiler" title="Permalink to this headline"></a></h2>
 <p>In the USER_INSTALL phase you can use the <code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlcompiler.opam</span></code>
 provided <code class="docutils literal notranslate"><span class="pre">ocamlopt.opt</span></code> by doing the following:</p>
 <ol class="arabic simple">
@@ -114,13 +109,13 @@ into <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/
 </ol>
 </div>
 </div>
-</div>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="Design.html" class="btn btn-neutral float-left" title="Design" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="WritingComponents.html" class="btn btn-neutral float-left" title="Writing Components" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Design.html" class="btn btn-neutral float-right" title="Design" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

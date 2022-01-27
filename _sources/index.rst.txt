@@ -21,8 +21,8 @@ generators.
    :caption: Table of Contents
 
    self
+   doc/components/index
    doc/Design
-   doc/StandardComponents
 
 Indices and tables
 ==================
