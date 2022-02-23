@@ -131,7 +131,7 @@ Here is what the ``opam install ...`` step does in detail:
 
 4. Create a
    `dune_site plugin loader <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_
-   executable named ``dkml-runner.exe`` that will perform the steps in
+   executable named ``dkml-install-runner.exe`` that will perform the steps in
    :ref:`UserPhases`
  
 5. The last step depends on what type of installer
@@ -150,7 +150,7 @@ Here is what the ``opam install ...`` step does in detail:
         All of the ``$OPAM_SWITCH_PREFIX/share/$I/staging-files/`` will go
         into the ``_work`` top-level folder of the ``$I.zip`` archive.
 
-        The ``dkml-runner.exe`` executable will be placed in the root of the
+        The ``dkml-install-runner.exe`` executable will be placed in the root of the
         ``$I.zip`` archive.
 
    Future Possibility: 0install
@@ -185,7 +185,7 @@ User runs the installer
        
         This is a underspecified spot in the design; a tiny embedded DSL would
         be best here. The DSL would be translated to command line options for
-        the ``dkml-runner.exe`` when using the CLI Archive Installer, but
+        the ``dkml-install-runner.exe`` when using the CLI Archive Installer, but
         also be translated to UI configuration for graphical installers.
 4. **USER_DEPLOY_INITIAL phase**: Copy everything from the archive to the
    <end_user_installation_prefix> except the ``_work`` folder.
@@ -204,13 +204,13 @@ User runs the installer
       
       .. code:: powershell
 
-            Start-Process powershell -ArgumentList '& dkml-runner.exe --admin' -verb RunAs
+            Start-Process powershell -ArgumentList '& dkml-install-runner.exe --admin' -verb RunAs
 
       or in Unix:
 
       .. code:: bash
 
-            sudo dkml-runner --admin
+            sudo dkml-install-runner --admin
 
       The ``--admin`` mode will in topological order call each component:
 

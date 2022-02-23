@@ -1,7 +1,7 @@
 (library
  (name dkml_install_api)
  (public_name dkml-install.api)
- (libraries astring fmt cmdliner))
+ (libraries astring fmt fpath cmdliner))
 
 (documentation
  (package dkml-install))

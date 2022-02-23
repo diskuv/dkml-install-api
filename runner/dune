@@ -3,8 +3,18 @@
  (name main)
  (package dkml-install-runner)
  (modules sites main)
- (libraries dkml-install.register dune-site dune-site.plugins
-   cmdliner logs.cli fmt.cli logs.fmt fmt.tty))
+ (libraries
+  dkml-install.register
+  dune-site
+  dune-site.plugins
+  cmdliner
+  logs.cli
+  fmt.cli
+  logs.fmt
+  fmt.tty
+  bos
+  fpath
+  str))
 
 (generate_sites_module
  (module sites)

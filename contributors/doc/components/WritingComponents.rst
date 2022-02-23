@@ -17,11 +17,15 @@ For example, when the following configuration values are defined:
 
     let component_name = "something"
 
+    let execute_install ctx =
+        Format.printf
+          "Here is where we would install using bytecode run with: %s@\n"
+          (ctx#path_eval "%{ocamlrun:share}/bin/ocamlrun.exe")
+
     let install_user_subcommand ~component_name ~subcommand_name =
         let doc = "Install a component called " ^ component_name in
-        let execute () = print_endline "Installing ... okay, it is done!" in
         let cmd =
-            ( Term.(const execute $ const ()), Term.info subcommand_name ~doc )
+            ( Term.(const execute_install $ ctx_t), Term.info subcommand_name ~doc )
         in
         Result.ok cmd
 
