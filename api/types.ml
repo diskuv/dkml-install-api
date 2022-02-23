@@ -1,5 +1,5 @@
 module Context = struct
-  type t = { path_eval : string -> string }
+  type t = { path_eval : string -> Fpath.t; eval : string -> string }
   (** [t] is the record type for the context.
 
 {1 Context Methods}
@@ -41,6 +41,25 @@ The following fields are available from the context today:
     the staging directory is
     ["$OPAM_SWITCH_PREFIX/share/dkml-component-<COMPONENT_NAME>/staging-files"]. You can use
     the ["--opam-context"] option to test your components in an Opam environment.
+  }
+
+
+  {- [ctx.eval "/some/expression"]
+
+  Evaluates the given expression, resolving any templates embedded in the
+  expression.
+
+  An example expression is ["%{components:all}"].
+
+  All templates that are available with [path_eval] are available with [eval].
+  However unlike [path_eval] the [eval] function will do no path conversions on
+  Windows. In addition [eval] has templates that are not available in
+  [path_eval].
+
+  Templates available to [eval] but not in [path_eval]:
+
+  - ["%{components:all}"] is the space separated names of the components that are
+  or will be installed
   }
 }
 *)

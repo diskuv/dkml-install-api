@@ -26,4 +26,9 @@ module Interpreter : sig
 
   val eval : t -> string -> string
   (** [eval interpreter expression] uses the [interpreter] to expand the [expression] *)
+
+  val path_eval : t -> string -> Fpath.t
+  (** [path_eval interpreter expression] uses the [interpreter] to expand the [expression]
+      into a path. On Windows the path will be a conventional Windows path with
+      backslashes instead of forward slashes. *)
 end

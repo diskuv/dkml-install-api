@@ -118,11 +118,12 @@ let create_context self_component_name () prefix staging_files_opt opam_context
     | false, Some staging_files -> Staging_files_dir staging_files
   in
   let global_context = Global_context.create reg ~staging_files_source in
-  let path_eval_interpreter =
+  let interpreter =
     Interpreter.create global_context ~self_component_name ~prefix
   in
   {
-    Dkml_install_api.Context.path_eval = Interpreter.eval path_eval_interpreter;
+    Dkml_install_api.Context.eval = Interpreter.eval interpreter;
+    path_eval = Interpreter.path_eval interpreter;
   }
 
 (** [ctx_t component] creates a [Term] for [component] that sets up logging
