@@ -1,8 +1,6 @@
-open Bos
 open Cmdliner
 open Dkml_install_register
 open Dkml_install_api
-module StringMap = Map.Make (String)
 
 let ( >>= ) = Result.bind
 
@@ -108,72 +106,24 @@ let opam_context_t =
   in
   Arg.(value & flag & info [ "opam-context" ] ~doc)
 
-(** [string_to_fpath str] converts [str] into a [Fpath.t]. On Windows the
-    [str] is normalized to a regular Windows file path (ex. backslashes). *)
-let string_to_norm_fpath str =
-  match Fpath.of_string str with Ok p -> p | Error (`Msg e) -> failwith e
-
-(** [absdir_staging_files ~component_name ~opam_context ~staging_files_opt] is
-    the [component_name] component's staging-files directory *)
-let absdir_staging_files ~component_name ~opam_context ~staging_files_opt =
-  match (opam_context, staging_files_opt) with
-  | false, None ->
-      failwith
-        "Either `--opam-context` or `--staging-files DIR` must be specified"
-  | true, _ ->
-      let opam_switch_prefix = OS.Env.opt_var "OPAM_SWITCH_PREFIX" ~absent:"" in
-      if opam_switch_prefix = "" then
-        failwith
-          "When using --opam-context the OPAM_SWITCH_PREFIX environment \
-           variable must be defined by evaluating the `opam env` command.";
-      Fpath.(
-        to_string
-        @@ string_to_norm_fpath opam_switch_prefix
-           / "share"
-           / ("dkml-component-" ^ component_name)
-           / "staging-files")
-  | false, Some staging_files ->
-      Fpath.(to_string @@ (string_to_norm_fpath staging_files / component_name))
-
 let create_context self_component_name () prefix staging_files_opt opam_context
     =
-  let share_vars_res =
-    Component_registry.eval reg ~f:(fun cfg ->
-        let module Cfg = (val cfg : Component_config) in
-        Result.ok
-          ( Cfg.component_name ^ ":share",
-            absdir_staging_files ~component_name:Cfg.component_name
-              ~opam_context ~staging_files_opt ))
+  let open Runner.Path_eval in
+  let staging_files_source =
+    match (opam_context, staging_files_opt) with
+    | false, None ->
+        failwith
+          "Either `--opam-context` or `--staging-files DIR` must be specified"
+    | true, _ -> Global_context.Opam_context
+    | false, Some staging_files -> Staging_files_dir staging_files
   in
-  let share_vars =
-    match share_vars_res with
-    | Ok var_list -> var_list
-    | Error err -> failwith err
+  let global_context = Global_context.create reg ~staging_files_source in
+  let path_eval_interpreter =
+    Interpreter.create global_context ~self_component_name ~prefix
   in
-  let name_var = ("name", self_component_name) in
-  let temp_var =
-    ( "tmp",
-      Fpath.to_string @@ Rresult.R.error_msg_to_invalid_arg @@ OS.Dir.tmp "%s"
-    )
-  in
-  let prefix_var = ("prefix", Fpath.to_string @@ string_to_norm_fpath prefix) in
-  let all_vars_mp =
-    List.concat [ share_vars; [ name_var; temp_var; prefix_var ] ]
-    |> List.to_seq |> StringMap.of_seq
-  in
-  let path_eval expression =
-    let rec eval text = function
-      | [] -> text
-      | (varname, varvalue) :: tl ->
-          let search_for = "%{" ^ varname ^ "}%" in
-          let new_text =
-            Str.(global_replace (regexp_string search_for) varvalue text)
-          in
-          eval new_text tl
-    in
-    eval expression (StringMap.to_seq all_vars_mp |> List.of_seq)
-  in
-  { Dkml_install_api.Context.path_eval }
+  {
+    Dkml_install_api.Context.path_eval = Interpreter.eval path_eval_interpreter;
+  }
 
 (** [ctx_t component] creates a [Term] for [component] that sets up logging
     and any other global state, and defines the context record *)
