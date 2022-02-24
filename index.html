@@ -85,7 +85,7 @@ generators.</p>
 <p><strong>Why use it?</strong></p>
 <p>Often you start with the most basic installation logic: copy a directory of
 prebuilt binaries and other files into the installation directory.
-Later you realize you need to create a configuration file, populate a
+Later you realize you need to customize a configuration file, populate a
 database or compile assets at installation time. Now you have several options:</p>
 <ol class="arabic simple">
 <li><p>You generate the configuration/database/assets when your
@@ -98,19 +98,19 @@ suggest using the Lua interpreter embedded in the Fedora/RedHat <code class="doc
 manager for any scripting needs. For other target platforms like Windows
 and non-RedHat based package managers, you modify your installer to first
 install the Lua interpreter. You made a trade-off:
-you need to write some of your core logic in a language (Lua) which is
-likely a language unfamiliar to you or your OCaml application developers,
-and at some point you may need to rewrite or duplicate some of your existing
-OCaml logic in Lua.</p></li>
+you need to write some of your core logic in a language like Lua which is
+likely unfamiliar to you or your OCaml application developers,
+and you may need to rewrite or duplicate some of your existing OCaml logic
+in Lua or whatever the target platform recommends.</p></li>
 <li><p>You follow the widespread practice of using portable scripts. On Unix systems
 you write POSIX shell scripts that run with the Bourne shell available on
 almost all Unix machines. On Windows system you write PowerShell scripts
-which can become the basis for Windows package managers like
+which have been the basis of Windows package managers like
 <a class="reference external" href="https://docs.chocolatey.org/en-us/create/create-packages">Chocolatey</a>.</p></li>
 </ol>
-<p>By now you can see that you can rapidly accumulate technical debt because your
-installation logic gets complex quicker than you expected. The original
-author of the DKML Install API followed option #3 when developing a
+<p>By now you should see that you can rapidly accumulate technical debt when your
+installation logic gets complex quick. The original author of the DKML Install
+API followed option #3 when developing a
 Windows-friendly installer for OCaml. The installer worked well but other
 developers would have difficulty contributing to
 <a class="reference external" href="https://gitlab.com/diskuv/diskuv-ocaml/-/tree/v0.3.3/installtime">its Unix and Windows portable scripts</a>.</p>
@@ -118,9 +118,9 @@ developers would have difficulty contributing to
 logic in OCaml. With the DKML Install API you:</p>
 <ul class="simple">
 <li><p>inform your users of setup problems early during installation rather than
-at runtime (tradeoff for option #1)</p></li>
+at runtime. That avoids the tradeoff for option #1</p></li>
 <li><p>gain the ability to write your installation logic in a language you are
-already familiar with (tradeoff for option #2 and #3)</p></li>
+already familiar with. That avoids the tradeoff for option #2 and #3</p></li>
 <li><p>gain the ability to test units of your installation logic with
 your normal OCaml test infrastructure (Alcotest, ppx_expect, etc.)</p></li>
 </ul>
