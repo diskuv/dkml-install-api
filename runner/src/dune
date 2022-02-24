@@ -1,7 +1,15 @@
 (library
  (name runner)
  (package dkml-install-runner)
- (libraries dkml-install.register bos astring fpath)
+ (libraries
+  dkml-install.register
+  bos
+  astring
+  fpath
+  logs.fmt
+  logs.cli
+  fmt.cli
+  fmt.tty)
  (inline_tests)
  (preprocess
-  (pps ppx_inline_test ppx_expect)))
+  (pps ppx_expect)))

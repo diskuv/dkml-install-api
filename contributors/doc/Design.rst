@@ -92,14 +92,12 @@ Here is what the ``opam install ...`` step does in detail:
 
        * Placing files in ``<share>/static-files/`` where
          `<share> <https://opam.ocaml.org/doc/Manual.html#installfield-share>`_
-         is ``<opamswitch>/share/<C>/``. These files will be used in the
-         USER_DEPLOY_INITIAL phase.
+         is ``<opamswitch>/share/dkml-component-<C>/``. These files will be used
+         in the USER_DEPLOY_INITIAL phase.
 
-       * Placing executables and files in ``<share>/staging-files/`` where
-         `<share> <https://opam.ocaml.org/doc/Manual.html#installfield-share>`_
-         is ``<opamswitch>/share/<C>/``. These files will be used in the
-         USER_INSTALL phase
-         
+       * Placing executables and files in ``<share>/staging-files/``. These
+         files will be used in the USER_INSTALL phase
+
        .. important:: Relocatable requirements
 
            Anything inside ``<share>/static-files/`` and ``<share>/staging-files/``
@@ -107,10 +105,10 @@ Here is what the ``opam install ...`` step does in detail:
            to a different location on the end-user's hard drive. As of January
            2022, many executables like ``ocamlc`` and ``ocamlbuild`` are *not*
            relocatable.
-           
+
            Instead the only native executable should be
            ``ocamlrun`` (provided by ``dkml-component-ocamlrun.opam``).
-        
+
 2. **Merges** together the
    ``<share>/static-files/`` directories. It does the equivalent of
    the following for all components ``C``:
@@ -129,11 +127,12 @@ Here is what the ``opam install ...`` step does in detail:
        rsync -a $OPAM_SWITCH_PREFIX/share/$C/staging-files/ \
             $OPAM_SWITCH_PREFIX/share/$I/staging-files/$C/
 
-4. Create a
-   `dune_site plugin loader <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_
-   executable named ``dkml-install-runner.exe`` that will perform the steps in
+4. Create
+   `dune_site plugin loader <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_-based executables named ``dkml-install-setup.exe``,
+   ``dkml-install-user-runner.exe`` and
+   ``dkml-install-admin-runner.exe`` that will perform the steps in
    :ref:`UserPhases`
- 
+
 5. The last step depends on what type of installer
    generator has been configured. *As of Jan 2022 only the CLI Archive
    installer generator is available, and no configuration is needed. But
@@ -148,9 +147,11 @@ Here is what the ``opam install ...`` step does in detail:
         into the root of the ``$I.zip`` archive.
 
         All of the ``$OPAM_SWITCH_PREFIX/share/$I/staging-files/`` will go
-        into the ``_work`` top-level folder of the ``$I.zip`` archive.
+        into the ``_staging`` top-level folder of the ``$I.zip`` archive.
 
-        The ``dkml-install-runner.exe`` executable will be placed in the root of the
+        The ``dkml-install-user-runner.exe`` and
+        ``dkml-install-admin-runner.exe``
+        executables will be placed in the root of the
         ``$I.zip`` archive.
 
    Future Possibility: 0install
@@ -169,56 +170,99 @@ Here is what the ``opam install ...`` step does in detail:
 User runs the installer
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-1. Load all the components with
+1. [``dkml-install-setup.exe``] Load all the components with
    `dune_site's <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_
    ``Sites.Plugins.Plugins.load_all ()``:
-        
+
    * When a component (plugin) ``C`` is loaded, it will register itself
      with the ``dkml-install-api`` registry.
-2. After all the components are registered, the components are
-   topologically sorted based on their dependencies.
-3. Ask end-user which components to install. Some components may have
+2. [``dkml-install-setup.exe``] After all the components are registered, the
+   components are topologically sorted based on their dependencies.
+3. [``dkml-install-setup.exe``] Ask end-user which components to install.
+   Some components may have
    configuration that lets them display text (ex. license) or ask more
    questions.
-   
+4. [``dkml-install-setup.exe``] Formulate command line options for
+   ``dkml-install-user-runner.exe`` and  ``dkml-install-admin-runner.exe``
+   that correspond to the end-user selections. The same command line options
+   will be used in both executables.
+
    .. note::
-       
-        This is a underspecified spot in the design; a tiny embedded DSL would
-        be best here. The DSL would be translated to command line options for
-        the ``dkml-install-runner.exe`` when using the CLI Archive Installer, but
-        also be translated to UI configuration for graphical installers.
-4. **USER_DEPLOY_INITIAL phase**: Copy everything from the archive to the
-   <end_user_installation_prefix> except the ``_work`` folder.
-5. **USER_INSTALL phase**:
 
-   1. Copy the ``_work`` folder into a temporary folder
-   2. Check if there are any components that needs administrative/root
-      privileges. The check will be like:
+     This is a underspecified spot in the design. There needs to be a
+     "selections" file created by the CLI Archive Installer or GUI installer
+     to describe the end-user choices. And there needs to be some mapping
+     from that "selections" file into command line options for
+     ``dkml-install-user-runner.exe`` and  ``dkml-install-admin-runner.exe``.
+     And each component should be able to influence how that selections file
+     is created.
 
-      .. code:: ocaml
+     Early versions of the installer will simply have no choices.
 
-            Component.needs_admin "<end_user_installation_prefix>"
+5. [``dkml-install-setup.exe``] Check if there are any components that
+   needs administrative/root privileges. The check will be like:
 
-   3. If there are any components that needs administrative/root privileges,
-      spawn an escalated process in Windows PowerShell:
-      
-      .. code:: powershell
+   .. code:: ocaml
 
-            Start-Process powershell -ArgumentList '& dkml-install-runner.exe --admin' -verb RunAs
+         Component.needs_admin "<end_user_installation_prefix>"
 
-      or in Unix:
+6. [``dkml-install-setup.exe``] **ADMIN_INSTALL phase** If there are any
+   components that needs administrative/root privileges, then:
+
+   1. [``dkml-install-setup.exe``] Copy the ``_staging`` folder into a
+      temporary folder.
+
+      .. note::
+          We'll do this again in non-administrator mode. The design reason
+          for doing it twice is that file permission conflicts won't be an
+          issue, and
+          because we want the User Account Control popup on Windows or
+          sudo password prompt on Unix to be shown to the end-user as early
+          as possible. We don't want the end-user to have to wait a minute
+          for the staging files to be copied ... and only then get prompted
+          for a password because they may have left their computer to finish
+          the installation. The User Account Control popup only lasts a few
+          minutes, and if the popup is not pressed the installation fails.
+   2. [``dkml-install-setup.exe``] Spawn the ``dkml-install-admin-runner.exe``
+      executable as an elevated Unix process:
 
       .. code:: bash
 
-            sudo dkml-install-runner --admin
+         sudo dkml-install-admin-runner
 
-      The ``--admin`` mode will in topological order call each component:
+      or with a
+      `Windows User Account Control Application Manifest <https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works#request-execution-levels>`_.
+
+      An alternative for Windows is to use PowerShell to ask for Administrative privileges:
+
+      .. code:: powershell
+
+         Start-Process powershell -ArgumentList '& dkml-install-admin-runner.exe' -verb RunAs
+
+      The options given to ``dkml-install-admin-runner.exe`` were formulated
+      in an earlier step, plus an extra option is added for the location of
+      the staging folder.
+   3. [``dkml-install-admin-runner.exe``] In topological order call each
+      component:
 
       .. code:: ocaml
 
-            Component.run_as_admin "<end_user_installation_prefix>"
+         Component.run_as_admin "<end_user_installation_prefix>"
 
-   4. In topological order call each component like:
+7. [``dkml-install-setup.exe``] **USER_DEPLOY_INITIAL phase**: Copy
+   everything from the archive to the
+   <end_user_installation_prefix> except the ``_staging`` folder.
+8. [``dkml-install-setup.exe``] **USER_INSTALL phase**:
+
+   1. [``dkml-install-setup.exe``] Copy the ``_staging`` folder into a
+      temporary folder
+   2. [``dkml-install-setup.exe``] Spawn ``dkml-install-user-runner.exe``
+      with the options formulated
+      in an earlier step, plus an option for the location of the staging folder.
+   3. [``dkml-install-user-runner.exe``] Copy the non-staging files (especially
+      the static files) from the archive to the <end_user_installation_prefix>.
+   4. [``dkml-install-user-runner.exe``] In topological order call each
+      component like:
 
       .. code:: ocaml
 
