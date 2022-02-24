@@ -25,7 +25,7 @@
   (fmt (>= 0.8.9))
   (astring (>= 0.8.5))
   (tsort (>= 2.1.0))
-  (cmdliner (>= 1.0.4))))
+  (cmdliner (= 1.0.4))))
 
 (package
  (name dkml-install-runner)
@@ -43,7 +43,7 @@
   (dune-site (>= 2.9))
   (fmt (>= 0.8.9))
   (astring (>= 0.8.5))
-  (cmdliner (>= 1.0.4))
+  (cmdliner (= 1.0.4))
   (logs (>= 0.7.0))
   (bos (>= 0.2.0))
   (ppx_expect (>= v0.14.1))))
