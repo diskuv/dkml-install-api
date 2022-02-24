@@ -175,18 +175,13 @@ relocatable.</p>
 </li>
 </ol>
 </li>
-<li><p><strong>Merges</strong> together the
-<code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/static-files/</span></code> directories. It does the equivalent of
-the following for all components <code class="docutils literal notranslate"><span class="pre">C</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</span>/static-files/ <span class="se">\</span>
-     <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$I</span>/static-files/
-</pre></div>
-</div>
-</li>
-<li><p><strong>Side-by-side copies</strong> all the
+<li><p><strong>Side-by-side copies</strong> all the <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/static-files/</span></code> and
 <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code> directories. It does the equivalent of
 the following for all components <code class="docutils literal notranslate"><span class="pre">C</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</span>/staging-files/ <span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</span>/static-files/ <span class="se">\</span>
+     <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$I</span>/static-files/<span class="nv">$C</span>/
+
+rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</span>/staging-files/ <span class="se">\</span>
      <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$I</span>/staging-files/<span class="nv">$C</span>/
 </pre></div>
 </div>
@@ -205,11 +200,11 @@ should not change.</em></p>
 <dt>CLI Archive Installer Generator</dt><dd><p>This installer will produce a <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/dist/$I.zip</span></code>
 file or a <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/dist/$I.tar.gz</span></code> file.</p>
 <p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/static-files/</span></code> will go
-into the root of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
+into the <code class="docutils literal notranslate"><span class="pre">static</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 <p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/staging-files/</span></code> will go
-into the <code class="docutils literal notranslate"><span class="pre">_staging</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and
-<code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
+into the <code class="docutils literal notranslate"><span class="pre">staging</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>, <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>
+and <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
 executables will be placed in the root of the
 <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 </dd>
@@ -245,17 +240,28 @@ configuration that lets them display text (ex. license) or ask more
 questions.</p></li>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Formulate command line options for
 <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and  <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
-that correspond to the end-user selections. The same command line options
+that correspond to the end-user selections. By default the staging directory
+will be the <code class="docutils literal notranslate"><span class="pre">staging</span></code> directory that is in the same directory as
+<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>. The same command line options
 will be used in both executables.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This is a underspecified spot in the design. There needs to be a
-“selections” file created by the CLI Archive Installer or GUI installer
+“selections” artifact created by the CLI Archive Installer or GUI installer
 to describe the end-user choices. And there needs to be some mapping
-from that “selections” file into command line options for
+from that “selections” artifact into command line options for
 <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and  <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>.
-And each component should be able to influence how that selections file
+And each component should be able to influence how that selections artifact
 is created.</p>
+<p>A good start is by analogy to cross-platform UI component design, where
+you can assemble UI components into your own component hierarchy (ex. DOM),
+and then have them render to different graphics backends (web / native).
+The context record that is part of the current component implementation
+can have extra fields so each component can add new &lt;input&gt; elements to the
+root DOM, and other fields to convert the &lt;input&gt; elements into command
+line options. It would be the responsibility of the Text/GUI installer
+to render the &lt;input&gt; elements as questions for Text or visual choices
+for a GUI.</p>
 <p>Early versions of the installer will simply have no choices.</p>
 </div>
 </li>
@@ -268,25 +274,14 @@ needs administrative/root privileges. The check will be like:</p>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] <strong>ADMIN_INSTALL phase</strong> If there are any
 components that needs administrative/root privileges, then:</p>
 <ol class="arabic">
-<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Copy the <code class="docutils literal notranslate"><span class="pre">_staging</span></code> folder into a
-temporary folder.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>We’ll do this again in non-administrator mode. The design reason
-for doing it twice is that file permission conflicts won’t be an
-issue, and
-because we want the User Account Control popup on Windows or
-sudo password prompt on Unix to be shown to the end-user as early
-as possible. We don’t want the end-user to have to wait a minute
-for the staging files to be copied … and only then get prompted
-for a password because they may have left their computer to finish
-the installation. The User Account Control popup only lasts a few
-minutes, and if the popup is not pressed the installation fails.</p>
-</div>
-</li>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Spawn the <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
 executable as an elevated Unix process:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dkml-install-admin-runner
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># If doas is available, especially for OpenBSD</span>
+doas dkml-install-admin-runner
+<span class="c1"># If sudo is available</span>
+sudo dkml-install-admin-runner
+<span class="c1"># Otherwise use su</span>
+su root -c dkml-install-admin-runner
 </pre></div>
 </div>
 <p>or with a
@@ -297,7 +292,7 @@ executable as an elevated Unix process:</p>
 </div>
 <p>The options given to <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code> were formulated
 in an earlier step, plus an extra option is added for the location of
-the staging folder.</p>
+the <code class="docutils literal notranslate"><span class="pre">staging</span></code> folder.</p>
 </li>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>] In topological order call each
 component:</p>
@@ -308,17 +303,14 @@ component:</p>
 </ol>
 </li>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] <strong>USER_DEPLOY_INITIAL phase</strong>: Copy
-everything from the archive to the
-&lt;end_user_installation_prefix&gt; except the <code class="docutils literal notranslate"><span class="pre">_staging</span></code> folder.</p></li>
+the <code class="docutils literal notranslate"><span class="pre">static/$C</span></code> folder of each component <code class="docutils literal notranslate"><span class="pre">C</span></code> from the archive to the
+&lt;end_user_installation_prefix&gt;.</p></li>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] <strong>USER_INSTALL phase</strong>:</p>
 <ol class="arabic">
-<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Copy the <code class="docutils literal notranslate"><span class="pre">_staging</span></code> folder into a
-temporary folder</p></li>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Spawn <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>
 with the options formulated
-in an earlier step, plus an option for the location of the staging folder.</p></li>
-<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>] Copy the non-staging files (especially
-the static files) from the archive to the &lt;end_user_installation_prefix&gt;.</p></li>
+in an earlier step, plus an option for the location of the <code class="docutils literal notranslate"><span class="pre">staging</span></code>
+folder.</p></li>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>] In topological order call each
 component like:</p>
 <div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Component</span><span class="p">.</span><span class="n">run_as_user</span> <span class="s2">&quot;&lt;end_user_installation_prefix&gt;&quot;</span>
