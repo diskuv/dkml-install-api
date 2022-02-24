@@ -82,6 +82,57 @@ generator is available, but other well-known installer generators like
 Opam and b) installation instructions written in OCaml source code, and
 assembles binary artifacts that act as the primary materials to installer
 generators.</p>
+<p><strong>Why use it?</strong></p>
+<p>Often you start with the most basic installation logic: copy a directory of
+prebuilt binaries and other files into the installation directory.
+Later you realize you need to create a configuration file, populate a
+database or compile assets at installation time. Now you have several options:</p>
+<ol class="arabic simple">
+<li><p>You generate the configuration/database/assets when your
+program is first run. You made a trade-off: instead of notifying your user
+of problems early, they don’t find out until the program is run for the first
+time. Sometimes that is a perfectly acceptable trade-off.</p></li>
+<li><p>You follow your target platform’s recommendation; for example the
+<a class="reference external" href="https://docs.fedoraproject.org/en-US/packaging-guidelines/#_scripting_inside_of_specfiles">Fedora Linux Packaging Guidelines</a>
+suggest using the Lua interpreter embedded in the Fedora/RedHat <code class="docutils literal notranslate"><span class="pre">rpm</span></code> package
+manager for any scripting needs. For other target platforms like Windows
+and non-RedHat based package managers, you modify your installer to first
+install the Lua interpreter. You made a trade-off:
+you need to write some of your core logic in a language (Lua) which is
+likely a language unfamiliar to you or your OCaml application developers,
+and at some point you may need to rewrite or duplicate some of your existing
+OCaml logic in Lua.</p></li>
+<li><p>You follow the widespread practice of using portable scripts. On Unix systems
+you write POSIX shell scripts that run with the Bourne shell available on
+almost all Unix machines. On Windows system you write PowerShell scripts
+which can become the basis for Windows package managers like
+<a class="reference external" href="https://docs.chocolatey.org/en-us/create/create-packages">Chocolatey</a>.</p></li>
+</ol>
+<p>By now you can see that you can rapidly accumulate technical debt because your
+installation logic gets complex quicker than you expected. The original
+author of the DKML Install API followed option #3 when developing a
+Windows-friendly installer for OCaml. The installer worked well but other
+developers would have difficulty contributing to
+<a class="reference external" href="https://gitlab.com/diskuv/diskuv-ocaml/-/tree/v0.3.3/installtime">its Unix and Windows portable scripts</a>.</p>
+<p>As OCaml application developers, you already know how to embed complex
+logic in OCaml. With the DKML Install API you:</p>
+<ul class="simple">
+<li><p>inform your users of setup problems early during installation rather than
+at runtime (tradeoff for option #1)</p></li>
+<li><p>gain the ability to write your installation logic in a language you are
+already familiar with (tradeoff for option #2 and #3)</p></li>
+<li><p>gain the ability to test units of your installation logic with
+your normal OCaml test infrastructure (Alcotest, ppx_expect, etc.)</p></li>
+</ul>
+<p>but you will need to accept a learning curve for:</p>
+<ul class="simple">
+<li><p>how to use this DKML Install API</p></li>
+<li><p>how to write Opam packages that install artifacts to non-standard locations</p></li>
+<li><p>how to use OCaml libraries like <a class="reference external" href="https://erratique.ch/software/bos">Daniel Bünzli’s Bos library</a>
+for cross-platform portable file and directory handling and
+<a class="reference external" href="https://github.com/CraigFe/progress#readme">Craig Ferguson’s Progress library</a>
+for showing progress bars</p></li>
+</ul>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
 <ul class="current">

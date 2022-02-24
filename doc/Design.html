@@ -156,12 +156,10 @@ need to be shared with the consumers of that component.</p>
 <ul class="simple">
 <li><p>Placing files in <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/static-files/</span></code> where
 <a class="reference external" href="https://opam.ocaml.org/doc/Manual.html#installfield-share">&lt;share&gt;</a>
-is <code class="docutils literal notranslate"><span class="pre">&lt;opamswitch&gt;/share/&lt;C&gt;/</span></code>. These files will be used in the
-USER_DEPLOY_INITIAL phase.</p></li>
-<li><p>Placing executables and files in <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code> where
-<a class="reference external" href="https://opam.ocaml.org/doc/Manual.html#installfield-share">&lt;share&gt;</a>
-is <code class="docutils literal notranslate"><span class="pre">&lt;opamswitch&gt;/share/&lt;C&gt;/</span></code>. These files will be used in the
-USER_INSTALL phase</p></li>
+is <code class="docutils literal notranslate"><span class="pre">&lt;opamswitch&gt;/share/dkml-component-&lt;C&gt;/</span></code>. These files will be used
+in the USER_DEPLOY_INITIAL phase.</p></li>
+<li><p>Placing executables and files in <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code>. These
+files will be used in the USER_INSTALL phase</p></li>
 </ul>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
@@ -193,9 +191,10 @@ the following for all components <code class="docutils literal notranslate"><spa
 </pre></div>
 </div>
 </li>
-<li><p>Create a
-<a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site plugin loader</a>
-executable named <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> that will perform the steps in
+<li><p>Create
+<a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site plugin loader</a>-based executables named <code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>,
+<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and
+<code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code> that will perform the steps in
 <a class="reference internal" href="#userphases"><span class="std std-ref">User runs the installer</span></a></p></li>
 <li><p>The last step depends on what type of installer
 generator has been configured. <em>As of Jan 2022 only the CLI Archive
@@ -208,8 +207,10 @@ file or a <code class="docutils literal notranslate"><span class="pre">$OPAM_SWI
 <p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/static-files/</span></code> will go
 into the root of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 <p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/staging-files/</span></code> will go
-into the <code class="docutils literal notranslate"><span class="pre">_work</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> executable will be placed in the root of the
+into the <code class="docutils literal notranslate"><span class="pre">_staging</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and
+<code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
+executables will be placed in the root of the
 <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 </dd>
 <dt>Future Possibility: 0install</dt><dd><p>If no component needs administrative permission then
@@ -228,7 +229,7 @@ configure than 0install.</p>
 <div class="section" id="user-runs-the-installer">
 <span id="userphases"></span><h3>User runs the installer<a class="headerlink" href="#user-runs-the-installer" title="Permalink to this headline"></a></h3>
 <ol class="arabic">
-<li><p>Load all the components with
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Load all the components with
 <a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site’s</a>
 <code class="docutils literal notranslate"><span class="pre">Sites.Plugins.Plugins.load_all</span> <span class="pre">()</span></code>:</p>
 <ul class="simple">
@@ -236,45 +237,90 @@ configure than 0install.</p>
 with the <code class="docutils literal notranslate"><span class="pre">dkml-install-api</span></code> registry.</p></li>
 </ul>
 </li>
-<li><p>After all the components are registered, the components are
-topologically sorted based on their dependencies.</p></li>
-<li><p>Ask end-user which components to install. Some components may have
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] After all the components are registered, the
+components are topologically sorted based on their dependencies.</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Ask end-user which components to install.
+Some components may have
 configuration that lets them display text (ex. license) or ask more
-questions.</p>
+questions.</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Formulate command line options for
+<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and  <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
+that correspond to the end-user selections. The same command line options
+will be used in both executables.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This is a underspecified spot in the design; a tiny embedded DSL would
-be best here. The DSL would be translated to command line options for
-the <code class="docutils literal notranslate"><span class="pre">dkml-runner.exe</span></code> when using the CLI Archive Installer, but
-also be translated to UI configuration for graphical installers.</p>
+<p>This is a underspecified spot in the design. There needs to be a
+“selections” file created by the CLI Archive Installer or GUI installer
+to describe the end-user choices. And there needs to be some mapping
+from that “selections” file into command line options for
+<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and  <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>.
+And each component should be able to influence how that selections file
+is created.</p>
+<p>Early versions of the installer will simply have no choices.</p>
 </div>
 </li>
-<li><p><strong>USER_DEPLOY_INITIAL phase</strong>: Copy everything from the archive to the
-&lt;end_user_installation_prefix&gt; except the <code class="docutils literal notranslate"><span class="pre">_work</span></code> folder.</p></li>
-<li><p><strong>USER_INSTALL phase</strong>:</p>
-<ol class="arabic">
-<li><p>Copy the <code class="docutils literal notranslate"><span class="pre">_work</span></code> folder into a temporary folder</p></li>
-<li><p>Check if there are any components that needs administrative/root
-privileges. The check will be like:</p>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Check if there are any components that
+needs administrative/root privileges. The check will be like:</p>
 <div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Component</span><span class="p">.</span><span class="n">needs_admin</span> <span class="s2">&quot;&lt;end_user_installation_prefix&gt;&quot;</span>
 </pre></div>
 </div>
 </li>
-<li><p>If there are any components that needs administrative/root privileges,
-spawn an escalated process in Windows PowerShell:</p>
-<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">Start-Process</span> <span class="n">powershell</span> <span class="n">-ArgumentList</span> <span class="s1">&#39;&amp; dkml-runner.exe --admin&#39;</span> <span class="n">-verb</span> <span class="n">RunAs</span>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] <strong>ADMIN_INSTALL phase</strong> If there are any
+components that needs administrative/root privileges, then:</p>
+<ol class="arabic">
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Copy the <code class="docutils literal notranslate"><span class="pre">_staging</span></code> folder into a
+temporary folder.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We’ll do this again in non-administrator mode. The design reason
+for doing it twice is that file permission conflicts won’t be an
+issue, and
+because we want the User Account Control popup on Windows or
+sudo password prompt on Unix to be shown to the end-user as early
+as possible. We don’t want the end-user to have to wait a minute
+for the staging files to be copied … and only then get prompted
+for a password because they may have left their computer to finish
+the installation. The User Account Control popup only lasts a few
+minutes, and if the popup is not pressed the installation fails.</p>
+</div>
+</li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Spawn the <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
+executable as an elevated Unix process:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dkml-install-admin-runner
 </pre></div>
 </div>
-<p>or in Unix:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo dkml-runner --admin
+<p>or with a
+<a class="reference external" href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works#request-execution-levels">Windows User Account Control Application Manifest</a>.</p>
+<p>An alternative for Windows is to use PowerShell to ask for Administrative privileges:</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">Start-Process</span> <span class="n">powershell</span> <span class="n">-ArgumentList</span> <span class="s1">&#39;&amp; dkml-install-admin-runner.exe&#39;</span> <span class="n">-verb</span> <span class="n">RunAs</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">--admin</span></code> mode will in topological order call each component:</p>
+<p>The options given to <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code> were formulated
+in an earlier step, plus an extra option is added for the location of
+the staging folder.</p>
+</li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>] In topological order call each
+component:</p>
 <div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Component</span><span class="p">.</span><span class="n">run_as_admin</span> <span class="s2">&quot;&lt;end_user_installation_prefix&gt;&quot;</span>
 </pre></div>
 </div>
 </li>
-<li><p>In topological order call each component like:</p>
+</ol>
+</li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] <strong>USER_DEPLOY_INITIAL phase</strong>: Copy
+everything from the archive to the
+&lt;end_user_installation_prefix&gt; except the <code class="docutils literal notranslate"><span class="pre">_staging</span></code> folder.</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] <strong>USER_INSTALL phase</strong>:</p>
+<ol class="arabic">
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Copy the <code class="docutils literal notranslate"><span class="pre">_staging</span></code> folder into a
+temporary folder</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>] Spawn <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>
+with the options formulated
+in an earlier step, plus an option for the location of the staging folder.</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>] Copy the non-staging files (especially
+the static files) from the archive to the &lt;end_user_installation_prefix&gt;.</p></li>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>] In topological order call each
+component like:</p>
 <div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Component</span><span class="p">.</span><span class="n">run_as_user</span> <span class="s2">&quot;&lt;end_user_installation_prefix&gt;&quot;</span>
 </pre></div>
 </div>
