@@ -19,6 +19,8 @@ depends: [
   "astring" {>= "0.8.5"}
   "cmdliner" {>= "1.0.4"}
   "logs" {>= "0.7.0"}
+  "bos" {>= "0.2.0"}
+  "ppx_expect" {>= "v0.14.1"}
 ]
 build: [
   ["dune" "subst"] {dev}
