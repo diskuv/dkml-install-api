@@ -10,6 +10,13 @@
   dune-site.plugins
   cmdliner))
 
+(rule
+ (targets admin-link-flags.sexp)
+ (deps
+  (:discover config/discover.exe))
+ (action
+  (run %{discover})))
+
 (executable
  (public_name dkml-install-admin-runner)
  (name admin_main)
@@ -23,15 +30,10 @@
  ; To extract the manifest file:
  ;  & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\mt.exe" '-inputresource:Z:\source\dkml-install-api\_build\install\default\bin\dkml-install-admin-runner.exe;#1' -out:admin2.manifest
  (ocamlopt_flags
-  ; Use an initial `-cclib -v` to see how link.exe is invoked through flexlink.exe
-  -cclib
-  -link
-  -cclib
-  /MANIFEST:EMBED
-  -cclib
-  -link
-  -cclib
-  /MANIFESTUAC:level='requireAdministrator')
+  ; Uncomment the following to see how link.exe is invoked through flexlink.exe:
+  ; -cclib
+  ; -v
+  (:include admin-link-flags.sexp))
  (libraries
   dkml-install.register
   runner
