@@ -3,6 +3,29 @@
 Writing Components
 ==================
 
+Introduction
+------------
+
+You first decision will be how to break your installation into one or more
+components.
+
+A component is an optional set of logic in the form of bytecode executables,
+and an optional set of "staging" files used by the bytecode logic, and an
+optional set of "static" files that will be installed as-is on the end-user
+machine.
+
+Each "feature" component should deliver a single set of functionality
+to the end-user. Your decision is simple: each feature component should
+correspond to one "feature" selectable by the end-user at installation time.
+If, for example, you are creating an installer for a text editor, then you
+could have one feature be the text editor, while you have multiple features for
+the multiple language packs your editor supports.
+
+Each "support" component should deliver a single set of functionality that is
+shared between components. For example, almost all components will need the
+the [ocamlrun] support component so each feature component can run their
+bytecode executables.
+
 Every installation uses a ``dkml-install-runner.exe`` executable customized
 to an installer. The component you write will be linked into
 ``dkml-install-runner.exe`` at installation time.
