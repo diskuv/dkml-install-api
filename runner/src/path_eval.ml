@@ -2,12 +2,8 @@ open Dkml_install_register
 open Dkml_install_api
 open Astring
 open Bos
+open Os_utils
 module StringMap = Map.Make (String)
-
-(** [string_to_fpath str] converts [str] into a [Fpath.t]. On Windows the
-    [str] is normalized to a regular Windows file path (ex. backslashes). *)
-let string_to_norm_fpath str =
-  match Fpath.of_string str with Ok p -> p | Error (`Msg e) -> failwith e
 
 module Global_context = struct
   type t = {
@@ -22,22 +18,10 @@ module Global_context = struct
     the [component_name] component's staging-files directory *)
   let absdir_staging_files ~component_name = function
     | Opam_context ->
-        let opam_switch_prefix =
-          OS.Env.opt_var "OPAM_SWITCH_PREFIX" ~absent:""
-        in
-        if opam_switch_prefix = "" then
-          failwith
-            "When using --opam-context the OPAM_SWITCH_PREFIX environment \
-             variable must be defined by evaluating the `opam env` command.";
-        Fpath.(
-          to_string
-          @@ string_to_norm_fpath opam_switch_prefix
-             / "share"
-             / ("dkml-component-" ^ component_name)
-             / "staging-files")
+        Os_utils.absdir_install_files ~component_name Staging Opam_context
     | Staging_files_dir staging_files ->
-        Fpath.(
-          to_string @@ (string_to_norm_fpath staging_files / component_name))
+        Os_utils.absdir_install_files ~component_name Staging
+          (Install_files_dir staging_files)
 
   let create reg ~staging_files_source =
     let component_vars_res =
@@ -94,9 +78,7 @@ module Interpreter = struct
         Fpath.to_string @@ Rresult.R.error_msg_to_invalid_arg
         @@ Global_context.tmp_dir global_ctx )
     in
-    let prefix_var =
-      ("prefix", Fpath.to_string @@ string_to_norm_fpath prefix)
-    in
+    let prefix_var = ("prefix", normalize_path prefix) in
     let local_vars = [ name_var; temp_var; prefix_var ] in
     let all_vars =
       List.concat [ Global_context.global_vars global_ctx; local_vars ]

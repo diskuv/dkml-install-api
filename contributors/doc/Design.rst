@@ -109,31 +109,25 @@ Here is what the ``opam install ...`` step does in detail:
            Instead the only native executable should be
            ``ocamlrun`` (provided by ``dkml-component-ocamlrun.opam``).
 
-2. **Merges** together the
-   ``<share>/static-files/`` directories. It does the equivalent of
-   the following for all components ``C``:
-
-   .. code:: bash
-
-       rsync -a $OPAM_SWITCH_PREFIX/share/$C/static-files/ \
-            $OPAM_SWITCH_PREFIX/share/$I/static-files/
-
-3. **Side-by-side copies** all the
+2. **Side-by-side copies** all the ``<share>/static-files/`` and
    ``<share>/staging-files/`` directories. It does the equivalent of
    the following for all components ``C``:
 
    .. code:: bash
 
+       rsync -a $OPAM_SWITCH_PREFIX/share/$C/static-files/ \
+            $OPAM_SWITCH_PREFIX/share/$I/static-files/$C/
+
        rsync -a $OPAM_SWITCH_PREFIX/share/$C/staging-files/ \
             $OPAM_SWITCH_PREFIX/share/$I/staging-files/$C/
 
-4. Create
+3. Create
    `dune_site plugin loader <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_-based executables named ``dkml-install-setup.exe``,
    ``dkml-install-user-runner.exe`` and
    ``dkml-install-admin-runner.exe`` that will perform the steps in
    :ref:`UserPhases`
 
-5. The last step depends on what type of installer
+4. The last step depends on what type of installer
    generator has been configured. *As of Jan 2022 only the CLI Archive
    installer generator is available, and no configuration is needed. But
    regardless of which installer generator is available, the Component packages
@@ -144,13 +138,13 @@ Here is what the ``opam install ...`` step does in detail:
         file or a ``$OPAM_SWITCH_PREFIX/share/$I/dist/$I.tar.gz`` file.
 
         All of the ``$OPAM_SWITCH_PREFIX/share/$I/static-files/`` will go
-        into the root of the ``$I.zip`` archive.
+        into the ``static`` top-level folder of the ``$I.zip`` archive.
 
         All of the ``$OPAM_SWITCH_PREFIX/share/$I/staging-files/`` will go
-        into the ``_staging`` top-level folder of the ``$I.zip`` archive.
+        into the ``staging`` top-level folder of the ``$I.zip`` archive.
 
-        The ``dkml-install-user-runner.exe`` and
-        ``dkml-install-admin-runner.exe``
+        The ``dkml-install-setup.exe``, ``dkml-install-user-runner.exe``
+        and ``dkml-install-admin-runner.exe``
         executables will be placed in the root of the
         ``$I.zip`` archive.
 
@@ -184,18 +178,30 @@ User runs the installer
    questions.
 4. [``dkml-install-setup.exe``] Formulate command line options for
    ``dkml-install-user-runner.exe`` and  ``dkml-install-admin-runner.exe``
-   that correspond to the end-user selections. The same command line options
+   that correspond to the end-user selections. By default the staging directory
+   will be the ``staging`` directory that is in the same directory as
+   ``dkml-install-setup.exe``. The same command line options
    will be used in both executables.
 
    .. note::
 
      This is a underspecified spot in the design. There needs to be a
-     "selections" file created by the CLI Archive Installer or GUI installer
+     "selections" artifact created by the CLI Archive Installer or GUI installer
      to describe the end-user choices. And there needs to be some mapping
-     from that "selections" file into command line options for
+     from that "selections" artifact into command line options for
      ``dkml-install-user-runner.exe`` and  ``dkml-install-admin-runner.exe``.
-     And each component should be able to influence how that selections file
+     And each component should be able to influence how that selections artifact
      is created.
+     
+     A good start is by analogy to cross-platform UI component design, where
+     you can assemble UI components into your own component hierarchy (ex. DOM),
+     and then have them render to different graphics backends (web / native).
+     The context record that is part of the current component implementation
+     can have extra fields so each component can add new <input> elements to the
+     root DOM, and other fields to convert the <input> elements into command
+     line options. It would be the responsibility of the Text/GUI installer
+     to render the <input> elements as questions for Text or visual choices
+     for a GUI.
 
      Early versions of the installer will simply have no choices.
 
@@ -209,26 +215,17 @@ User runs the installer
 6. [``dkml-install-setup.exe``] **ADMIN_INSTALL phase** If there are any
    components that needs administrative/root privileges, then:
 
-   1. [``dkml-install-setup.exe``] Copy the ``_staging`` folder into a
-      temporary folder.
-
-      .. note::
-          We'll do this again in non-administrator mode. The design reason
-          for doing it twice is that file permission conflicts won't be an
-          issue, and
-          because we want the User Account Control popup on Windows or
-          sudo password prompt on Unix to be shown to the end-user as early
-          as possible. We don't want the end-user to have to wait a minute
-          for the staging files to be copied ... and only then get prompted
-          for a password because they may have left their computer to finish
-          the installation. The User Account Control popup only lasts a few
-          minutes, and if the popup is not pressed the installation fails.
-   2. [``dkml-install-setup.exe``] Spawn the ``dkml-install-admin-runner.exe``
+   1. [``dkml-install-setup.exe``] Spawn the ``dkml-install-admin-runner.exe``
       executable as an elevated Unix process:
 
       .. code:: bash
 
+         # If doas is available, especially for OpenBSD
+         doas dkml-install-admin-runner
+         # If sudo is available
          sudo dkml-install-admin-runner
+         # Otherwise use su
+         su root -c dkml-install-admin-runner
 
       or with a
       `Windows User Account Control Application Manifest <https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works#request-execution-levels>`_.
@@ -241,8 +238,8 @@ User runs the installer
 
       The options given to ``dkml-install-admin-runner.exe`` were formulated
       in an earlier step, plus an extra option is added for the location of
-      the staging folder.
-   3. [``dkml-install-admin-runner.exe``] In topological order call each
+      the ``staging`` folder.
+   2. [``dkml-install-admin-runner.exe``] In topological order call each
       component:
 
       .. code:: ocaml
@@ -250,18 +247,15 @@ User runs the installer
          Component.run_as_admin "<end_user_installation_prefix>"
 
 7. [``dkml-install-setup.exe``] **USER_DEPLOY_INITIAL phase**: Copy
-   everything from the archive to the
-   <end_user_installation_prefix> except the ``_staging`` folder.
+   the ``static/$C`` folder of each component ``C`` from the archive to the
+   <end_user_installation_prefix>.
 8. [``dkml-install-setup.exe``] **USER_INSTALL phase**:
 
-   1. [``dkml-install-setup.exe``] Copy the ``_staging`` folder into a
-      temporary folder
-   2. [``dkml-install-setup.exe``] Spawn ``dkml-install-user-runner.exe``
+   1. [``dkml-install-setup.exe``] Spawn ``dkml-install-user-runner.exe``
       with the options formulated
-      in an earlier step, plus an option for the location of the staging folder.
-   3. [``dkml-install-user-runner.exe``] Copy the non-staging files (especially
-      the static files) from the archive to the <end_user_installation_prefix>.
-   4. [``dkml-install-user-runner.exe``] In topological order call each
+      in an earlier step, plus an option for the location of the ``staging``
+      folder.
+   2. [``dkml-install-user-runner.exe``] In topological order call each
       component like:
 
       .. code:: ocaml

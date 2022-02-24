@@ -1,4 +1,16 @@
 (executable
+ (public_name dkml-install-setup)
+ (name setup_main)
+ (package dkml-install-runner)
+ (modules setup_sites setup_main)
+ (libraries
+  dkml-install.register
+  runner
+  dune-site
+  dune-site.plugins
+  cmdliner))
+
+(executable
  (public_name dkml-install-user-runner)
  (name user_main)
  (package dkml-install-runner)
@@ -40,6 +52,12 @@
   dune-site
   dune-site.plugins
   cmdliner))
+
+(generate_sites_module
+ (module setup_sites)
+ (plugins
+  ; (<package> <name>)
+  (dkml-install-runner plugins)))
 
 (generate_sites_module
  (module admin_sites)

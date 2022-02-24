@@ -1,4 +1,5 @@
 open Cmdliner
+open Bos
 
 let help man_format cmds topic =
   match topic with
@@ -61,14 +62,46 @@ let create_context self_component_name reg () prefix staging_files_opt
 
 (* Options for installation commands *)
 
+let prefix_arg = "prefix"
+
 let prefix_t =
   let doc = "$(docv) is the installation directory" in
   Arg.(
-    required & opt (some string) None & info [ "prefix" ] ~docv:"PREFIX" ~doc)
+    required & opt (some string) None & info [ prefix_arg ] ~docv:"PREFIX" ~doc)
+
+(* Directory containing dkml-install-setup.exe *)
+let archive_dir_for_setup = Fpath.(v OS.Arg.exec |> parent)
+
+let staging_files_arg = "staging-files"
+
+let static_files_arg = "static-files"
 
 let staging_files_opt_t =
   let doc = "$(docv) is the staging files directory for the installation" in
-  Arg.(value & opt (some dir) None & info [ "staging-files" ] ~docv:"DIR" ~doc)
+  Arg.(
+    value & opt (some dir) None & info [ staging_files_arg ] ~docv:"DIR" ~doc)
+
+(** [staging_files_for_setup_t] is the dkml-install-setup.exe Term for the
+    staging files directory.  It defaults to the sibling directory "staging". *)
+let staging_files_for_setup_t =
+  let default_dir = Fpath.(archive_dir_for_setup / "staging") in
+  let doc = "$(docv) is the staging files directory of the installation" in
+  Arg.(
+    value
+    & opt dir (Fpath.to_string default_dir)
+    & info [ staging_files_arg ] ~docv:"DIR" ~doc)
+
+(** [static_files_for_setup_t] is the dkml-install-setup.exe Term for the
+    static files directory.  It defaults to the sibling directory "static". *)
+let static_files_for_setup_t =
+  let default_dir = Fpath.(archive_dir_for_setup / "static") in
+  let doc = "$(docv) is the static files directory of the installation" in
+  Arg.(
+    value
+    & opt dir (Fpath.to_string default_dir)
+    & info [ static_files_arg ] ~docv:"DIR" ~doc)
+
+let opam_context_args = "opam-context"
 
 let opam_context_t =
   let doc =
@@ -78,7 +111,7 @@ let opam_context_t =
      PowerShell or `eval $$(opam env)` is necessary to activate an Opam switch \
      and set the OPAM_SWITCH_PREFIX environment variable"
   in
-  Arg.(value & flag & info [ "opam-context" ] ~doc)
+  Arg.(value & flag & info [ opam_context_args ] ~doc)
 
 (** [ctx_t component] creates a [Term] for [component] that sets up logging
     and any other global state, and defines the context record *)
@@ -104,4 +137,3 @@ let help_cmd =
   in
   ( Term.(ret (const help $ Arg.man_format $ Term.choice_names $ topic)),
     Term.info "help" ~doc ~exits:Term.default_exits ~man )
-
