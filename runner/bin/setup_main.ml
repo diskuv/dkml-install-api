@@ -4,16 +4,7 @@ open Dkml_install_api
 open Runner.Cmdliner_runner
 open Bos
 open Runner.Error_handling
-open Runner.Error_handling.Let_syntax
-
-(* This is a error='polymorphic bind *)
-let ( >>= ) = Result.bind
-
-(* This is a error=string bind *)
-let ( let* ) = Let_syntax.bind
-
-(* This is a error=string map *)
-let ( let+ ) x f = Let_syntax.map f x
+open Runner.Error_handling.Monad_syntax
 
 (* Load dkml-install-api module so that Dynlink access control
    does not prohibit plugins (components) from loading it by
@@ -49,23 +40,37 @@ type static_files_source = Opam_context_static | Static_files_dir of string
 let absdir_static_files ~component_name = function
   | Opam_context_static ->
       Runner.Os_utils.absdir_install_files ~component_name Static Opam_context
-  | Static_files_dir staging_files ->
-      Runner.Os_utils.absdir_install_files ~component_name Staging
-        (Install_files_dir staging_files)
+  | Static_files_dir static_files ->
+      Runner.Os_utils.absdir_install_files ~component_name Static
+        (Install_files_dir static_files)
 
 (* Create command line options for dkml-install-{user,admin}-runner.exe *)
 
 let z s = "--" ^ s
 
-let runner_args ~prefix ~staging_files ~opam_context =
+let runner_args ~log_config:{ log_config_style_renderer; log_config_level }
+    ~prefix ~staging_files_source =
   let open Runner.Os_utils in
-  let common =
-    Cmd.(
-      v (z prefix_arg)
-      % normalize_path prefix % z staging_files_arg
-      % normalize_path staging_files)
+  let color =
+    match log_config_style_renderer with
+    | None -> "auto"
+    | Some `None -> "never"
+    | Some `Ansi_tty -> "always"
   in
-  if opam_context then Cmd.(common % z opam_context_args) else common
+  let args =
+    Cmd.(
+      empty
+      % ("--verbosity=" ^ Logs.level_to_string log_config_level)
+      % ("--color=" ^ color) % z prefix_arg % normalize_path prefix)
+  in
+  let args =
+    match staging_files_source with
+    | Runner.Path_eval.Global_context.Opam_context ->
+        Cmd.(args % z opam_context_args)
+    | Staging_files_dir staging_files ->
+        Cmd.(args % z staging_files_arg % normalize_path staging_files)
+  in
+  args
 
 let spawn cmd =
   Logs.info (fun m -> m "Running: %a" Cmd.pp cmd);
@@ -116,51 +121,75 @@ let name_t =
   Arg.(required & opt (some string) None & info [ "name" ] ~doc)
 
 (* Entry point of CLI *)
-let setup () name prefix static_files staging_files opam_context =
+let setup log_config name prefix static_files staging_files opam_context =
+  (* The Opam context staging file directory takes priority over
+     any staging_files from the command line. *)
+  let staging_files_source =
+    Runner.Cmdliner_runner.staging_files_source ~opam_context
+      ~staging_files_opt:(Some staging_files)
+  in
   let static_files_source =
     if opam_context then Opam_context_static else Static_files_dir static_files
   in
-  let args = runner_args ~prefix ~staging_files ~opam_context in
+  let args = runner_args ~log_config ~prefix ~staging_files_source in
 
   let exe_cmd s = Cmd.v Fpath.(to_string @@ (archive_dir_for_setup / s)) in
-  let admin_cmd = Cmd.(exe_cmd "dkml-install-admin-runner.exe" %% args) in
-  let user_cmd = Cmd.(exe_cmd "dkml-install-user-runner.exe" %% args) in
 
   let prefix_fp = Runner.Os_utils.string_to_norm_fpath prefix in
   let spawn_admin_if_needed () =
-    if needs_install_admin then spawn (elevated_cmd admin_cmd) else Result.ok ()
+    if needs_install_admin then
+      let+ (_ : unit list) =
+        Component_registry.eval reg ~f:(fun cfg ->
+            let module Cfg = (val cfg : Component_config) in
+            spawn
+            @@ elevated_cmd
+                 Cmd.(
+                   exe_cmd "dkml-install-admin-runner.exe"
+                   % ("install-admin-" ^ Cfg.component_name)
+                   %% args))
+      in
+      ()
+    else Result.ok ()
   in
-
   let install_sequence =
     (* Run admin-runner.exe commands *)
     let* () = spawn_admin_if_needed () in
-    (* Copy <static>/<component> into <prefix> *)
-    Result.map (fun (_ : bool) -> ())
-    @@ let* (_ : unit list) =
-         Component_registry.eval reg ~f:(fun cfg ->
-             let module Cfg = (val cfg : Component_config) in
-             let static_dir_fp =
-               match
-                 Fpath.of_string
-                 @@ absdir_static_files ~component_name:Cfg.component_name
-                      static_files_source
-               with
-               | Error (`Msg m) -> raise (Installation_error m)
-               | Ok v -> v
-             in
-             match Runner.Os_utils.copy_dir static_dir_fp prefix_fp with
-             | Ok () -> Result.ok ()
-             | Error msg -> Result.error (Fmt.str "%a" Rresult.R.pp_msg msg))
-       in
-       (* Run user-runner.exe *)
-       let+ () = spawn user_cmd in
-       true
+    (* Copy <static>/<component> into <prefix>, if present *)
+    let* (_ : unit list) =
+      Component_registry.eval reg ~f:(fun cfg ->
+          let module Cfg = (val cfg : Component_config) in
+          let* static_dir_fp =
+            map_msg_error_to_string @@ Fpath.of_string
+            @@ absdir_static_files ~component_name:Cfg.component_name
+                 static_files_source
+          in
+          let* exists =
+            map_msg_error_to_string @@ OS.File.exists static_dir_fp
+          in
+          let+ () =
+            if exists then Runner.Os_utils.copy_dir static_dir_fp prefix_fp
+            else Result.ok ()
+          in
+          ())
+    in
+    (* Run user-runner.exe *)
+    let+ (_ : unit list) =
+      Component_registry.eval reg ~f:(fun cfg ->
+          let module Cfg = (val cfg : Component_config) in
+          spawn
+            Cmd.(
+              exe_cmd "dkml-install-user-runner.exe"
+              % ("install-user-" ^ Cfg.component_name)
+              %% args))
+    in
+    ()
   in
   match install_sequence with
   | Ok _ -> ()
   | Error e ->
-      Logs.err (fun m -> m "Could not install %s. %s" name e);
-      raise (Installation_error e)
+      raise
+        (Installation_error
+           (Fmt.str "@[Could not install %s.@]@,@[%a@]" name Fmt.lines e))
 
 let setup_cmd =
   let doc = "the OCaml CLI installer" in

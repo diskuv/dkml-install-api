@@ -29,27 +29,36 @@ let help_secs =
 
 (* Options common to all commands *)
 
+type log_config = {
+  log_config_style_renderer : Fmt.style_renderer option;
+  log_config_level : Logs.level option;
+}
+
 let setup_log style_renderer level =
   Fmt_tty.setup_std_outputs ?style_renderer ();
   Logs.set_level level;
   Logs.set_reporter (Logs_fmt.reporter ());
-  ()
+  { log_config_style_renderer = style_renderer; log_config_level = level }
 
 let setup_log_t =
   Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())
 
 (* Define a context that includes all component-based fields *)
 
-let create_context self_component_name reg () prefix staging_files_opt
-    opam_context =
+let staging_files_source ~opam_context ~staging_files_opt =
+  match (opam_context, staging_files_opt) with
+  | false, None ->
+      raise
+        (Error_handling.Installation_error
+           "Either `--opam-context` or `--staging-files DIR` must be specified")
+  | true, _ -> Path_eval.Global_context.Opam_context
+  | false, Some staging_files -> Staging_files_dir staging_files
+
+let create_context self_component_name reg (_log_config : log_config) prefix
+    staging_files_opt opam_context =
   let open Path_eval in
   let staging_files_source =
-    match (opam_context, staging_files_opt) with
-    | false, None ->
-        failwith
-          "Either `--opam-context` or `--staging-files DIR` must be specified"
-    | true, _ -> Global_context.Opam_context
-    | false, Some staging_files -> Staging_files_dir staging_files
+    staging_files_source ~opam_context ~staging_files_opt
   in
   let global_context = Global_context.create reg ~staging_files_source in
   let interpreter =
@@ -97,6 +106,8 @@ let staging_files_arg = "staging-files"
 
 let static_files_arg = "static-files"
 
+let opam_context_args = "opam-context"
+
 let staging_files_opt_t =
   let doc = "$(docv) is the staging files directory for the installation" in
   Arg.(
@@ -108,7 +119,12 @@ let staging_files_opt_t =
     staging files directory.  It defaults to the sibling directory "staging". *)
 let staging_files_for_setup_t =
   let default_dir = Fpath.(archive_dir_for_setup / "staging") in
-  let doc = "$(docv) is the staging files directory of the installation" in
+  let doc =
+    Fmt.str
+      "$(docv) is the staging files directory of the installation. The \
+       $(b,--%s) option will take priority if $(b,--%s) is used."
+      opam_context_args opam_context_args
+  in
   Arg.(
     value
     & opt raw_dir (Fpath.to_string default_dir)
@@ -123,8 +139,6 @@ let static_files_for_setup_t =
     value
     & opt raw_dir (Fpath.to_string default_dir)
     & info [ static_files_arg ] ~docv:"DIR" ~doc)
-
-let opam_context_args = "opam-context"
 
 let opam_context_t =
   let doc =

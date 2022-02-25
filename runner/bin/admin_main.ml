@@ -3,23 +3,14 @@ open Dkml_install_register
 open Dkml_install_api
 open Runner.Cmdliner_runner
 open Runner.Error_handling
-open Runner.Error_handling.Let_syntax
-
-(* This is a error='polymorphic bind *)
-let ( >>= ) = Result.bind
-
-(* This is a error=string bind *)
-let ( let* ) = Let_syntax.bind
-
-(* This is a error=string map *)
-let ( let+ ) x f = Let_syntax.map f x
+open Runner.Error_handling.Monad_syntax
 
 let default_cmd =
   let doc = "the OCaml CLI administrator installer" in
   let sdocs = Manpage.s_common_options in
   let exits = Term.default_exits in
   let man = help_secs in
-  ( Term.(ret (const (fun () -> `Help (`Pager, None)) $ setup_log_t)),
+  ( Term.(ret (const (fun _log_config -> `Help (`Pager, None)) $ setup_log_t)),
     Term.info "dkml-install-admin-runner" ~version:"%%VERSION%%" ~doc ~sdocs
       ~exits ~man )
 

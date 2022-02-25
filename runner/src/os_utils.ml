@@ -1,6 +1,6 @@
 open Bos
-
-let ( >>= ) = Result.bind
+open Error_handling
+open Error_handling.Monad_syntax
 
 (** [string_to_fpath str] converts [str] into a [Fpath.t]. On Windows the
     [str] is normalized to a regular Windows file path (ex. backslashes). *)
@@ -12,23 +12,39 @@ let string_to_norm_fpath str =
 let normalize_path str = Fpath.(to_string (string_to_norm_fpath str))
 
 let copy_dir src dst =
-  let cp rel success =
-    Logs.on_error ~pp:Rresult.R.pp_msg ~use:(fun _ -> false)
-    @@
-    if not success then (* no more copying if we had an error *)
-      Result.ok false
-    else
-      let src = Fpath.(src // rel) and dst = Fpath.(dst // rel) in
-      OS.Path.Mode.get src >>= fun mode ->
-      OS.File.read src >>= fun data ->
-      OS.Dir.create (Fpath.parent dst) >>= fun _ ->
-      OS.File.write ~mode dst data >>= fun () -> Result.ok true
+  let raise_fold_error fpath result =
+    Rresult.R.error_msgf
+      "@[A copy directory operation errored out while visiting %a.@]@,\
+       @[  @[%a@]@]" Fpath.pp fpath
+      (Rresult.R.pp
+         ~ok:(Fmt.any "<unknown copydir problem>")
+         ~error:Rresult.R.pp_msg)
+      result
   in
-  OS.Path.fold cp true [ src ] >>= function
-  | true -> Result.ok ()
-  | false ->
-      Rresult.R.error_msgf "Failed to copy the directory from %a to %a" Fpath.pp
-        src Fpath.pp dst
+  let cp rel = function
+    | Error _ as e ->
+        (* no more copying if we had an error *)
+        e
+    | Ok () ->
+        let src = Fpath.(src // rel) and dst = Fpath.(dst // rel) in
+        let* mode = map_rresult_error_to_string @@ OS.Path.Mode.get src in
+        let* data = map_rresult_error_to_string @@ OS.File.read src in
+        let* (_ : bool) =
+          map_rresult_error_to_string @@ OS.Dir.create (Fpath.parent dst)
+        in
+        let+ () = map_rresult_error_to_string @@ OS.File.write ~mode dst data in
+        ()
+  in
+  map_rresult_error_to_string
+  @@ OS.Path.fold ~err:raise_fold_error cp (Result.ok ()) [ src ]
+  >>= function
+  | Ok () -> Result.ok ()
+  | Error s ->
+      Result.error
+        (Fmt.str
+           "@[@[Failed to copy the directory@]@[@ from %a@]@[@ to %a@]@ .@]@ \
+            @[%s@]"
+           Fpath.pp src Fpath.pp dst s)
 
 type install_files_source = Opam_context | Install_files_dir of string
 
