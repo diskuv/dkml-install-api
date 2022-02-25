@@ -14,7 +14,10 @@ Z:\source\...kernel> with-dkml opam install ./vendor\diskuv-ocaml\vendor\dkml-co
 
 Z:\source\...kernel> with-dkml opam install  ./vendor\diskuv-ocaml\vendor\dkml-component-ocamlcompiler\dkml-component-ocamlcompiler.opam ./vendor\diskuv-ocaml\vendor\dkml-component-ocamlcompiler\dkml-component-ocamlrun.opam ..\..\..\dkml-install-api\dkml-install.opam  ..\..\..\dkml-install-api\dkml-install-runner.opam
 
-Z:\source\dkml-install-api\_opam\bin\dkml-install-runner.exe
+Z:\source\dkml-install-api\_opam\bin\dkml-install-admin-runner.exe
+Z:\source\dkml-install-api\_opam\bin\dkml-install-user-runner.exe
+Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe
+
 Z:\source\...kernel> with-dkml dune build vendor/diskuv-ocaml/vendor/dkml-component-ocamlcompiler/install/ocamlcompiler/dkml_component_ocamlcompiler.cmxa
 
 Z:\source\dkml-install-api> with-dkml dune build

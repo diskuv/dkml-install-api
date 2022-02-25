@@ -60,6 +60,27 @@ let create_context self_component_name reg () prefix staging_files_opt
     path_eval = Interpreter.path_eval interpreter;
   }
 
+(* Cmdliner, at least in 1.0.4, has the pp_str treated as an escaped OCaml
+   string. Not sure why, but backslashes on Windows path are interpreted
+   to be escape sequences. So create raw_* to add escaping to the raw
+   strings. *)
+
+let quote s = Fmt.str "`%s'" s
+
+let err_no kind s = Fmt.str "no %s %s" (quote s) kind
+
+let err_not_dir s = Fmt.str "%s is not a directory" (quote s)
+
+let raw_pp_str fmt s = Fmt.string fmt (String.escaped s)
+
+let raw_dir =
+  let parse s =
+    match Sys.file_exists s with
+    | true -> if Sys.is_directory s then `Ok s else `Error (err_not_dir s)
+    | false -> `Error (err_no "directory" s)
+  in
+  (parse, raw_pp_str)
+
 (* Options for installation commands *)
 
 let prefix_arg = "prefix"
@@ -79,7 +100,9 @@ let static_files_arg = "static-files"
 let staging_files_opt_t =
   let doc = "$(docv) is the staging files directory for the installation" in
   Arg.(
-    value & opt (some dir) None & info [ staging_files_arg ] ~docv:"DIR" ~doc)
+    value
+    & opt (some raw_dir) None
+    & info [ staging_files_arg ] ~docv:"DIR" ~doc)
 
 (** [staging_files_for_setup_t] is the dkml-install-setup.exe Term for the
     staging files directory.  It defaults to the sibling directory "staging". *)
@@ -88,7 +111,7 @@ let staging_files_for_setup_t =
   let doc = "$(docv) is the staging files directory of the installation" in
   Arg.(
     value
-    & opt dir (Fpath.to_string default_dir)
+    & opt raw_dir (Fpath.to_string default_dir)
     & info [ staging_files_arg ] ~docv:"DIR" ~doc)
 
 (** [static_files_for_setup_t] is the dkml-install-setup.exe Term for the
@@ -98,18 +121,19 @@ let static_files_for_setup_t =
   let doc = "$(docv) is the static files directory of the installation" in
   Arg.(
     value
-    & opt dir (Fpath.to_string default_dir)
+    & opt raw_dir (Fpath.to_string default_dir)
     & info [ static_files_arg ] ~docv:"DIR" ~doc)
 
 let opam_context_args = "opam-context"
 
 let opam_context_t =
   let doc =
-    "Obtain staging files from the currently activated Opam switch defined by \
-     the OPAM_SWITCH_PREFIX environment variable. A command like `(& opam env) \
-     -split '\\r?\\n' | ForEach-Object { Invoke-Expression $$_ }` for Windows \
-     PowerShell or `eval $$(opam env)` is necessary to activate an Opam switch \
-     and set the OPAM_SWITCH_PREFIX environment variable"
+    Manpage.escape
+      "Obtain staging files from the currently activated Opam switch defined \
+       by the OPAM_SWITCH_PREFIX environment variable. A command like `(& opam \
+       env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression $_ }` for \
+       Windows PowerShell or `eval $(opam env)` is necessary to activate an \
+       Opam switch and set the OPAM_SWITCH_PREFIX environment variable"
   in
   Arg.(value & flag & info [ opam_context_args ] ~doc)
 
