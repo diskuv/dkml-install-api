@@ -15,18 +15,18 @@ open Runner.Error_handling.Monad_syntax
 let (_ : string list) = Default_component_config.depends_on
 
 (* Load all the available components *)
-let () = Setup_sites.Plugins.Plugins.load_all ()
+let () = Uninstall_sites.Plugins.Plugins.load_all ()
 
 let reg = Component_registry.get ()
 
 (* Create command line options for dkml-install-{user,admin}-runner.exe *)
 
 let name_t =
-  let doc = "The name of the program to install" in
+  let doc = "The name of the program to uninstall" in
   Arg.(required & opt (some string) None & info [ "name" ] ~doc)
 
 (* Entry point of CLI *)
-let setup log_config name prefix static_files_source staging_files_source =
+let setup log_config name prefix staging_files_source =
   let args =
     Runner.Component_utils.common_runner_args ~log_config ~prefix
       ~staging_files_source
@@ -34,7 +34,6 @@ let setup log_config name prefix static_files_source staging_files_source =
 
   let exe_cmd s = Cmd.v Fpath.(to_string @@ (archive_dir_for_setup / s)) in
 
-  let prefix_fp = Runner.Os_utils.string_to_norm_fpath prefix in
   let spawn_admin_if_needed () =
     if Runner.Component_utils.needs_install_admin reg then
       let+ (_ : unit list) =
@@ -44,43 +43,25 @@ let setup log_config name prefix static_files_source staging_files_source =
             @@ Runner.Component_utils.elevated_cmd
                  Cmd.(
                    exe_cmd "dkml-install-admin-runner.exe"
-                   % ("install-admin-" ^ Cfg.component_name)
+                   % ("uninstall-admin-" ^ Cfg.component_name)
                    %% args))
       in
       ()
     else Result.ok ()
   in
   let install_sequence =
-    (* Run admin-runner.exe commands *)
-    let* () = spawn_admin_if_needed () in
-    (* Copy <static>/<component> into <prefix>, if present *)
-    let* (_ : unit list) =
-      Component_registry.eval reg ~f:(fun cfg ->
-          let module Cfg = (val cfg : Component_config) in
-          let* static_dir_fp =
-            map_msg_error_to_string @@ Fpath.of_string
-            @@ Runner.Component_utils.absdir_static_files
-                 ~component_name:Cfg.component_name static_files_source
-          in
-          let* exists =
-            map_msg_error_to_string @@ OS.File.exists static_dir_fp
-          in
-          let+ () =
-            if exists then Runner.Os_utils.copy_dir static_dir_fp prefix_fp
-            else Result.ok ()
-          in
-          ())
-    in
     (* Run user-runner.exe *)
-    let+ (_ : unit list) =
+    let* (_ : unit list) =
       Component_registry.eval reg ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Runner.Component_utils.spawn
             Cmd.(
               exe_cmd "dkml-install-user-runner.exe"
-              % ("install-user-" ^ Cfg.component_name)
+              % ("uninstall-user-" ^ Cfg.component_name)
               %% args))
     in
+    (* Run admin-runner.exe commands *)
+    let+ () = spawn_admin_if_needed () in
     ()
   in
   match install_sequence with
@@ -88,17 +69,18 @@ let setup log_config name prefix static_files_source staging_files_source =
   | Error e ->
       raise
         (Installation_error
-           (Fmt.str "@[Could not install %s.@]@,@[%a@]" name Fmt.lines e))
+           (Fmt.str "@[Could not uninstall %s.@]@,@[%a@]" name Fmt.lines e))
 
-let setup_cmd =
-  let doc = "the OCaml installer" in
+let uninstall_cmd =
+  let doc = "the OCaml uninstaller" in
   ( Term.(
       const setup $ setup_log_t $ name_t $ prefix_t
-      $ static_files_source_for_setup_and_uninstall_t
       $ staging_files_source_for_setup_and_uninstall_t),
-    Term.info "dkml-install-setup" ~version:"%%VERSION%%" ~doc )
+    Term.info "dkml-install-uninstall" ~version:"%%VERSION%%" ~doc )
 
 let () =
   Term.(
     exit
-    @@ catch_cmdliner_eval (fun () -> eval ~catch:false setup_cmd) (`Error `Exn))
+    @@ catch_cmdliner_eval
+         (fun () -> eval ~catch:false uninstall_cmd)
+         (`Error `Exn))

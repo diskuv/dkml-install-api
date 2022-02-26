@@ -25,9 +25,8 @@ module type Intf = sig
       dependency order, executing function [f] on each component configuration.
    *)
 
-   (** The module [Private] is meant for internal use only. *)
+  (** The module [Private] is meant for internal use only. *)
   module Private : sig
     val reset : unit -> unit
   end
-
 end

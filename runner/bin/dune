@@ -11,6 +11,18 @@
   cmdliner))
 
 (executable
+ (public_name dkml-install-uninstall)
+ (name uninstall_main)
+ (package dkml-install-runner)
+ (modules uninstall_sites uninstall_main)
+ (libraries
+  dkml-install.register
+  runner
+  dune-site
+  dune-site.plugins
+  cmdliner))
+
+(executable
  (public_name dkml-install-user-runner)
  (name user_main)
  (package dkml-install-runner)
@@ -55,6 +67,12 @@
 
 (generate_sites_module
  (module setup_sites)
+ (plugins
+  ; (<package> <name>)
+  (dkml-install-runner plugins)))
+
+(generate_sites_module
+ (module uninstall_sites)
  (plugins
   ; (<package> <name>)
   (dkml-install-runner plugins)))

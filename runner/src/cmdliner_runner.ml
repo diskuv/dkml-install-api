@@ -29,16 +29,14 @@ let help_secs =
 
 (* Options common to all commands *)
 
-type log_config = {
-  log_config_style_renderer : Fmt.style_renderer option;
-  log_config_level : Logs.level option;
-}
-
 let setup_log style_renderer level =
   Fmt_tty.setup_std_outputs ?style_renderer ();
   Logs.set_level level;
   Logs.set_reporter (Logs_fmt.reporter ());
-  { log_config_style_renderer = style_renderer; log_config_level = level }
+  {
+    Cmdliner_common.log_config_style_renderer = style_renderer;
+    log_config_level = level;
+  }
 
 let setup_log_t =
   Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())
@@ -54,8 +52,9 @@ let staging_files_source ~opam_context ~staging_files_opt =
   | true, _ -> Path_eval.Global_context.Opam_context
   | false, Some staging_files -> Staging_files_dir staging_files
 
-let create_context self_component_name reg (_log_config : log_config) prefix
-    staging_files_opt opam_context =
+let create_context self_component_name reg
+    (_log_config : Cmdliner_common.log_config) prefix staging_files_opt
+    opam_context =
   let open Path_eval in
   let staging_files_source =
     staging_files_source ~opam_context ~staging_files_opt
@@ -92,53 +91,47 @@ let raw_dir =
 
 (* Options for installation commands *)
 
-let prefix_arg = "prefix"
-
 let prefix_t =
   let doc = "$(docv) is the installation directory" in
   Arg.(
-    required & opt (some string) None & info [ prefix_arg ] ~docv:"PREFIX" ~doc)
+    required
+    & opt (some string) None
+    & info [ Cmdliner_common.prefix_arg ] ~docv:"PREFIX" ~doc)
 
 (* Directory containing dkml-install-setup.exe *)
 let archive_dir_for_setup = Fpath.(v OS.Arg.exec |> parent)
-
-let staging_files_arg = "staging-files"
-
-let static_files_arg = "static-files"
-
-let opam_context_args = "opam-context"
 
 let staging_files_opt_t =
   let doc = "$(docv) is the staging files directory for the installation" in
   Arg.(
     value
     & opt (some raw_dir) None
-    & info [ staging_files_arg ] ~docv:"DIR" ~doc)
+    & info [ Cmdliner_common.staging_files_arg ] ~docv:"DIR" ~doc)
 
-(** [staging_files_for_setup_t] is the dkml-install-setup.exe Term for the
+(** [staging_files_for_setup_and_uninstall_t] is the dkml-install-setup.exe Term for the
     staging files directory.  It defaults to the sibling directory "staging". *)
-let staging_files_for_setup_t =
+let staging_files_for_setup_and_uninstall_t =
   let default_dir = Fpath.(archive_dir_for_setup / "staging") in
   let doc =
     Fmt.str
       "$(docv) is the staging files directory of the installation. The \
        $(b,--%s) option will take priority if $(b,--%s) is used."
-      opam_context_args opam_context_args
+      Cmdliner_common.opam_context_args Cmdliner_common.opam_context_args
   in
   Arg.(
     value
     & opt raw_dir (Fpath.to_string default_dir)
-    & info [ staging_files_arg ] ~docv:"DIR" ~doc)
+    & info [ Cmdliner_common.staging_files_arg ] ~docv:"DIR" ~doc)
 
-(** [static_files_for_setup_t] is the dkml-install-setup.exe Term for the
+(** [static_files_for_setup_and_uninstall_t] is the dkml-install-setup.exe Term for the
     static files directory.  It defaults to the sibling directory "static". *)
-let static_files_for_setup_t =
+let static_files_for_setup_and_uninstall_t =
   let default_dir = Fpath.(archive_dir_for_setup / "static") in
   let doc = "$(docv) is the static files directory of the installation" in
   Arg.(
     value
     & opt raw_dir (Fpath.to_string default_dir)
-    & info [ static_files_arg ] ~docv:"DIR" ~doc)
+    & info [ Cmdliner_common.static_files_arg ] ~docv:"DIR" ~doc)
 
 let opam_context_t =
   let doc =
@@ -149,7 +142,26 @@ let opam_context_t =
        Windows PowerShell or `eval $(opam env)` is necessary to activate an \
        Opam switch and set the OPAM_SWITCH_PREFIX environment variable"
   in
-  Arg.(value & flag & info [ opam_context_args ] ~doc)
+  Arg.(value & flag & info [ Cmdliner_common.opam_context_args ] ~doc)
+
+let staging_files_source_for_setup_and_uninstall_t =
+  (* The Opam context staging file directory takes priority over
+     any staging_files from the command line. *)
+  let _staging_files_source opam_context staging_files =
+    staging_files_source ~opam_context ~staging_files_opt:(Some staging_files)
+  in
+  Term.(
+    const _staging_files_source
+    $ opam_context_t $ staging_files_for_setup_and_uninstall_t)
+
+let static_files_source_for_setup_and_uninstall_t =
+  let static_files_source opam_context static_files =
+    if opam_context then Component_utils.Opam_context_static
+    else Static_files_dir static_files
+  in
+  Term.(
+    const static_files_source $ opam_context_t
+    $ static_files_for_setup_and_uninstall_t)
 
 (** [ctx_t component] creates a [Term] for [component] that sets up logging
     and any other global state, and defines the context record *)
