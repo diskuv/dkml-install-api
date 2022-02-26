@@ -38,7 +38,7 @@ let component_cmds =
             ~ctx_t:(ctx_t Cfg.component_name reg))
     in
     let* uninstall_admin_cmds =
-      Component_registry.eval reg ~f:(fun cfg ->
+      Component_registry.reverse_eval reg ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Cfg.uninstall_admin_subcommand ~component_name:Cfg.component_name
             ~subcommand_name:(Fmt.str "uninstall-admin-%s" Cfg.component_name)

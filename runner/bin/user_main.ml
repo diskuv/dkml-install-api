@@ -38,7 +38,7 @@ let component_cmds =
             ~ctx_t:(ctx_t Cfg.component_name reg))
     in
     let* uninstall_user_cmds =
-      Component_registry.eval reg ~f:(fun cfg ->
+      Component_registry.reverse_eval reg ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Cfg.uninstall_user_subcommand ~component_name:Cfg.component_name
             ~subcommand_name:(Fmt.str "uninstall-user-%s" Cfg.component_name)
