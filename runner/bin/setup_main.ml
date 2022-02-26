@@ -37,17 +37,11 @@ let setup log_config name prefix static_files_source staging_files_source =
   let prefix_fp = Runner.Os_utils.string_to_norm_fpath prefix in
   let spawn_admin_if_needed () =
     if Runner.Component_utils.needs_install_admin reg then
-      let+ (_ : unit list) =
-        Component_registry.eval reg ~f:(fun cfg ->
-            let module Cfg = (val cfg : Component_config) in
-            Runner.Component_utils.spawn
-            @@ Runner.Component_utils.elevated_cmd
-                 Cmd.(
-                   exe_cmd "dkml-install-admin-runner.exe"
-                   % ("install-admin-" ^ Cfg.component_name)
-                   %% args))
-      in
-      ()
+      Runner.Component_utils.spawn
+      @@ Runner.Component_utils.elevated_cmd
+           Cmd.(
+             exe_cmd "dkml-install-admin-runner.exe"
+             % "install-adminall" %% args)
     else Result.ok ()
   in
   let install_sequence =
@@ -94,8 +88,8 @@ let setup_cmd =
   let doc = "the OCaml installer" in
   ( Term.(
       const setup $ setup_log_t $ name_t $ prefix_t
-      $ static_files_source_for_setup_and_uninstall_t
-      $ staging_files_source_for_setup_and_uninstall_t),
+      $ static_files_source_for_setup_and_uninstaller_t
+      $ staging_files_source_for_setup_and_uninstaller_t),
     Term.info "dkml-install-setup" ~version:"%%VERSION%%" ~doc )
 
 let () =

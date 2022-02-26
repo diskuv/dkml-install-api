@@ -108,9 +108,9 @@ let staging_files_opt_t =
     & opt (some raw_dir) None
     & info [ Cmdliner_common.staging_files_arg ] ~docv:"DIR" ~doc)
 
-(** [staging_files_for_setup_and_uninstall_t] is the dkml-install-setup.exe Term for the
+(** [staging_files_for_setup_and_uninstaller_t] is the dkml-install-setup.exe Term for the
     staging files directory.  It defaults to the sibling directory "staging". *)
-let staging_files_for_setup_and_uninstall_t =
+let staging_files_for_setup_and_uninstaller_t =
   let default_dir = Fpath.(archive_dir_for_setup / "staging") in
   let doc =
     Fmt.str
@@ -123,9 +123,9 @@ let staging_files_for_setup_and_uninstall_t =
     & opt raw_dir (Fpath.to_string default_dir)
     & info [ Cmdliner_common.staging_files_arg ] ~docv:"DIR" ~doc)
 
-(** [static_files_for_setup_and_uninstall_t] is the dkml-install-setup.exe Term for the
+(** [static_files_for_setup_and_uninstaller_t] is the dkml-install-setup.exe Term for the
     static files directory.  It defaults to the sibling directory "static". *)
-let static_files_for_setup_and_uninstall_t =
+let static_files_for_setup_and_uninstaller_t =
   let default_dir = Fpath.(archive_dir_for_setup / "static") in
   let doc = "$(docv) is the static files directory of the installation" in
   Arg.(
@@ -144,7 +144,7 @@ let opam_context_t =
   in
   Arg.(value & flag & info [ Cmdliner_common.opam_context_args ] ~doc)
 
-let staging_files_source_for_setup_and_uninstall_t =
+let staging_files_source_for_setup_and_uninstaller_t =
   (* The Opam context staging file directory takes priority over
      any staging_files from the command line. *)
   let _staging_files_source opam_context staging_files =
@@ -152,16 +152,16 @@ let staging_files_source_for_setup_and_uninstall_t =
   in
   Term.(
     const _staging_files_source
-    $ opam_context_t $ staging_files_for_setup_and_uninstall_t)
+    $ opam_context_t $ staging_files_for_setup_and_uninstaller_t)
 
-let static_files_source_for_setup_and_uninstall_t =
+let static_files_source_for_setup_and_uninstaller_t =
   let static_files_source opam_context static_files =
     if opam_context then Component_utils.Opam_context_static
     else Static_files_dir static_files
   in
   Term.(
     const static_files_source $ opam_context_t
-    $ static_files_for_setup_and_uninstall_t)
+    $ static_files_for_setup_and_uninstaller_t)
 
 (** [ctx_t component] creates a [Term] for [component] that sets up logging
     and any other global state, and defines the context record *)

@@ -11,10 +11,10 @@
   cmdliner))
 
 (executable
- (public_name dkml-install-uninstall)
- (name uninstall_main)
+ (public_name dkml-install-uninstaller)
+ (name uninstaller_main)
  (package dkml-install-runner)
- (modules uninstall_sites uninstall_main)
+ (modules uninstaller_sites uninstaller_main)
  (libraries
   dkml-install.register
   runner
@@ -72,7 +72,7 @@
   (dkml-install-runner plugins)))
 
 (generate_sites_module
- (module uninstall_sites)
+ (module uninstaller_sites)
  (plugins
   ; (<package> <name>)
   (dkml-install-runner plugins)))

@@ -17,6 +17,7 @@ Z:\source\...kernel> with-dkml opam install  ./vendor\diskuv-ocaml\vendor\dkml-c
 Z:\source\dkml-install-api\_opam\bin\dkml-install-admin-runner.exe
 Z:\source\dkml-install-api\_opam\bin\dkml-install-user-runner.exe
 Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe
+Z:\source\dkml-install-api\_opam\bin\dkml-install-uninstaller.exe
 
 with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe --name test123 --prefix Z:\temp\prefix --opam-context
 

@@ -15,7 +15,7 @@ open Runner.Error_handling.Monad_syntax
 let (_ : string list) = Default_component_config.depends_on
 
 (* Load all the available components *)
-let () = Uninstall_sites.Plugins.Plugins.load_all ()
+let () = Uninstaller_sites.Plugins.Plugins.load_all ()
 
 let reg = Component_registry.get ()
 
@@ -36,17 +36,11 @@ let setup log_config name prefix staging_files_source =
 
   let spawn_admin_if_needed () =
     if Runner.Component_utils.needs_install_admin reg then
-      let+ (_ : unit list) =
-        Component_registry.eval reg ~f:(fun cfg ->
-            let module Cfg = (val cfg : Component_config) in
-            Runner.Component_utils.spawn
-            @@ Runner.Component_utils.elevated_cmd
-                 Cmd.(
-                   exe_cmd "dkml-install-admin-runner.exe"
-                   % ("uninstall-admin-" ^ Cfg.component_name)
-                   %% args))
-      in
-      ()
+      Runner.Component_utils.spawn
+      @@ Runner.Component_utils.elevated_cmd
+           Cmd.(
+             exe_cmd "dkml-install-admin-runner.exe"
+             % "uninstall-adminall" %% args)
     else Result.ok ()
   in
   let install_sequence =
@@ -61,8 +55,7 @@ let setup log_config name prefix staging_files_source =
               %% args))
     in
     (* Run admin-runner.exe commands *)
-    let+ () = spawn_admin_if_needed () in
-    ()
+    spawn_admin_if_needed ()
   in
   match install_sequence with
   | Ok _ -> ()
@@ -75,8 +68,8 @@ let uninstall_cmd =
   let doc = "the OCaml uninstaller" in
   ( Term.(
       const setup $ setup_log_t $ name_t $ prefix_t
-      $ staging_files_source_for_setup_and_uninstall_t),
-    Term.info "dkml-install-uninstall" ~version:"%%VERSION%%" ~doc )
+      $ staging_files_source_for_setup_and_uninstaller_t),
+    Term.info "dkml-install-uninstaller" ~version:"%%VERSION%%" ~doc )
 
 let () =
   Term.(

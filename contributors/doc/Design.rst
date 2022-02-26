@@ -122,7 +122,8 @@ Here is what the ``opam install ...`` step does in detail:
             $OPAM_SWITCH_PREFIX/share/$I/staging-files/$C/
 
 3. Create
-   `dune_site plugin loader <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_-based executables named ``dkml-install-setup.exe``,
+   `dune_site plugin loader <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_-based executables
+   named ``dkml-install-setup.exe``, ``dkml-install-uninstaller.exe``,
    ``dkml-install-user-runner.exe`` and
    ``dkml-install-admin-runner.exe`` that will perform the steps in
    :ref:`UserPhases`
@@ -143,8 +144,8 @@ Here is what the ``opam install ...`` step does in detail:
         All of the ``$OPAM_SWITCH_PREFIX/share/$I/staging-files/`` will go
         into the ``staging`` top-level folder of the ``$I.zip`` archive.
 
-        The ``dkml-install-setup.exe``, ``dkml-install-user-runner.exe``
-        and ``dkml-install-admin-runner.exe``
+        The ``dkml-install-setup.exe``, ``dkml-install-uninstaller.exe``,
+        ``dkml-install-user-runner.exe`` and ``dkml-install-admin-runner.exe``
         executables will be placed in the root of the
         ``$I.zip`` archive.
 
