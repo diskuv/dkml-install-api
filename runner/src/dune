@@ -3,6 +3,7 @@
  (package dkml-install-runner)
  (libraries
   dkml-install.register
+  dkml-install.api
   bos
   astring
   fpath

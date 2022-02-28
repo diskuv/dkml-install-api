@@ -1,8 +1,6 @@
-exception Installation_error of string
-
 let () =
   Printexc.register_printer (function
-    | Installation_error x -> Some ("Installation error: " ^ x)
+    | Dkml_install_api.Installation_error x -> Some ("Installation error: " ^ x)
     | _ -> None)
 
 let errors_are_immediate () = true
@@ -31,13 +29,15 @@ module Let_syntax = struct
       match r with
       | Ok v -> f v
       | Error e ->
-          if errors_are_immediate () then raise (Installation_error e)
+          if errors_are_immediate () then
+            raise (Dkml_install_api.Installation_error e)
           else Error e
 
     let map f = function
       | Ok v -> Ok (f v)
       | Error e ->
-          if errors_are_immediate () then raise (Installation_error e)
+          if errors_are_immediate () then
+            raise (Dkml_install_api.Installation_error e)
           else Error e
   end
 end

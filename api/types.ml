@@ -1,5 +1,48 @@
 module Context = struct
-  type t = { path_eval : string -> Fpath.t; eval : string -> string }
+  (** ABI V2 is the version 2 of the supported list of ABIs *)
+  module Abi_v2 = struct
+    type t =
+      | Android_arm64v8a
+      | Android_arm32v7a
+      | Android_x86
+      | Android_x86_64
+      | Darwin_arm64
+      | Darwin_x86_64
+      | Linux_arm64
+      | Linux_arm32v6
+      | Linux_arm32v7
+      | Linux_x86_64
+      | Linux_x86
+      | Windows_x86_64
+      | Windows_x86
+      | Windows_arm64
+      | Windows_arm32
+    [@@deriving show, eq, ord]
+
+    let of_string = function
+      | "Android_arm64v8a" -> Result.ok Android_arm64v8a
+      | "Android_arm32v7a" -> Result.ok Android_arm32v7a
+      | "Android_x86" -> Result.ok Android_x86
+      | "Android_x86_64" -> Result.ok Android_x86_64
+      | "Darwin_arm64" -> Result.ok Darwin_arm64
+      | "Darwin_x86_64" -> Result.ok Darwin_x86_64
+      | "Linux_arm64" -> Result.ok Linux_arm64
+      | "Linux_arm32v6" -> Result.ok Linux_arm32v6
+      | "Linux_arm32v7" -> Result.ok Linux_arm32v7
+      | "Linux_x86_64" -> Result.ok Linux_x86_64
+      | "Linux_x86" -> Result.ok Linux_x86
+      | "Windows_x86_64" -> Result.ok Windows_x86_64
+      | "Windows_x86" -> Result.ok Windows_x86
+      | "Windows_arm64" -> Result.ok Windows_arm64
+      | "Windows_arm32" -> Result.ok Windows_arm32
+      | s -> Result.error ("Unknown v2 ABI: " ^ s)
+  end
+
+  type t = {
+    path_eval : string -> Fpath.t;
+    eval : string -> string;
+    host_abi_v2 : Abi_v2.t;
+  }
   (** [t] is the record type for the context.
 
 {1 Context Methods}
@@ -26,8 +69,9 @@ The following fields are available from the context today:
   - ["%{tmp}"] is the absolute path to a temporary directory unique to the
   component that is currently being installed. No other component will use the
   same temporary directory.
-  - ["%{COMPONENT_NAME:share}"] is the absolute path within the staging directory
-  of the named component. Usually the staging files include a bytecode
+  - ["%{_:share}"] and ["%{COMPONENT_NAME:share}"] are the absolute path within
+  the staging directory of the currently-being-installed and the named component.
+  Usually the staging files include a bytecode
   executable to run a component's installation logic.
 
   Variations:
@@ -42,7 +86,6 @@ The following fields are available from the context today:
     ["$OPAM_SWITCH_PREFIX/share/dkml-component-<COMPONENT_NAME>/staging-files"]. You can use
     the ["--opam-context"] option to test your components in an Opam environment.
   }
-
 
   {- [ctx.eval "/some/expression"]
 
@@ -60,6 +103,32 @@ The following fields are available from the context today:
 
   - ["%{components:all}"] is the space separated names of the components that are
   or will be installed
+  }
+
+  {- [ctx.host_abi_v2]
+
+  The ABI for the host machine from the list of V2 ABIs. You cannot rely on
+  inspecting the OCaml bytecode interpreter since the interpreter is often
+  compiled to 32-bit for maximum portability. When more host ABIs are
+  supported they will go into a future [ctx.host_abi_v3] or later;
+  for type-safety [ctx.host_abi_v2] will give a [Result.Error] for those
+  new host ABIs.
+
+  Values for the V2 ABI include:
+
+  * Android_arm64v8a
+  * Android_arm32v7a
+  * Android_x86
+  * Android_x86_64
+  * Darwin_arm64
+  * Darwin_x86_64
+  * Linux_arm64
+  * Linux_arm32v6
+  * Linux_arm32v7
+  * Linux_x86_64
+  * Linux_x86
+  * Windows_x86_64
+  * Windows_x86
   }
 }
 *)

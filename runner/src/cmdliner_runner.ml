@@ -47,9 +47,9 @@ let staging_files_source ~opam_context ~staging_files_opt =
   match (opam_context, staging_files_opt) with
   | false, None ->
       raise
-        (Error_handling.Installation_error
+        (Dkml_install_api.Installation_error
            "Either `--opam-context` or `--staging-files DIR` must be specified")
-  | true, _ -> Path_eval.Global_context.Opam_context
+  | true, _ -> Path_eval.Opam_context
   | false, Some staging_files -> Staging_files_dir staging_files
 
 let create_context self_component_name reg
@@ -61,11 +61,21 @@ let create_context self_component_name reg
   in
   let global_context = Global_context.create reg ~staging_files_source in
   let interpreter =
-    Interpreter.create global_context ~self_component_name ~prefix
+    Interpreter.create global_context ~self_component_name ~staging_files_source
+      ~prefix
+  in
+  let host_abi_v2 =
+    match Host_abi.create_v2 () with
+    | Ok abi -> abi
+    | Error s ->
+        raise
+          (Dkml_install_api.Installation_error
+             (Fmt.str "Could not detect the host ABI. %s" s))
   in
   {
     Dkml_install_api.Context.eval = Interpreter.eval interpreter;
     path_eval = Interpreter.path_eval interpreter;
+    host_abi_v2;
   }
 
 (* Cmdliner, at least in 1.0.4, has the pp_str treated as an escaped OCaml

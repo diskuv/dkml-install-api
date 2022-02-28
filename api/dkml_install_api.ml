@@ -74,3 +74,5 @@ module Default_component_config = struct
 
   let test () = ()
 end
+
+exception Installation_error of string

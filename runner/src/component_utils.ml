@@ -1,7 +1,6 @@
 open Bos
 open Dkml_install_register
 open Dkml_install_api
-open Error_handling
 open Error_handling.Monad_syntax
 
 type static_files_source = Opam_context_static | Static_files_dir of string
@@ -51,8 +50,7 @@ let common_runner_args
   in
   let args =
     match staging_files_source with
-    | Path_eval.Global_context.Opam_context ->
-        Cmd.(args % z Cmdliner_common.opam_context_args)
+    | Path_eval.Opam_context -> Cmd.(args % z Cmdliner_common.opam_context_args)
     | Staging_files_dir staging_files ->
         Cmd.(
           args
@@ -69,7 +67,7 @@ let spawn cmd =
           Rresult.R.pp_msg e
       in
       if Error_handling.errors_are_immediate () then
-        raise (Error_handling.Installation_error msg)
+        raise (Dkml_install_api.Installation_error msg)
       else Result.error msg)
   @@ (OS.Cmd.(run_status cmd) >>= function
       | `Exited 0 -> Result.ok ()

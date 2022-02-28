@@ -5,14 +5,14 @@ open Bos
 open Os_utils
 module StringMap = Map.Make (String)
 
+type staging_files_source = Opam_context | Staging_files_dir of string
+
 module Global_context = struct
   type t = {
     global_vars : (string * string) list;
     global_pathonly_vars : (string * string) list;
     default_tmp_dir : Fpath.t;
   }
-
-  type staging_files_source = Opam_context | Staging_files_dir of string
 
   (** [absdir_staging_files ~component_name staging_files_source] is
     the [component_name] component's staging-files directory *)
@@ -71,7 +71,7 @@ module Interpreter = struct
     all_pathonly_vars : (string * string) list;
   }
 
-  let create global_ctx ~self_component_name ~prefix =
+  let create global_ctx ~self_component_name ~staging_files_source ~prefix =
     let name_var = ("name", self_component_name) in
     let temp_var =
       ( "tmp",
@@ -79,7 +79,12 @@ module Interpreter = struct
         @@ Global_context.tmp_dir global_ctx )
     in
     let prefix_var = ("prefix", normalize_path prefix) in
-    let local_vars = [ name_var; temp_var; prefix_var ] in
+    let current_share_var =
+      ( "_:share",
+        Global_context.absdir_staging_files ~component_name:self_component_name
+          staging_files_source )
+    in
+    let local_vars = [ name_var; temp_var; prefix_var; current_share_var ] in
     let all_vars =
       List.concat [ Global_context.global_vars global_ctx; local_vars ]
     in
@@ -107,12 +112,14 @@ end
 
 let mock_default_tmp_dir = OS.Dir.default_tmp ()
 
+let mock_staging_files_sources = Staging_files_dir "/test/staging-files"
+
 let mock_global_ctx =
   let global_pathonly_vars =
     [
       ( "ocamlrun:share",
         Global_context.absdir_staging_files ~component_name:"ocamlrun"
-          (Staging_files_dir "/test/staging-files") );
+          mock_staging_files_sources );
     ]
   in
   {
@@ -125,7 +132,7 @@ let mock_global_ctx =
 
 let interpreter () =
   Interpreter.create mock_global_ctx ~self_component_name:"component_under_test"
-    ~prefix:"/test/prefix"
+    ~staging_files_source:mock_staging_files_sources ~prefix:"/test/prefix"
 
 let%test "%{components:all}% are all the available components" =
   let r = Interpreter.eval (interpreter ()) "%{components:all}%" in

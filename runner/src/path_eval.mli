@@ -1,8 +1,8 @@
+type staging_files_source = Opam_context | Staging_files_dir of string
+
 module Global_context : sig
   type t
   (** the type of the global context *)
-
-  type staging_files_source = Opam_context | Staging_files_dir of string
 
   val create :
     Dkml_install_register.Component_registry.t ->
@@ -17,7 +17,11 @@ module Interpreter : sig
   type t
 
   val create :
-    Global_context.t -> self_component_name:string -> prefix:string -> t
+    Global_context.t ->
+    self_component_name:string ->
+    staging_files_source:staging_files_source ->
+    prefix:string ->
+    t
   (** [create global_ctx ~self_component_name ~prefix] creates an interpreter
       for the component [self_component_name] for installations into
       the [prefix] directory. 

@@ -37,7 +37,10 @@ module type Component_config_defaultable = sig
         let install_user_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Install the pieces that don't require Administrative rights" in
           Result.ok @@ Cmdliner.Term.(const execute_install $ ctx_t, info subcommand_name ~doc)
-      ]} *)
+      ]}
+
+      Your [Term.t] function ([install_user_subcommand ctx]) should raise
+      {!Installation_error} for any terminal failures. *)
 
   val uninstall_user_subcommand :
     component_name:string ->
@@ -71,7 +74,10 @@ module type Component_config_defaultable = sig
       let uninstall_user_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Uninstall the pieces that don't require Administrative rights" in
         Result.ok @@ Cmdliner.Term.(const execute_uninstall $ ctx_t, info subcommand_name ~doc)
-    ]} *)
+      ]}
+
+      Your [Term.t] function ([uninstall_user_subcommand ctx]) should raise
+      {!Installation_error} for any terminal failures. *)
 
   val needs_install_admin : unit -> bool
   (** [needs_install_admin] should inspect the environment and say [true] if and only
@@ -113,7 +119,10 @@ module type Component_config_defaultable = sig
         let install_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Install the pieces requiring Administrative rights" in
           Result.ok @@ Cmdliner.Term.(const execute_install_admin $ ctx_t, info subcommand_name ~doc)
-    ]} *)
+      ]}
+
+      Your [Term.t] function ([execute_install_admin ctx]) should raise
+      {!Installation_error} for any terminal failures. *)
 
   val uninstall_admin_subcommand :
     component_name:string ->
@@ -147,7 +156,10 @@ module type Component_config_defaultable = sig
         let uninstall_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Install the pieces requiring Administrative rights" in
           Result.ok @@ Cmdliner.Term.(const execute_uninstall_admin $ ctx_t, info subcommand_name ~doc)
-    ]} *)
+      ]}
+
+      Your [Term.t] function ([execute_uninstall_admin ctx]) should raise
+      {!Installation_error} for any terminal failures. *)
 
   val test : unit -> unit
   (** [test ()] is reserved for unit testing; it should do nothing in
@@ -182,4 +194,10 @@ module type Intf = sig
     include Component_config_defaultable
     (** @inline *)
   end
+
+  (* {3 Exceptions} *)
+
+  exception Installation_error of string
+  (** Raise [Installation_error message] when your component has a terminal
+    failure  *)
 end
