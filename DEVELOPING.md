@@ -20,6 +20,7 @@ Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe
 Z:\source\dkml-install-api\_opam\bin\dkml-install-uninstaller.exe
 
 with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe --name test123 --prefix Z:\temp\prefix --opam-context
+with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-install-uninstall.exe --name test123 --prefix Z:\temp\prefix --opam-context
 
 Z:\source\...kernel> with-dkml dune build vendor/diskuv-ocaml/vendor/dkml-component-ocamlcompiler/install/ocamlcompiler/dkml_component_ocamlcompiler.cmxa
 

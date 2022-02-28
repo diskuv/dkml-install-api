@@ -95,8 +95,9 @@ Here is what the ``opam install ...`` step does in detail:
          is ``<opamswitch>/share/dkml-component-<C>/``. These files will be used
          in the USER_DEPLOY_INITIAL phase.
 
-       * Placing executables and files in ``<share>/staging-files/``. These
-         files will be used in the USER_INSTALL phase
+       * Placing executables and files in
+         ``<share>/staging-files/<target_arch>``. These files will be used in
+         the USER_INSTALL phase
 
        .. important:: Relocatable requirements
 
@@ -108,6 +109,15 @@ Here is what the ``opam install ...`` step does in detail:
 
            Instead the only native executable should be
            ``ocamlrun`` (provided by ``dkml-component-ocamlrun.opam``).
+
+       .. important:: Target architectures
+
+           Creating universal applications for macOS or archive libraries
+           for Android requires that more than one target architecture is
+           available in the application. Staging files have a ``<target_arch>/``
+           subfolder that can be used to create universal applications. If the
+           staging files are architecture agnostic then the files should go
+           into a ``generic/`` subfolder.
 
 2. **Side-by-side copies** all the ``<share>/static-files/`` and
    ``<share>/staging-files/`` directories. It does the equivalent of
