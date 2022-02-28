@@ -158,8 +158,9 @@ need to be shared with the consumers of that component.</p>
 <a class="reference external" href="https://opam.ocaml.org/doc/Manual.html#installfield-share">&lt;share&gt;</a>
 is <code class="docutils literal notranslate"><span class="pre">&lt;opamswitch&gt;/share/dkml-component-&lt;C&gt;/</span></code>. These files will be used
 in the USER_DEPLOY_INITIAL phase.</p></li>
-<li><p>Placing executables and files in <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code>. These
-files will be used in the USER_INSTALL phase</p></li>
+<li><p>Placing executables and files in
+<code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/&lt;target_arch&gt;</span></code>. These files will be used in
+the USER_INSTALL phase</p></li>
 </ul>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
@@ -171,6 +172,16 @@ to a different location on the end-user’s hard drive. As of January
 relocatable.</p>
 <p>Instead the only native executable should be
 <code class="docutils literal notranslate"><span class="pre">ocamlrun</span></code> (provided by <code class="docutils literal notranslate"><span class="pre">dkml-component-ocamlrun.opam</span></code>).</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Target architectures</p>
+<p>Creating universal applications for macOS or archive libraries
+for Android requires that more than one target architecture is
+available in the application. Staging files have a <code class="docutils literal notranslate"><span class="pre">&lt;target_arch&gt;/</span></code>
+subfolder that can be used to create universal applications. If the
+staging files are architecture agnostic then the files should go
+into a <code class="docutils literal notranslate"><span class="pre">generic/</span></code> subfolder.</p>
 </div>
 </li>
 </ol>
@@ -187,7 +198,8 @@ rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</
 </div>
 </li>
 <li><p>Create
-<a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site plugin loader</a>-based executables named <code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>,
+<a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site plugin loader</a>-based executables
+named <code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>, <code class="docutils literal notranslate"><span class="pre">dkml-install-uninstaller.exe</span></code>,
 <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and
 <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code> that will perform the steps in
 <a class="reference internal" href="#userphases"><span class="std std-ref">User runs the installer</span></a></p></li>
@@ -203,8 +215,8 @@ file or a <code class="docutils literal notranslate"><span class="pre">$OPAM_SWI
 into the <code class="docutils literal notranslate"><span class="pre">static</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 <p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/staging-files/</span></code> will go
 into the <code class="docutils literal notranslate"><span class="pre">staging</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>, <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>
-and <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
+<p>The <code class="docutils literal notranslate"><span class="pre">dkml-install-setup.exe</span></code>, <code class="docutils literal notranslate"><span class="pre">dkml-install-uninstaller.exe</span></code>,
+<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
 executables will be placed in the root of the
 <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 </dd>
