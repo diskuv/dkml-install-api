@@ -40,7 +40,7 @@ module type Component_config_defaultable = sig
       ]}
 
       Your [Term.t] function ([install_user_subcommand ctx]) should raise
-      {!Installation_error} for any terminal failures. *)
+      {!Installation_error} for any unrecoverable failures. *)
 
   val uninstall_user_subcommand :
     component_name:string ->
@@ -77,7 +77,7 @@ module type Component_config_defaultable = sig
       ]}
 
       Your [Term.t] function ([uninstall_user_subcommand ctx]) should raise
-      {!Installation_error} for any terminal failures. *)
+      {!Installation_error} for any unrecoverable failures. *)
 
   val needs_install_admin : unit -> bool
   (** [needs_install_admin] should inspect the environment and say [true] if and only
@@ -122,7 +122,7 @@ module type Component_config_defaultable = sig
       ]}
 
       Your [Term.t] function ([execute_install_admin ctx]) should raise
-      {!Installation_error} for any terminal failures. *)
+      {!Installation_error} for any unrecoverable failures. *)
 
   val uninstall_admin_subcommand :
     component_name:string ->
@@ -159,7 +159,7 @@ module type Component_config_defaultable = sig
       ]}
 
       Your [Term.t] function ([execute_uninstall_admin ctx]) should raise
-      {!Installation_error} for any terminal failures. *)
+      {!Installation_error} for any unrecoverable failures. *)
 
   val test : unit -> unit
   (** [test ()] is reserved for unit testing; it should do nothing in
@@ -195,9 +195,20 @@ module type Intf = sig
     (** @inline *)
   end
 
-  (* {3 Exceptions} *)
+  (* {3 Error handling} *)
 
   exception Installation_error of string
   (** Raise [Installation_error message] when your component has a terminal
     failure  *)
+
+  val log_spawn_and_raise : Bos.Cmd.t -> unit
+  (** [log_spawn_and_raise cmd] logs the command [cmd] and runs it
+      synchronously, raising {!Installation_error} if the command exits with a
+      non-zero error code.
+
+      The environment variable ["OCAMLRUNPARAM"] will be set to ["b"] so that
+      any OCaml bytecode launched by [log_spawn_and_raise] will have
+      backtraces. Any exiting environment variable ["OCAMLRUNPARAM"] will
+      be kept, however. *)
+
 end

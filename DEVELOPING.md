@@ -14,13 +14,15 @@ Z:\source\...kernel> with-dkml opam install ./vendor\diskuv-ocaml\vendor\dkml-co
 
 Z:\source\...kernel> with-dkml opam install  ./vendor\diskuv-ocaml\vendor\dkml-component-ocamlcompiler\dkml-component-ocamlcompiler.opam ./vendor\diskuv-ocaml\vendor\dkml-component-ocamlcompiler\dkml-component-ocamlrun.opam ..\..\..\dkml-install-api\dkml-install.opam  ..\..\..\dkml-install-api\dkml-install-runner.opam
 
+Z:\source\...kernel> with-dkml time opam install  ./vendor\diskuv-ocaml\vendor\dkml-component-ocamlcompiler\dkml-component-enduser-ocamlcompiler.opam ./vendor\diskuv-ocaml\vendor\dkml-component-ocamlcompiler\dkml-component-staging-ocamlrun.opam ..\..\..\dkml-install-api\dkml-install.opam  ..\..\..\dkml-install-api\dkml-install-runner.opam ..\..\..\dkml-component-enduser-unixutils\dkml-component-enduser-unixutils.opam  ..\..\..\dkml-component-staging-curl\dkml-component-staging-curl.opam
+
 Z:\source\dkml-install-api\_opam\bin\dkml-install-admin-runner.exe
 Z:\source\dkml-install-api\_opam\bin\dkml-install-user-runner.exe
 Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe
 Z:\source\dkml-install-api\_opam\bin\dkml-install-uninstaller.exe
 
-with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe --name test123 --prefix Z:\temp\prefix --opam-context
-with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-install-uninstall.exe --name test123 --prefix Z:\temp\prefix --opam-context
+with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe --name test123 --prefix Z:\temp\prefix --opam-context -v
+with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-install-uninstall.exe --name test123 --prefix Z:\temp\prefix --opam-context -v
 
 Z:\source\...kernel> with-dkml dune build vendor/diskuv-ocaml/vendor/dkml-component-ocamlcompiler/install/ocamlcompiler/dkml_component_ocamlcompiler.cmxa
 

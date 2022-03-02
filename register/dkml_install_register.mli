@@ -12,9 +12,7 @@
           (** Redefine any other values you want to override *)
         end
         let reg = Component_registry.get ()
-        let run = function Ok () -> () | Error str -> failwith str
-        let () = run
-          @@ Component_registry.add_component reg (module Component : Component_config)
+        let () = Component_registry.add_component reg (module Component : Component_config)
     ]} *)
 module Component_registry : sig
   include Registry_intf.Intf

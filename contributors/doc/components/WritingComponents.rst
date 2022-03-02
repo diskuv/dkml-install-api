@@ -43,7 +43,7 @@ For example, when the following configuration values are defined:
     let execute_install ctx =
         Format.printf
           "Here is where we would install using bytecode run with: %s@\n"
-          (ctx#path_eval "%{ocamlrun:share}/bin/ocamlrun.exe")
+          (ctx.path_eval "%{ocamlrun:share}/bin/ocamlrun.exe")
 
     let install_user_subcommand ~component_name ~subcommand_name =
         let doc = "Install a component called " ^ component_name in
@@ -160,12 +160,22 @@ documentation.
 Staging Files
 -------------
 
-As a Component author you should **only create bytecode executables**
-in your OPAM_BUILD phase. Build them with 32-bit compilers on Windows for
-maximum portability.
+As a Component author you should
+**only create bytecode executables with no C stubs**
+in your OPAM_BUILD phase.
+
+Bytecode executables ensure portability, and not depending on C stubs ensures
+that the end-user's machine does not need specific versions of
+specific shared libraries pre-installed.
+
+On Windows and Linux you should build bytecode executables built from a 32-bit
+OCaml compiler. 32-bit bytecode works on 64-bit machines, but not all
+64-bit bytecode will work on 32-bit machines.
 
 .. _StaticFiles:
 
 Static Files
 ------------
+
+Any static file will go straight into the end-user installation directory.
 

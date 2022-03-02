@@ -45,6 +45,13 @@ let setup log_config name prefix static_files_source staging_files_source =
     else Result.ok ()
   in
   let install_sequence =
+    (* Diagnostics *)
+    let* (_ : unit list) =
+      Component_registry.eval reg ~f:(fun cfg ->
+          let module Cfg = (val cfg : Component_config) in
+          Result.ok
+          @@ Logs.debug (fun m -> m "Will install component %s" Cfg.component_name))
+    in
     (* Run admin-runner.exe commands *)
     let* () = spawn_admin_if_needed () in
     (* Copy <static>/<component> into <prefix>, if present *)

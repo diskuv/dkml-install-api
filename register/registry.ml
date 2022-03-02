@@ -10,18 +10,26 @@ let get () = global_registry
 
 let add_component reg cfg =
   let module Cfg = (val cfg : Component_config) in
-  let ( >>= ) = Result.bind in
-  Validate.validate (module Cfg) >>= fun () ->
-  match Hashtbl.find_opt reg Cfg.component_name with
-  | Some _component ->
-      Result.error
-        (Fmt.str
-           "[debe504f] The component named '%s' has already been added to the \
-            registry"
-           Cfg.component_name)
-  | None ->
-      Hashtbl.add reg Cfg.component_name cfg;
-      Result.ok ()
+  match Validate.validate (module Cfg) with
+  | Ok () -> (
+      match Hashtbl.find_opt reg Cfg.component_name with
+      | Some _component ->
+          raise
+            (Installation_error
+               (Fmt.str
+                  "[debe504f] The component named '%s' has already been added \
+                   to the registry"
+                  Cfg.component_name))
+      | None ->
+          Logs.debug (fun m ->
+              m
+                "@[Adding component '%s' to the registry with dependencies:@]@ \
+                 @[%a@]@"
+                Cfg.component_name
+                Fmt.(Dump.list string)
+                Cfg.depends_on);
+          Hashtbl.add reg Cfg.component_name cfg)
+  | Error s -> raise (Installation_error s)
 
 let toposort reg =
   let vertex_map =

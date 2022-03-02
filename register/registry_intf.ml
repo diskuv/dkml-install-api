@@ -5,8 +5,7 @@ module type Intf = sig
   val get : unit -> t
   (** Get a reference to the global component registry *)
 
-  val add_component :
-    t -> (module Dkml_install_api.Component_config) -> (unit, string) Result.t
+  val add_component : t -> (module Dkml_install_api.Component_config) -> unit
   (** [add_component registry component] adds the component to the registry *)
 
   val eval :
