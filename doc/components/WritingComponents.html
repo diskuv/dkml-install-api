@@ -172,12 +172,19 @@ documentation.</p>
 </div>
 <div class="section" id="staging-files">
 <span id="stagingfiles"></span><h2>Staging Files<a class="headerlink" href="#staging-files" title="Permalink to this headline"></a></h2>
-<p>As a Component author you should <strong>only create bytecode executables</strong>
-in your OPAM_BUILD phase. Build them with 32-bit compilers on Windows for
-maximum portability.</p>
+<p>As a Component author you should
+<strong>only create bytecode executables with no C stubs</strong>
+in your OPAM_BUILD phase.</p>
+<p>Bytecode executables ensure portability, and not depending on C stubs ensures
+that the end-user’s machine does not need specific versions of
+specific shared libraries pre-installed.</p>
+<p>On Windows and Linux you should build bytecode executables built from a 32-bit
+OCaml compiler. 32-bit bytecode works on 64-bit machines, but not all
+64-bit bytecode will work on 32-bit machines.</p>
 </div>
 <div class="section" id="static-files">
 <span id="staticfiles"></span><h2>Static Files<a class="headerlink" href="#static-files" title="Permalink to this headline"></a></h2>
+<p>Any static file will go straight into the end-user installation directory.</p>
 </div>
 </div>
 
