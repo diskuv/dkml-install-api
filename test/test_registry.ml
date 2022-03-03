@@ -58,9 +58,9 @@ let test_eval () =
          "results (return b), (return a), (return c)";
        ])
     (let reg = Component_registry.get () in
-     Component_registry.add_component reg (module A) >>= fun () ->
-     Component_registry.add_component reg (module B) >>= fun () ->
-     Component_registry.add_component reg (module C) >>= fun () ->
+     Component_registry.add_component reg (module A);
+     Component_registry.add_component reg (module B);
+     Component_registry.add_component reg (module C);
      evaluate_in_registry ~eval:Component_registry.eval reg)
 
 let test_reverse_eval () =
@@ -76,10 +76,31 @@ let test_reverse_eval () =
          "results (return c), (return a), (return b)";
        ])
     (let reg = Component_registry.get () in
-     Component_registry.add_component reg (module A) >>= fun () ->
-     Component_registry.add_component reg (module B) >>= fun () ->
-     Component_registry.add_component reg (module C) >>= fun () ->
+     Component_registry.add_component reg (module A);
+     Component_registry.add_component reg (module B);
+     Component_registry.add_component reg (module C);
      evaluate_in_registry ~eval:Component_registry.reverse_eval reg)
+
+let test_validate_failure () =
+  let () = Queue.clear ops in
+  let () = Component_registry.Private.reset () in
+  Alcotest.(check (result unit string_starts_with))
+    "validate failure when dependency not addded"
+    (Result.error "[14b63c08]")
+    (let reg = Component_registry.get () in
+     Component_registry.add_component reg (module A);
+     Component_registry.validate reg)
+
+let test_validate_success () =
+  let () = Queue.clear ops in
+  let () = Component_registry.Private.reset () in
+  Alcotest.(check (result unit string_starts_with))
+    "validate success when all dependencies added" (Result.ok ())
+    (let reg = Component_registry.get () in
+     Component_registry.add_component reg (module A);
+     Component_registry.add_component reg (module B);
+     Component_registry.add_component reg (module C);
+     Component_registry.validate reg)
 
 let () =
   let open Alcotest in
@@ -89,5 +110,10 @@ let () =
         [
           test_case "eval" `Quick test_eval;
           test_case "reverse-eval" `Quick test_reverse_eval;
+        ] );
+      ( "validation",
+        [
+          test_case "validate-failure" `Quick test_validate_failure;
+          test_case "validate-success" `Quick test_validate_success;
         ] );
     ]

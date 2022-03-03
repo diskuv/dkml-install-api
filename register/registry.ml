@@ -24,12 +24,40 @@ let add_component reg cfg =
           Logs.debug (fun m ->
               m
                 "@[Adding component '%s' to the registry with dependencies:@]@ \
-                 @[%a@]@"
+                 @[%a@]"
                 Cfg.component_name
                 Fmt.(Dump.list string)
                 Cfg.depends_on);
           Hashtbl.add reg Cfg.component_name cfg)
   | Error s -> raise (Installation_error s)
+
+let validate reg =
+  let ( let* ) = Result.bind in
+  Hashtbl.to_seq_values reg |> List.of_seq
+  |> List.fold_left
+       (fun acc1 cfg ->
+         let* () = acc1 in
+         let module Cfg = (val cfg : Component_config) in
+         List.fold_left
+           (fun acc2 dependency ->
+             let* () = acc2 in
+             if Hashtbl.mem reg dependency then Result.ok ()
+             else
+               Result.error
+                 (Fmt.str
+                    "[14b63c08] The component '%s' declares a dependency on \
+                     '%s' but that dependency is not available as a plugin. \
+                     Check the following in order: 1) Has `dkml-component-%s` \
+                     been added as an Opam (or findlib) dependency? 2) Does \
+                     `dkml-component-%s` call [Registry.add_component] using \
+                     [component_name=%a]? 3) Is the PLUGIN_NAME in dune's \
+                     `(plugin (name PLUGIN_NAME) ...)` unique across all \
+                     plugin name and across all library names in the Opam \
+                     switch (or findlib path)?"
+                    Cfg.component_name dependency dependency dependency
+                    Fmt.Dump.string dependency))
+           (Result.ok ()) Cfg.depends_on)
+       (Result.ok ())
 
 let toposort reg =
   let vertex_map =

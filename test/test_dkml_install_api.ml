@@ -2,8 +2,8 @@ open Dkml_install_register
 open More_testables
 
 let test_add_once () =
-  Alcotest.(check (result unit string_starts_with))
-    "no errors" (Result.ok ())
+  Alcotest.(check unit)
+    "no errors" ()
     (let reg = Component_registry.get () in
      Component_registry.add_component reg
        (module struct
@@ -13,24 +13,27 @@ let test_add_once () =
        end))
 
 let test_add_twice () =
-  Alcotest.(check (result unit string_starts_with))
-    "fail to add same component name"
-    (Result.error "[debe504f]")
+  Alcotest.(check string_starts_with)
+    "fail to add same component name" "[debe504f]"
     (let reg = Component_registry.get () in
-     let ( >>= ) = Result.bind in
      Component_registry.add_component reg
        (module struct
          include Dkml_install_api.Default_component_config
 
          let component_name = "add-twice"
-       end)
-     >>= fun () ->
-     Component_registry.add_component reg
-       (module struct
-         include Dkml_install_api.Default_component_config
+       end);
+     let actual_error =
+       ref "expected the second add_component to raise an error"
+     in
+     (try
+        Component_registry.add_component reg
+          (module struct
+            include Dkml_install_api.Default_component_config
 
-         let component_name = "add-twice"
-       end))
+            let component_name = "add-twice"
+          end)
+      with Dkml_install_api.Installation_error msg -> actual_error := msg);
+     !actual_error)
 
 let () =
   let open Alcotest in

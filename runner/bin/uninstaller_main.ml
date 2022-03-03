@@ -14,19 +14,22 @@ open Runner.Error_handling.Monad_syntax
    https://ocaml.org/api/Dynlink.html#1_Accesscontrol "set_allowed_units" *)
 let (_ : string list) = Default_component_config.depends_on
 
-(* Load all the available components *)
-let () = Uninstaller_sites.Plugins.Plugins.load_all ()
-
-let reg = Component_registry.get ()
-
 (* Create command line options for dkml-install-{user,admin}-runner.exe *)
 
 let name_t =
   let doc = "The name of the program to uninstall" in
   Arg.(required & opt (some string) None & info [ "name" ] ~doc)
 
-(* Entry point of CLI *)
+(* Entry point of CLI.
+
+   Logging is configured just before this function is called through Cmdliner
+   Term evaluation of `log_config`. If you don't see log statement, make
+   sure the log statements are created inside (or after) `setup ...`. *)
 let setup log_config name prefix staging_files_source =
+  (* Load all the available components *)
+  Uninstaller_sites.Plugins.Plugins.load_all ();
+  let reg = Component_registry.get () in
+
   let args =
     Runner.Component_utils.common_runner_args ~log_config ~prefix
       ~staging_files_source
@@ -44,6 +47,8 @@ let setup log_config name prefix staging_files_source =
     else Result.ok ()
   in
   let install_sequence =
+    (* Validate *)
+    let* () = Component_registry.validate reg in
     (* Run user-runner.exe *)
     let* (_ : unit list) =
       Component_registry.eval reg ~f:(fun cfg ->

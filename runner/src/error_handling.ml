@@ -5,6 +5,10 @@ let () =
 
 let errors_are_immediate () = true
 
+let get_ok_or_raise_string = function
+  | Ok v -> v
+  | Error msg -> raise (Dkml_install_api.Installation_error msg)
+
 let catch_cmdliner_eval f default_on_err =
   try f ()
   with e ->

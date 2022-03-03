@@ -21,10 +21,18 @@ let default_cmd =
    https://ocaml.org/api/Dynlink.html#1_Accesscontrol "set_allowed_units" *)
 let (_ : string list) = Default_component_config.depends_on
 
+(* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
+   reset the logger to what was given on the command line. *)
+let (_ : Runner__Cmdliner_common.log_config) =
+  Runner.Cmdliner_runner.setup_log None None
+
 (* Load all the available components *)
 let () = Admin_sites.Plugins.Plugins.load_all ()
 
 let reg = Component_registry.get ()
+
+let () =
+  Runner.Error_handling.get_ok_or_raise_string (Component_registry.validate reg)
 
 (* Install all administrative CLI subcommands for all the components *)
 
