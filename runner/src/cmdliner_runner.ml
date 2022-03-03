@@ -33,10 +33,8 @@ let setup_log style_renderer level =
   Fmt_tty.setup_std_outputs ?style_renderer ();
   Logs.set_level level;
   Logs.set_reporter (Logs_fmt.reporter ());
-  {
-    Cmdliner_common.log_config_style_renderer = style_renderer;
-    log_config_level = level;
-  }
+  Dkml_install_api.Log_config.create ?log_config_style_renderer:style_renderer
+    ?log_config_level:level ()
 
 let setup_log_t =
   Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())
@@ -52,8 +50,7 @@ let staging_files_source ~opam_context ~staging_files_opt =
   | true, _ -> Path_eval.Opam_context
   | false, Some staging_files -> Staging_files_dir staging_files
 
-let create_context self_component_name reg
-    (_log_config : Cmdliner_common.log_config) prefix staging_files_opt
+let create_context self_component_name reg log_config prefix staging_files_opt
     opam_context =
   let open Path_eval in
   let staging_files_source =
@@ -76,6 +73,7 @@ let create_context self_component_name reg
     Dkml_install_api.Context.eval = Interpreter.eval interpreter;
     path_eval = Interpreter.path_eval interpreter;
     host_abi_v2;
+    log_config;
   }
 
 (* Cmdliner, at least in 1.0.4, has the pp_str treated as an escaped OCaml

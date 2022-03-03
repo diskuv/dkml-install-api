@@ -175,6 +175,8 @@ module type Component_config = sig
 end
 
 module type Intf = sig
+  (** {2 Configuration} *)
+
   module type Component_config_defaultable = Component_config_defaultable
   [@@inline]
   (** Component configuration values that can be supplied with defaults. *)
@@ -195,11 +197,13 @@ module type Intf = sig
     (** @inline *)
   end
 
-  (* {3 Error handling} *)
+  (** {2 Error handling} *)
 
   exception Installation_error of string
   (** Raise [Installation_error message] when your component has a terminal
     failure  *)
+
+  (** {2 Process execution} *)
 
   val log_spawn_and_raise : Bos.Cmd.t -> unit
   (** [log_spawn_and_raise cmd] logs the command [cmd] and runs it
@@ -211,4 +215,91 @@ module type Intf = sig
       backtraces. Any exiting environment variable ["OCAMLRUNPARAM"] will
       be kept, however. *)
 
+  (**
+  {2 Logging}
+
+  Logging follows the Cmdliner standards.
+
+  All dkml_install generated executables can be supplied with the following
+  options:
+
+  {v
+      --color=WHEN (absent=auto)
+          Colorize the output. WHEN must be one of `auto', `always' or
+          `never'.
+
+      -q, --quiet
+          Be quiet. Takes over -v and --verbosity.
+
+      -v, --verbose
+          Increase verbosity. Repeatable, but more than twice does not bring
+          more.
+
+      --verbosity=LEVEL (absent=warning)
+          Be more or less verbose. LEVEL must be one of `quiet', `error',
+          `warning', `info' or `debug'. Takes over -v.
+  v}
+
+  You can use {!Log_config} to pass the color and verbosity options into
+  your own bytecode executables.
+
+  Start by initializing the logger in your own executables with the
+  following [setup_log_t] Cmdliner Term:
+
+  {[
+    let setup_log style_renderer level =
+      Fmt_tty.setup_std_outputs ?style_renderer ();
+      Logs.set_level level;
+      Logs.set_reporter (Logs_fmt.reporter ());
+      Dkml_install_api.Log_config.create ?log_config_style_renderer:style_renderer
+        ?log_config_level:level ()
+
+    let setup_log_t =
+      Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())
+  ]}
+
+  Finally, with a {!Log_config.t} you can use {!Log_config.to_args} to pass the
+  correct command line options into your own executables.
+  For components that are configured to spawn bytecode programs
+  you can locate the {!Log_config.t} in the
+  {!Dkml_install_api.Context.log_config}
+  ([ctx.Dkml_install_api.Context.log_config])
+  context field. That could look like:
+
+  {[
+    let execute ctx =
+      let ocamlrun =
+        ctx.Context.path_eval "%{staging-ocamlrun:share}%/generic/bin/ocamlrun"
+      in
+      log_spawn_and_raise
+        Cmd.(
+          v (Fpath.to_string
+              (ctx.Context.path_eval "%{staging-ocamlrun:share}%/generic/bin/ocamlrun"))
+          % Fpath.to_string
+              (ctx.Context.path_eval "%{_:share}%/generic/your_bytecode.bc")
+          (* Pass --verbosity and --color to your bytecode *)
+          %% Log_config.to_args ctx.Context.log_config)
+
+    let () =
+      let reg = Component_registry.get () in
+      Component_registry.add_component reg
+        (module struct
+          include Default_component_config
+
+          let component_name = "enduser-yourcomponent"
+
+          let depends_on = [ "staging-ocamlrun" ]
+
+          let install_user_subcommand ~component_name:_ ~subcommand_name ~ctx_t =
+            let doc = "Install your component" in
+            Result.ok
+            @@ Cmdliner.Term.(const execute $ ctx_t, info subcommand_name ~doc)
+        end)
+  ]}
+
+  Others can use the {!Log_config.t} return value from [setup_log] when
+  calling {!Log_config.to_args}.
+  *)
+
+  module Log_config : module type of Log_config
 end

@@ -30,21 +30,11 @@ let absdir_static_files ~component_name = function
 
 let z s = "--" ^ s
 
-let common_runner_args
-    ~log_config:{ Cmdliner_common.log_config_style_renderer; log_config_level }
-    ~prefix ~staging_files_source =
+let common_runner_args ~log_config ~prefix ~staging_files_source =
   let open Os_utils in
-  let color =
-    match log_config_style_renderer with
-    | None -> "auto"
-    | Some `None -> "never"
-    | Some `Ansi_tty -> "always"
-  in
   let args =
     Cmd.(
-      empty
-      % ("--verbosity=" ^ Logs.level_to_string log_config_level)
-      % ("--color=" ^ color)
+      Log_config.to_args log_config
       % z Cmdliner_common.prefix_arg
       % normalize_path prefix)
   in

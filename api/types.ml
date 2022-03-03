@@ -42,10 +42,11 @@ module Context = struct
     path_eval : string -> Fpath.t;
     eval : string -> string;
     host_abi_v2 : Abi_v2.t;
+    log_config : Log_config.t;
   }
   (** [t] is the record type for the context.
 
-{1 Context Methods}
+{1 Context Fields}
 
 The following fields are available from the context today:
 
@@ -129,6 +130,12 @@ The following fields are available from the context today:
   * Linux_x86
   * Windows_x86_64
   * Windows_x86
+  }
+
+  {- [ctx.log_config]
+  
+  The logging configuration. See the Logging section of {!Dkml_install_api}
+  for how to use it.
   }
 }
 *)

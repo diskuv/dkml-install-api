@@ -1,7 +1,6 @@
 open Bos
 open Cmdliner
 module Context = Types.Context
-
 module type Component_config = Dkml_install_api_intf.Component_config
 
 module type Component_config_defaultable =
@@ -74,6 +73,10 @@ module Default_component_config = struct
     Result.ok cmd
 
   let test () = ()
+end
+
+module Log_config = struct
+  include Log_config
 end
 
 exception Installation_error of string
