@@ -6,11 +6,9 @@ module Global_context : sig
 
   val create :
     Dkml_install_register.Component_registry.t ->
-    staging_files_source:staging_files_source ->
     t
-  (** [create registry ~staging_files_source] creates a global context
-      for components in the [registry] with staging files coming from
-      [staging_files_source] *)
+  (** [create registry] creates a global context for components in the
+      [registry] *)
 end
 
 module Interpreter : sig

@@ -25,10 +25,14 @@ let name_t =
    Logging is configured just before this function is called through Cmdliner
    Term evaluation of `log_config`. If you don't see log statement, make
    sure the log statements are created inside (or after) `setup ...`. *)
-let setup log_config name prefix static_files_source staging_files_source =
+let setup log_config name prefix component_selector static_files_source
+    staging_files_source =
   (* Load all the available components *)
   Setup_sites.Plugins.Plugins.load_all ();
   let reg = Component_registry.get () in
+
+  (* Only install what was specified, if specified *)
+  let selector = to_selector component_selector in
 
   let args =
     Runner.Component_utils.common_runner_args ~log_config ~prefix
@@ -39,7 +43,7 @@ let setup log_config name prefix static_files_source staging_files_source =
 
   let prefix_fp = Runner.Os_utils.string_to_norm_fpath prefix in
   let spawn_admin_if_needed () =
-    if Runner.Component_utils.needs_install_admin reg then
+    if Runner.Component_utils.needs_install_admin reg selector then
       Runner.Component_utils.spawn
       @@ Runner.Component_utils.elevated_cmd
            Cmd.(
@@ -52,7 +56,7 @@ let setup log_config name prefix static_files_source staging_files_source =
     let* () = Component_registry.validate reg in
     (* Diagnostics *)
     let* (_ : unit list) =
-      Component_registry.eval reg ~f:(fun cfg ->
+      Component_registry.eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Result.ok
           @@ Logs.debug (fun m ->
@@ -62,7 +66,7 @@ let setup log_config name prefix static_files_source staging_files_source =
     let* () = spawn_admin_if_needed () in
     (* Copy <static>/<component> into <prefix>, if present *)
     let* (_ : unit list) =
-      Component_registry.eval reg ~f:(fun cfg ->
+      Component_registry.eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           let* static_dir_fp =
             map_msg_error_to_string @@ Fpath.of_string
@@ -80,7 +84,7 @@ let setup log_config name prefix static_files_source staging_files_source =
     in
     (* Run user-runner.exe *)
     let+ (_ : unit list) =
-      Component_registry.eval reg ~f:(fun cfg ->
+      Component_registry.eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Runner.Component_utils.spawn
             Cmd.(
@@ -101,6 +105,7 @@ let setup_cmd =
   let doc = "the OCaml installer" in
   ( Term.(
       const setup $ setup_log_t $ name_t $ prefix_t
+      $ component_selector_t ~install:true
       $ static_files_source_for_setup_and_uninstaller_t
       $ staging_files_source_for_setup_and_uninstaller_t),
     Term.info "dkml-install-setup" ~version:"%%VERSION%%" ~doc )

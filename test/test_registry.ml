@@ -45,7 +45,7 @@ let evaluate_in_registry ~eval reg =
     ops;
   Result.ok (Queue.to_seq ops |> List.of_seq)
 
-let test_eval () =
+let test_eval selector () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
   Alcotest.(check (result (list string) string_starts_with))
@@ -61,9 +61,9 @@ let test_eval () =
      Component_registry.add_component reg (module A);
      Component_registry.add_component reg (module B);
      Component_registry.add_component reg (module C);
-     evaluate_in_registry ~eval:Component_registry.eval reg)
+     evaluate_in_registry ~eval:(Component_registry.eval ~selector) reg)
 
-let test_reverse_eval () =
+let test_reverse_eval selector () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
   Alcotest.(check (result (list string) string_starts_with))
@@ -79,7 +79,7 @@ let test_reverse_eval () =
      Component_registry.add_component reg (module A);
      Component_registry.add_component reg (module B);
      Component_registry.add_component reg (module C);
-     evaluate_in_registry ~eval:Component_registry.reverse_eval reg)
+     evaluate_in_registry ~eval:(Component_registry.reverse_eval ~selector) reg)
 
 let test_validate_failure () =
   let () = Queue.clear ops in
@@ -106,10 +106,19 @@ let () =
   let open Alcotest in
   run "Registry"
     [
-      ( "dependency-order",
+      ( "dependency-order all",
         [
-          test_case "eval" `Quick test_eval;
-          test_case "reverse-eval" `Quick test_reverse_eval;
+          test_case "eval" `Quick (test_eval All_components);
+          test_case "reverse-eval" `Quick (test_reverse_eval All_components);
+        ] );
+      ( "dependency-order select c",
+        let selector =
+          Component_registry.Just_named_components_plus_their_dependencies
+            [ "c" ]
+        in
+        [
+          test_case "eval" `Quick (test_eval selector);
+          test_case "reverse-eval" `Quick (test_reverse_eval selector);
         ] );
       ( "validation",
         [

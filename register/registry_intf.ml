@@ -2,6 +2,12 @@ module type Intf = sig
   type t
   (** The type of the component registry *)
 
+  (** The type of the component selector. Either all components,
+      or just the specified components plus all of their dependencies. *)
+  type component_selector =
+    | All_components
+    | Just_named_components_plus_their_dependencies of string list
+
   val get : unit -> t
   (** Get a reference to the global component registry *)
 
@@ -14,6 +20,7 @@ module type Intf = sig
 
   val eval :
     t ->
+    selector:component_selector ->
     f:((module Dkml_install_api.Component_config) -> ('a, string) result) ->
     ('a list, string) result
   (** [eval registry ~f] iterates through the registry in dependency order,
@@ -22,6 +29,7 @@ module type Intf = sig
 
   val reverse_eval :
     t ->
+    selector:component_selector ->
     f:((module Dkml_install_api.Component_config) -> ('a, string) result) ->
     ('a list, string) result
   (** [reverse_eval registry ~f] iterates through the registry in reverse

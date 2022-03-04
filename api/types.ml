@@ -58,7 +58,7 @@ The following fields are available from the context today:
   expression will convert the path into native Windows (ex. C:\Program Files)
   or Unix format (ex. /usr/local/share).
 
-  An example expression is ["%{ocamlrun:share}/bin/ocamlrun.exe"]
+  An example expression is ["%{ocamlrun:share}/generic/bin/ocamlrun"]
   which would be the location of ocamlrun.exe within the staging files directory.
 
   Templates:
@@ -71,9 +71,12 @@ The following fields are available from the context today:
   component that is currently being installed. No other component will use the
   same temporary directory.
   - ["%{_:share}"] and ["%{COMPONENT_NAME:share}"] are the absolute path within
-  the staging directory of the currently-being-installed and the named component.
-  Usually the staging files include a bytecode
-  executable to run a component's installation logic.
+  the staging directory of the currently-being-installed and the named
+  component, respectively.
+  {e {b Only COMPONENT_NAMEs that are transitive dependencies
+  of the currently-being-installed component will be resolved.}}
+  Usually the staging files include a bytecode executable to run a component's
+  installation logic.
 
   Variations:
 

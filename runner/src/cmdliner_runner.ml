@@ -56,7 +56,7 @@ let create_context self_component_name reg log_config prefix staging_files_opt
   let staging_files_source =
     staging_files_source ~opam_context ~staging_files_opt
   in
-  let global_context = Global_context.create reg ~staging_files_source in
+  let global_context = Global_context.create reg in
   let interpreter =
     Interpreter.create global_context ~self_component_name ~staging_files_source
       ~prefix
@@ -177,6 +177,24 @@ let ctx_t component_name reg =
   Term.(
     const create_context $ const component_name $ const reg $ setup_log_t
     $ prefix_t $ staging_files_opt_t $ opam_context_t)
+
+let to_selector component_selector =
+  if component_selector = [] then
+    Dkml_install_register.Component_registry.All_components
+  else Just_named_components_plus_their_dependencies component_selector
+
+let component_selector_t ~install =
+  let doc =
+    if install then
+      "A component to install; all the components it depends on are implicitly \
+       added. May be repeated. If no components are specified, then all \
+       components are installed."
+    else
+      "A component to uninstall; all the components it depends on are \
+       implicitly added. May be repeated. If no components are specified, then \
+       all components are uninstalled."
+  in
+  Arg.(value & opt_all string [] & info [ "component" ] ~doc)
 
 (* Commands *)
 

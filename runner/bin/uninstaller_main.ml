@@ -25,10 +25,13 @@ let name_t =
    Logging is configured just before this function is called through Cmdliner
    Term evaluation of `log_config`. If you don't see log statement, make
    sure the log statements are created inside (or after) `setup ...`. *)
-let setup log_config name prefix staging_files_source =
+let uninstall log_config name prefix component_selector staging_files_source =
   (* Load all the available components *)
   Uninstaller_sites.Plugins.Plugins.load_all ();
   let reg = Component_registry.get () in
+
+  (* Only uninstall what was specified, if specified *)
+  let selector = to_selector component_selector in
 
   let args =
     Runner.Component_utils.common_runner_args ~log_config ~prefix
@@ -38,7 +41,7 @@ let setup log_config name prefix staging_files_source =
   let exe_cmd s = Cmd.v Fpath.(to_string @@ (archive_dir_for_setup / s)) in
 
   let spawn_admin_if_needed () =
-    if Runner.Component_utils.needs_install_admin reg then
+    if Runner.Component_utils.needs_install_admin reg selector then
       Runner.Component_utils.spawn
       @@ Runner.Component_utils.elevated_cmd
            Cmd.(
@@ -51,7 +54,7 @@ let setup log_config name prefix staging_files_source =
     let* () = Component_registry.validate reg in
     (* Run user-runner.exe *)
     let* (_ : unit list) =
-      Component_registry.eval reg ~f:(fun cfg ->
+      Component_registry.eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Runner.Component_utils.spawn
             Cmd.(
@@ -72,7 +75,8 @@ let setup log_config name prefix staging_files_source =
 let uninstall_cmd =
   let doc = "the OCaml uninstaller" in
   ( Term.(
-      const setup $ setup_log_t $ name_t $ prefix_t
+      const uninstall $ setup_log_t $ name_t $ prefix_t
+      $ component_selector_t ~install:false
       $ staging_files_source_for_setup_and_uninstaller_t),
     Term.info "dkml-install-uninstaller" ~version:"%%VERSION%%" ~doc )
 

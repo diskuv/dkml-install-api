@@ -12,49 +12,25 @@ module Global_context = struct
     global_vars : (string * string) list;
     global_pathonly_vars : (string * string) list;
     default_tmp_dir : Fpath.t;
+    reg : Component_registry.t;
   }
 
-  (** [absdir_staging_files ~component_name staging_files_source] is
-    the [component_name] component's staging-files directory *)
-  let absdir_staging_files ~component_name = function
-    | Opam_context ->
-        Os_utils.absdir_install_files ~component_name Staging Opam_context
-    | Staging_files_dir staging_files ->
-        Os_utils.absdir_install_files ~component_name Staging
-          (Install_files_dir staging_files)
-
-  let create reg ~staging_files_source =
-    let component_vars_res =
-      Component_registry.eval reg ~f:(fun cfg ->
+  let create reg =
+    let all_component_vars_res =
+      Component_registry.eval reg ~selector:All_components ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
-          Result.ok
-            ( Cfg.component_name,
-              Cfg.component_name ^ ":share",
-              absdir_staging_files ~component_name:Cfg.component_name
-                staging_files_source ))
-    in
-    let share_vars =
-      match component_vars_res with
-      | Ok var_list ->
-          List.map
-            (fun (_componentname, varname, varvalue) -> (varname, varvalue))
-            var_list
-      | Error err -> failwith err
+          Result.ok Cfg.component_name)
     in
     let all_components_var =
-      match component_vars_res with
-      | Ok var_list ->
-          ( "components:all",
-            String.concat ~sep:" "
-            @@ List.map
-                 (fun (componentname, _varname, _varvalue) -> componentname)
-                 var_list )
-      | Error err -> failwith err
+      match all_component_vars_res with
+      | Ok var_list -> ("components:all", String.concat ~sep:" " var_list)
+      | Error err -> raise (Installation_error err)
     in
     {
-      global_vars = [ all_components_var ] @ share_vars;
-      global_pathonly_vars = share_vars;
+      global_vars = [ all_components_var ];
+      global_pathonly_vars = [];
       default_tmp_dir = OS.Dir.default_tmp ();
+      reg;
     }
 
   let global_pathonly_vars { global_pathonly_vars; _ } = global_pathonly_vars
@@ -71,6 +47,15 @@ module Interpreter = struct
     all_pathonly_vars : (string * string) list;
   }
 
+  (** [absdir_staging_files ~component_name staging_files_source] is
+    the [component_name] component's staging-files directory *)
+  let absdir_staging_files ~component_name = function
+    | Opam_context ->
+        Os_utils.absdir_install_files ~component_name Staging Opam_context
+    | Staging_files_dir staging_files ->
+        Os_utils.absdir_install_files ~component_name Staging
+          (Install_files_dir staging_files)
+
   let create global_ctx ~self_component_name ~staging_files_source ~prefix =
     let name_var = ("name", self_component_name) in
     let temp_var =
@@ -81,15 +66,40 @@ module Interpreter = struct
     let prefix_var = ("prefix", normalize_path prefix) in
     let current_share_var =
       ( "_:share",
-        Global_context.absdir_staging_files ~component_name:self_component_name
+        absdir_staging_files ~component_name:self_component_name
           staging_files_source )
     in
     let local_vars = [ name_var; temp_var; prefix_var; current_share_var ] in
+
+    (* Only the self component plus its dependencies will be interpreted *)
+    let self_selector =
+      Component_registry.Just_named_components_plus_their_dependencies
+        [ self_component_name ]
+    in
+    let self_component_vars_res =
+      Component_registry.eval global_ctx.reg ~selector:self_selector
+        ~f:(fun cfg ->
+          let module Cfg = (val cfg : Component_config) in
+          Result.ok
+            ( Cfg.component_name ^ ":share",
+              absdir_staging_files ~component_name:Cfg.component_name
+                staging_files_source ))
+    in
+    let self_share_vars =
+      Error_handling.get_ok_or_raise_string self_component_vars_res
+    in
+
     let all_vars =
-      List.concat [ Global_context.global_vars global_ctx; local_vars ]
+      List.concat
+        [ Global_context.global_vars global_ctx; local_vars; self_share_vars ]
     in
     let all_pathonly_vars =
-      List.concat [ Global_context.global_pathonly_vars global_ctx; local_vars ]
+      List.concat
+        [
+          Global_context.global_pathonly_vars global_ctx;
+          local_vars;
+          self_share_vars;
+        ]
     in
     { all_vars; all_pathonly_vars }
 
@@ -115,24 +125,30 @@ let mock_default_tmp_dir = OS.Dir.default_tmp ()
 let mock_staging_files_sources = Staging_files_dir "/test/staging-files"
 
 let mock_global_ctx =
-  let global_pathonly_vars =
+  {
+    Global_context.global_pathonly_vars = [];
+    global_vars = [ ("components:all", "ocamlrun component_under_test") ];
+    default_tmp_dir = mock_default_tmp_dir;
+    reg = Component_registry.get ();
+  }
+
+let interpreter () =
+  let orig =
+    Interpreter.create mock_global_ctx
+      ~self_component_name:"component_under_test"
+      ~staging_files_source:mock_staging_files_sources ~prefix:"/test/prefix"
+  in
+  let extra_pathonly_vars =
     [
       ( "ocamlrun:share",
-        Global_context.absdir_staging_files ~component_name:"ocamlrun"
+        Interpreter.absdir_staging_files ~component_name:"ocamlrun"
           mock_staging_files_sources );
     ]
   in
   {
-    Global_context.global_pathonly_vars;
-    global_vars =
-      [ ("components:all", "ocamlrun component_under_test") ]
-      @ global_pathonly_vars;
-    default_tmp_dir = mock_default_tmp_dir;
+    Interpreter.all_vars = orig.all_vars @ extra_pathonly_vars;
+    all_pathonly_vars = orig.all_pathonly_vars @ extra_pathonly_vars;
   }
-
-let interpreter () =
-  Interpreter.create mock_global_ctx ~self_component_name:"component_under_test"
-    ~staging_files_source:mock_staging_files_sources ~prefix:"/test/prefix"
 
 let%test "%{components:all}% are all the available components" =
   let r = Interpreter.eval (interpreter ()) "%{components:all}%" in

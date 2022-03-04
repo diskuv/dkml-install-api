@@ -6,10 +6,10 @@ open Error_handling.Monad_syntax
 type static_files_source = Opam_context_static | Static_files_dir of string
 
 (* Check all components to see if _any_ needs admin *)
-let needs_install_admin reg =
+let needs_install_admin reg selector =
   let at_least_one_component_needs_admin =
     let* needs_install_admin =
-      Component_registry.eval reg ~f:(fun cfg ->
+      Component_registry.eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Result.ok @@ Cfg.needs_install_admin ())
     in

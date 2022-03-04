@@ -11,6 +11,7 @@ let string_to_norm_fpath str =
     Windows path with backslashes. *)
 let normalize_path str = Fpath.(to_string (string_to_norm_fpath str))
 
+(* TODO: Place in separate installutils library (not API) *)
 let copy_dir src dst =
   let raise_fold_error fpath result =
     Rresult.R.error_msgf

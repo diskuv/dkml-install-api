@@ -33,11 +33,15 @@ let reg = Component_registry.get ()
 let () =
   Runner.Error_handling.get_ok_or_raise_string (Component_registry.validate reg)
 
-(* Install all administrative CLI subcommands for all the components *)
+(** {1 Setup}
 
-let install_admin_cmds =
+  Install all non-administrative CLI subcommands for all the components.
+  Even though all CLI subcommands are registered, setup.exe (setup_main) will
+  only ask for some of the components if the --component option is used. *)
+
+let install_admin_cmds ~selector =
   let cmd_results =
-    Component_registry.eval reg ~f:(fun cfg ->
+    Component_registry.eval reg ~selector ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         Cfg.install_admin_subcommand ~component_name:Cfg.component_name
           ~subcommand_name:(Fmt.str "install-admin-%s" Cfg.component_name)
@@ -47,9 +51,9 @@ let install_admin_cmds =
   | Ok cmds -> cmds
   | Error msg -> raise (Installation_error msg)
 
-let uninstall_admin_cmds =
+let uninstall_admin_cmds ~selector =
   let cmd_results =
-    Component_registry.reverse_eval reg ~f:(fun cfg ->
+    Component_registry.reverse_eval reg ~selector ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         Cfg.uninstall_admin_subcommand ~component_name:Cfg.component_name
           ~subcommand_name:(Fmt.str "uninstall-admin-%s" Cfg.component_name)
@@ -83,16 +87,22 @@ let run_terms acc (term_t, term_info) =
 
 let install_all_cmd =
   let doc = "install all components" in
-  let runall () = List.fold_left run_terms (`Ok ()) install_admin_cmds in
+  let runall selector =
+    List.fold_left run_terms (`Ok ())
+      (install_admin_cmds ~selector:(to_selector selector))
+  in
   Term.
-    ( ret (const runall $ const ()),
+    ( ret (const runall $ component_selector_t ~install:true),
       info "install-adminall" ~version:"%%VERSION%%" ~doc )
 
 let uninstall_all_cmd =
   let doc = "uninstall all components" in
-  let runall () = List.fold_left run_terms (`Ok ()) uninstall_admin_cmds in
+  let runall selector =
+    List.fold_left run_terms (`Ok ())
+      (uninstall_admin_cmds ~selector:(to_selector selector))
+  in
   Term.
-    ( ret (const runall $ const ()),
+    ( ret (const runall $ component_selector_t ~install:false),
       info "uninstall-adminall" ~version:"%%VERSION%%" ~doc )
 
 let () =
@@ -100,8 +110,13 @@ let () =
     exit
     @@ catch_cmdliner_eval
          (fun () ->
+          (*  [install_all_cmd] and [uninstall_all_cmd] will only use
+              CLI specified components. [install_admin_cmds] and
+              [uninstall_admin_cmds] will use _all_ components, which means
+              any individual component can be installed and uninstalled
+              by invoking the individual subcommand. *)
            eval_choice ~catch:false default_cmd
              (help_cmd :: install_all_cmd :: uninstall_all_cmd
-              :: install_admin_cmds
-             @ uninstall_admin_cmds))
+              :: install_admin_cmds ~selector:All_components
+             @ uninstall_admin_cmds ~selector:All_components))
          (`Error `Exn))

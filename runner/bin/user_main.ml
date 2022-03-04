@@ -34,18 +34,21 @@ let reg = Component_registry.get ()
 let () =
   Runner.Error_handling.get_ok_or_raise_string (Component_registry.validate reg)
 
-(* Install all non-administrative CLI subcommands for all the components *)
+(** Install all non-administrative CLI subcommands for all the components.
+  Even though all CLI subcommands are registered, setup.exe (setup_main) will
+  only ask for some of the components if the --component option is used. *)
 let component_cmds =
+  let selector = Component_registry.All_components in
   let cmd_results =
     let* install_user_cmds =
-      Component_registry.eval reg ~f:(fun cfg ->
+      Component_registry.eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Cfg.install_user_subcommand ~component_name:Cfg.component_name
             ~subcommand_name:(Fmt.str "install-user-%s" Cfg.component_name)
             ~ctx_t:(ctx_t Cfg.component_name reg))
     in
     let* uninstall_user_cmds =
-      Component_registry.reverse_eval reg ~f:(fun cfg ->
+      Component_registry.reverse_eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Cfg.uninstall_user_subcommand ~component_name:Cfg.component_name
             ~subcommand_name:(Fmt.str "uninstall-user-%s" Cfg.component_name)
