@@ -27,7 +27,7 @@ let name_t =
    sure the log statements are created inside (or after) `setup ...`. *)
 let setup log_config name prefix component_selector static_files_source
     staging_files_source =
-  (* Load all the available components *)
+  (* Load all the available components. Logging has already been setup. *)
   Setup_sites.Plugins.Plugins.load_all ();
   let reg = Component_registry.get () in
 
@@ -43,7 +43,10 @@ let setup log_config name prefix component_selector static_files_source
 
   let prefix_fp = Runner.Os_utils.string_to_norm_fpath prefix in
   let spawn_admin_if_needed () =
-    if Runner.Component_utils.needs_install_admin reg selector then
+    if
+      Runner.Component_utils.needs_install_admin ~reg ~selector ~log_config
+        ~prefix ~staging_files_source
+    then
       Runner.Component_utils.spawn
       @@ Runner.Component_utils.elevated_cmd
            Cmd.(

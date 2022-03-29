@@ -1,6 +1,7 @@
 open Bos
 open Cmdliner
 module Context = Types.Context
+
 module type Component_config = Dkml_install_api_intf.Component_config
 
 module type Component_config_defaultable =
@@ -42,9 +43,9 @@ module Default_component_config = struct
     in
     Result.ok cmd
 
-  let needs_install_admin () = false
+  let needs_install_admin ~ctx:(_ : Context.t) = false
 
-  let needs_uninstall_admin () = false
+  let needs_uninstall_admin ~ctx:(_ : Context.t) = false
 
   let install_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
     let doc =

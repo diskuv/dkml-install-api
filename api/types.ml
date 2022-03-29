@@ -67,7 +67,7 @@ module Context = struct
 
 {1 Context Fields}
 
-The following fields are available from the context today:
+The following fields are available from the context:
 
 {ul
   {- [ctx.path_eval "/some/path/expression"]
@@ -85,17 +85,20 @@ The following fields are available from the context today:
   - ["%{prefix}"] is the absolute path of the final installation directory. If you
   are following {{:https://www.gnu.org/prep/standards/html_node/Directory-Variables.html} GNU directory standards},
   you should populate ["%{prefix}"] with subdirectories "bin/", "share/", etc.
-  - ["%{name}"] is the name of the component currently being installed
   - ["%{tmp}"] is the absolute path to a temporary directory unique to the
   component that is currently being installed. No other component will use the
   same temporary directory.
-  - ["%{_:share}"] and ["%{COMPONENT_NAME:share}"] are the absolute path within
-  the staging directory of the currently-being-installed and the named
-  component, respectively.
-  {e {b Only COMPONENT_NAMEs that are transitive dependencies
-  of the currently-being-installed component will be resolved.}}
-  Usually the staging files include a bytecode executable to run a component's
-  installation logic.
+  - ["%{_:share}"] is the absolute path within the staging directory of the
+  component currently being installed.
+
+  More templates available to all [ctx] except [needs_admin ctx]:
+
+  - ["%{COMPONENT_NAME:share}"] is the absolute path within
+    the staging directory of the named component, respectively.
+    Usually the staging files include a bytecode executable to run a component's
+    installation logic.
+    {e {b Only COMPONENT_NAMEs that are transitive dependencies
+    of the currently-being-installed component will be resolved.}}
 
   Variations:
 
@@ -124,6 +127,7 @@ The following fields are available from the context today:
 
   Templates available to [eval] but not in [path_eval]:
 
+  - ["%{name}"] is the name of the component currently being installed
   - ["%{components:all}"] is the space separated names of the components that are
   or will be installed
   }

@@ -41,20 +41,11 @@ let setup_log_t =
 
 (* Define a context that includes all component-based fields *)
 
-let staging_files_source ~opam_context ~staging_files_opt =
-  match (opam_context, staging_files_opt) with
-  | false, None ->
-      raise
-        (Dkml_install_api.Installation_error
-           "Either `--opam-context` or `--staging-files DIR` must be specified")
-  | true, _ -> Path_eval.Opam_context
-  | false, Some staging_files -> Staging_files_dir staging_files
-
 let create_context self_component_name reg log_config prefix staging_files_opt
     opam_context =
   let open Path_eval in
   let staging_files_source =
-    staging_files_source ~opam_context ~staging_files_opt
+    Component_utils.staging_files_source ~opam_context ~staging_files_opt
   in
   let global_context = Global_context.create reg in
   let interpreter =
@@ -156,7 +147,8 @@ let staging_files_source_for_setup_and_uninstaller_t =
   (* The Opam context staging file directory takes priority over
      any staging_files from the command line. *)
   let _staging_files_source opam_context staging_files =
-    staging_files_source ~opam_context ~staging_files_opt:(Some staging_files)
+    Component_utils.staging_files_source ~opam_context
+      ~staging_files_opt:(Some staging_files)
   in
   Term.(
     const _staging_files_source
@@ -171,8 +163,9 @@ let static_files_source_for_setup_and_uninstaller_t =
     const static_files_source $ opam_context_t
     $ static_files_for_setup_and_uninstaller_t)
 
-(** [ctx_t component] creates a [Term] for [component] that sets up logging
-    and any other global state, and defines the context record *)
+(** [ctx_t component_name reg] creates a [Term] for component [component_name]
+    that sets up logging and any other global state, and defines the context
+    record *)
 let ctx_t component_name reg =
   Term.(
     const create_context $ const component_name $ const reg $ setup_log_t

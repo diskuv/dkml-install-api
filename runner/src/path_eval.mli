@@ -4,9 +4,7 @@ module Global_context : sig
   type t
   (** the type of the global context *)
 
-  val create :
-    Dkml_install_register.Component_registry.t ->
-    t
+  val create : Dkml_install_register.Component_registry.t -> t
   (** [create registry] creates a global context for components in the
       [registry] *)
 end
@@ -20,11 +18,22 @@ module Interpreter : sig
     staging_files_source:staging_files_source ->
     prefix:string ->
     t
-  (** [create global_ctx ~self_component_name ~prefix] creates an interpreter
+  (** [create global_ctx ~self_component_name ~staging_files_source ~prefix]
+      creates an interpreter
       for the component [self_component_name] for installations into
       the [prefix] directory. 
         
       [global_ctx] is the global context from {!Global_context.create}. *)
+
+  val create_minimal :
+    self_component_name:string ->
+    staging_files_source:staging_files_source ->
+    prefix:string ->
+    t
+  (** [create_minimal ~self_component_name ~staging_files_source ~prefix]
+      creates a "minimal" interpreter with only one [self_component_name]
+      component. The interpreter also has access to non-component
+      specific variables. *)
 
   val eval : t -> string -> string
   (** [eval interpreter expression] uses the [interpreter] to expand the [expression] *)

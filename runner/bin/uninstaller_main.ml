@@ -41,7 +41,10 @@ let uninstall log_config name prefix component_selector staging_files_source =
   let exe_cmd s = Cmd.v Fpath.(to_string @@ (archive_dir_for_setup / s)) in
 
   let spawn_admin_if_needed () =
-    if Runner.Component_utils.needs_install_admin reg selector then
+    if
+      Runner.Component_utils.needs_uninstall_admin ~reg ~selector ~log_config
+        ~prefix ~staging_files_source
+    then
       Runner.Component_utils.spawn
       @@ Runner.Component_utils.elevated_cmd
            Cmd.(

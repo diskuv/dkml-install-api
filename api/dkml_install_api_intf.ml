@@ -79,13 +79,19 @@ module type Component_config_defaultable = sig
       Your [Term.t] function ([uninstall_user_subcommand ctx]) should raise
       {!Installation_error} for any unrecoverable failures. *)
 
-  val needs_install_admin : unit -> bool
-  (** [needs_install_admin] should inspect the environment and say [true] if and only
-      if the [install_admin_subcommand] is necessary *)
+  val needs_install_admin : ctx:Types.Context.t -> bool
+  (** [needs_install_admin ~ctx] should inspect the environment and say [true]
+      if and only if the [install_admin_subcommand] is necessary.
+        
+      [ctx] will be a minimal context that does not have access to other
+      components. *)
 
-  val needs_uninstall_admin : unit -> bool
-  (** [needs_uninstall_admin] should inspect the environment and say [true] if and only
-      if the [install_admin_subcommand] is necessary *)
+  val needs_uninstall_admin : ctx:Types.Context.t -> bool
+  (** [needs_uninstall_admin] should inspect the environment and say [true]
+      if and only if the [install_admin_subcommand] is necessary.
+        
+      [ctx] will be a minimal context that does not have access to other
+      components. *)
 
   val install_admin_subcommand :
     component_name:string ->

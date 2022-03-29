@@ -56,6 +56,24 @@ module Interpreter = struct
         Os_utils.absdir_install_files ~component_name Staging
           (Install_files_dir staging_files)
 
+  let create_minimal ~self_component_name ~staging_files_source ~prefix =
+    let name_var = ("name", self_component_name) in
+    let temp_var =
+      ( "tmp",
+        Fpath.to_string @@ Rresult.R.error_msg_to_invalid_arg
+        @@ OS.Dir.tmp "path_eval_%s" )
+    in
+    let prefix_var = ("prefix", normalize_path prefix) in
+    let current_share_var =
+      ( "_:share",
+        absdir_staging_files ~component_name:self_component_name
+          staging_files_source )
+    in
+    let local_pathonly_vars = [ temp_var; prefix_var; current_share_var ] in
+    let local_vars = [ name_var ] @ local_pathonly_vars in
+
+    { all_vars = local_vars; all_pathonly_vars = local_pathonly_vars }
+
   let create global_ctx ~self_component_name ~staging_files_source ~prefix =
     let name_var = ("name", self_component_name) in
     let temp_var =
@@ -69,7 +87,8 @@ module Interpreter = struct
         absdir_staging_files ~component_name:self_component_name
           staging_files_source )
     in
-    let local_vars = [ name_var; temp_var; prefix_var; current_share_var ] in
+    let local_pathonly_vars = [ temp_var; prefix_var; current_share_var ] in
+    let local_vars = [ name_var ] @ local_pathonly_vars in
 
     (* Only the self component plus its dependencies will be interpreted *)
     let self_selector =
@@ -97,7 +116,7 @@ module Interpreter = struct
       List.concat
         [
           Global_context.global_pathonly_vars global_ctx;
-          local_vars;
+          local_pathonly_vars;
           self_share_vars;
         ]
     in

@@ -6,17 +6,81 @@ open Error_handling.Monad_syntax
 type static_files_source = Opam_context_static | Static_files_dir of string
 
 (* Check all components to see if _any_ needs admin *)
-let needs_install_admin reg selector =
-  let at_least_one_component_needs_admin =
-    let* needs_install_admin =
-      Component_registry.eval reg ~selector ~f:(fun cfg ->
-          let module Cfg = (val cfg : Component_config) in
-          Result.ok @@ Cfg.needs_install_admin ())
-    in
-    Result.ok (List.exists Fun.id needs_install_admin)
+
+let staging_files_source ~opam_context ~staging_files_opt =
+  match (opam_context, staging_files_opt) with
+  | false, None ->
+      raise
+        (Dkml_install_api.Installation_error
+           "Either `--opam-context` or `--staging-files DIR` must be specified")
+  | true, _ -> Path_eval.Opam_context
+  | false, Some staging_files -> Staging_files_dir staging_files
+
+let create_minimal_context ~self_component_name ~log_config ~prefix
+    ~staging_files_source =
+  let open Path_eval in
+  let interpreter =
+    Interpreter.create_minimal ~self_component_name ~staging_files_source
+      ~prefix
   in
-  match at_least_one_component_needs_admin with
-  | Ok v -> v
+  let host_abi_v2 =
+    match Host_abi.create_v2 () with
+    | Ok abi -> abi
+    | Error s ->
+        raise
+          (Dkml_install_api.Installation_error
+             (Fmt.str "Could not detect the host ABI. %s" s))
+  in
+  {
+    Dkml_install_api.Context.eval = Interpreter.eval interpreter;
+    path_eval = Interpreter.path_eval interpreter;
+    host_abi_v2;
+    log_config;
+  }
+
+let needs_install_admin ~reg ~selector ~log_config ~prefix ~staging_files_source
+    =
+  match
+    Component_registry.eval reg ~selector ~f:(fun cfg ->
+        let module Cfg = (val cfg : Component_config) in
+        let ctx =
+          create_minimal_context ~self_component_name:Cfg.component_name
+            ~log_config ~prefix ~staging_files_source
+        in
+        Logs.debug (fun l ->
+            l
+              "Checking if we need to request administrator privileges for %s \
+               ..."
+              Cfg.component_name);
+        let ret = Cfg.needs_install_admin ~ctx in
+        Logs.debug (fun l ->
+            l "Administrator required to install %s? %b" Cfg.component_name ret);
+        Result.ok ret)
+  with
+  | Ok bools -> List.exists Fun.id bools
+  | Error msg -> raise (Installation_error msg)
+
+let needs_uninstall_admin ~reg ~selector ~log_config ~prefix
+    ~staging_files_source =
+  match
+    Component_registry.eval reg ~selector ~f:(fun cfg ->
+        let module Cfg = (val cfg : Component_config) in
+        let ctx =
+          create_minimal_context ~self_component_name:Cfg.component_name
+            ~log_config ~prefix ~staging_files_source
+        in
+        Logs.debug (fun l ->
+            l
+              "Checking if we need to request administrator privileges for %s \
+               ..."
+              Cfg.component_name);
+        let ret = Cfg.needs_uninstall_admin ~ctx in
+        Logs.debug (fun l ->
+            l "Administrator required to uninstall %s? %b" Cfg.component_name
+              ret);
+        Result.ok ret)
+  with
+  | Ok bools -> List.exists Fun.id bools
   | Error msg -> raise (Installation_error msg)
 
 (** [absdir_static_files ~component_name static_files_source] is
