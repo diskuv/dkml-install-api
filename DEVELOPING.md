@@ -29,4 +29,13 @@ Z:\source\...kernel> with-dkml dune build vendor/diskuv-ocaml/vendor/dkml-compon
 Z:\source\dkml-install-api> with-dkml dune build
 Z:\source\dkml-install-api> with-dkml ALCOTEST_VERBOSE=1 dune runtest
 
+
+
+
+Z:\source\dkml-component-ocamlcompiler> with-dkml opam pin add dkml-component-network-ocamlcompiler
+Z:\source\dkml-component-ocamlcompiler> with-dkml opam upgrade dkml-component-network-ocamlcompiler
+
+
+# As admin
+Z:\source\dkml-install-api\_opam\bin\dkml-install-admin-runner.exe install-admin-network-ocamlcompiler --opam-context --prefix Z:\temp\prefix -v
 ```

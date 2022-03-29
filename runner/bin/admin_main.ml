@@ -87,22 +87,22 @@ let run_terms acc (term_t, term_info) =
 
 let install_all_cmd =
   let doc = "install all components" in
-  let runall selector =
+  let runall (_ : Log_config.t) selector =
     List.fold_left run_terms (`Ok ())
       (install_admin_cmds ~selector:(to_selector selector))
   in
   Term.
-    ( ret (const runall $ component_selector_t ~install:true),
+    ( ret (const runall $ setup_log_t $ component_selector_t ~install:true),
       info "install-adminall" ~version:"%%VERSION%%" ~doc )
 
 let uninstall_all_cmd =
   let doc = "uninstall all components" in
-  let runall selector =
+  let runall (_ : Log_config.t) selector =
     List.fold_left run_terms (`Ok ())
       (uninstall_admin_cmds ~selector:(to_selector selector))
   in
   Term.
-    ( ret (const runall $ component_selector_t ~install:false),
+    ( ret (const runall $ setup_log_t $ component_selector_t ~install:false),
       info "uninstall-adminall" ~version:"%%VERSION%%" ~doc )
 
 let () =
@@ -110,7 +110,7 @@ let () =
     exit
     @@ catch_cmdliner_eval
          (fun () ->
-          (*  [install_all_cmd] and [uninstall_all_cmd] will only use
+           (* [install_all_cmd] and [uninstall_all_cmd] will only use
               CLI specified components. [install_admin_cmds] and
               [uninstall_admin_cmds] will use _all_ components, which means
               any individual component can be installed and uninstalled

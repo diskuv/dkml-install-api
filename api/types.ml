@@ -36,6 +36,25 @@ module Context = struct
       | "Windows_arm64" -> Result.ok Windows_arm64
       | "Windows_arm32" -> Result.ok Windows_arm32
       | s -> Result.error ("Unknown v2 ABI: " ^ s)
+
+    (** [to_canonical_string abi] will give the canonical representation of
+        the ABI to DKML tools and APIs. *)
+    let to_canonical_string = function
+      | Android_arm64v8a -> "android_arm64v8a"
+      | Android_arm32v7a -> "android_arm32v7a"
+      | Android_x86 -> "android_x86"
+      | Android_x86_64 -> "android_x86_64"
+      | Darwin_arm64 -> "darwin_arm64"
+      | Darwin_x86_64 -> "darwin_x86_64"
+      | Linux_arm64 -> "linux_arm64"
+      | Linux_arm32v6 -> "linux_arm32v6"
+      | Linux_arm32v7 -> "linux_arm32v7"
+      | Linux_x86_64 -> "linux_x86_64"
+      | Linux_x86 -> "linux_x86"
+      | Windows_x86_64 -> "windows_x86_64"
+      | Windows_x86 -> "windows_x86"
+      | Windows_arm64 -> "windows_arm64"
+      | Windows_arm32 -> "windows_arm32"
   end
 
   type t = {
