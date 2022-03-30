@@ -132,9 +132,13 @@ let spawn cmd =
 
 let elevated_cmd cmd =
   if Sys.win32 then
-    (* dkml-install-admin-exe on Win32 has a UAC manifest injected
-       by link.exe in dune *)
-    cmd
+    (* dkml-install-admin.exe on Win32 has a UAC manifest injected
+       by link.exe in dune. But still will get
+       "The requested operation requires elevation" if dkml-install-admin.exe
+       is spawned from another process rather than directly from
+       Command Prompt or PowerShell.
+       So use `start` *)
+    Cmd.(v "start" % "/wait" %% cmd)
   else
     match OS.Cmd.find_tool (Cmd.v "doas") with
     | Ok (Some fpath) -> Cmd.(v (Fpath.to_string fpath) %% cmd)
