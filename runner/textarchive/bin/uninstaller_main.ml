@@ -27,7 +27,7 @@ let name_t =
    sure the log statements are created inside (or after) `setup ...`. *)
 let uninstall log_config name prefix component_selector staging_files_source =
   (* Load all the available components *)
-  Uninstaller_sites.Plugins.Plugins.load_all ();
+  Dkml_install_runner_sites.load_all ();
   let reg = Component_registry.get () in
 
   (* Only uninstall what was specified, if specified *)

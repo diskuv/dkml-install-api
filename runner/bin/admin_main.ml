@@ -26,7 +26,7 @@ let (_ : string list) = Default_component_config.depends_on
 let (_ : Log_config.t) = Runner.Cmdliner_runner.setup_log None None
 
 (* Load all the available components *)
-let () = Admin_sites.Plugins.Plugins.load_all ()
+let () = Dkml_install_runner_sites.load_all ()
 
 let reg = Component_registry.get ()
 

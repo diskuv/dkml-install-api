@@ -137,7 +137,8 @@ let elevated_cmd cmd =
        "The requested operation requires elevation" if dkml-install-admin.exe
        is spawned from another process rather than directly from
        Command Prompt or PowerShell.
-       So use `start` *)
+       So use `start`. But `start` does not like non-Windows arguments
+       like `--an-option` so we have to use a batch script. *)
     Cmd.(v "start" % "/wait" %% cmd)
   else
     match OS.Cmd.find_tool (Cmd.v "doas") with

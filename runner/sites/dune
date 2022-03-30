@@ -1,0 +1,10 @@
+(generate_sites_module
+ (module sites)
+ (plugins
+  ; (<package> <name>)
+  (dkml-install-runner plugins)))
+
+(library
+ (name dkml_install_runner_sites)
+ (public_name dkml-install-runner.sites)
+ (libraries dune-site dune-site.plugins))

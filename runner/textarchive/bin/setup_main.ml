@@ -28,7 +28,7 @@ let name_t =
 let setup log_config name prefix component_selector static_files_source
     staging_files_source =
   (* Load all the available components. Logging has already been setup. *)
-  Setup_sites.Plugins.Plugins.load_all ();
+  Dkml_install_runner_sites.load_all ();
   let reg = Component_registry.get () in
 
   (* Only install what was specified, if specified *)

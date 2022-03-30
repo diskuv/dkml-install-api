@@ -1,0 +1,25 @@
+(executable
+ (public_name dkml-install-setup)
+ (name setup_main)
+ (package dkml-package-textarchive)
+ (modules setup_main)
+ (libraries
+  dkml-install.register
+  runner
+  dkml-install-runner.sites
+  dune-site
+  dune-site.plugins
+  cmdliner))
+
+(executable
+ (public_name dkml-install-uninstaller)
+ (name uninstaller_main)
+ (package dkml-package-textarchive)
+ (modules uninstaller_main)
+ (libraries
+  dkml-install.register
+  runner
+  dkml-install-runner.sites
+  dune-site
+  dune-site.plugins
+  cmdliner))

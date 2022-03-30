@@ -1,0 +1,18 @@
+name: "dkml-install-runner-textarchive"
+install: [
+  ["install" "-d" "%{_:share}%/staging-files/generic/bin"] {os = "win32"}
+  [
+    "unzip"
+    "-o"
+    "-d"
+    "%{_:share}%/staging-files"
+    "dl/gsudo.v1.2.0.zip"
+    "gsudo.exe"
+  ] {os = "win32"}
+]
+extra-source "dl/gsudo.v1.2.0.zip" {
+  src: "https://github.com/gerardog/gsudo/releases/download/v1.2.0/gsudo.v1.2.0.zip"
+  checksum: [
+    "sha256=57c90d138200214a4f662925175d451f41c208f7960ed2c1652561eaa9e7c15c"
+  ]
+}
