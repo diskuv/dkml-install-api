@@ -54,6 +54,39 @@ Z:\source\dkml-component-unixutils> with-dkml opam pin add dkml-component-stagin
 Z:\source\dkml-component-unixutils> with-dkml opam pin add dkml-component-network-unixutils . --yes
 Z:\source\dkml-component-unixutils> with-dkml opam upgrade dkml-component-staging-unixutils dkml-component-network-unixutils
 
+with-dkml opam dkml init
+(& opam env --switch Z:\source\dkml-install-api --set-switch) -split '\r?\n' | ForEach-Object { Invoke-Expression $_ }
+with-dkml opam remove ocaml-system base-unix.base base-threads.base base-bigarray.base --update-invariant
+with-dkml opam repository set-url diskuv-0.4.0-prerel14 git+https://github.com/diskuv/diskuv-opam-repository.git#main
+
+with-dkml opam pin dkml-base-compiler                   https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
+with-dkml opam pin ocaml                                https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
+with-dkml opam pin ocaml-config                         https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
+
+with-dkml opam pin dkml-component-network-ocamlcompiler git+file://Z:/source/dkml-component-ocamlcompiler#main --no-action --yes
+with-dkml opam pin dkml-component-staging-ocamlrun      git+file://Z:/source/dkml-component-ocamlcompiler#main --no-action --yes
+with-dkml opam pin dkml-install                         git+file://Z:/source/dkml-install-api#main --no-action --yes
+with-dkml opam pin dkml-install-runner                  git+file://Z:/source/dkml-install-api#main --no-action --yes
+with-dkml opam pin dkml-component-staging-curl          git+file://Z:/source/dkml-component-curl#main --no-action --yes
+with-dkml opam pin dkml-installer-network-ocaml         git+file://Z:/source/dkml-installer-ocaml#main --no-action --yes
+with-dkml opam pin dkml-component-staging-unixutils     git+file://Z:/source/dkml-component-unixutils#main --no-action --yes
+with-dkml opam pin dkml-component-network-unixutils     git+file://Z:/source/dkml-component-unixutils#main --no-action --yes
+
+with-dkml opam pin -k version curly 0.2.1-windows-env --no-action --yes
+with-dkml opam pin -k version dune-action-plugin    2.9.3 --no-action --yes
+with-dkml opam pin -k version dune-glob             2.9.3 --no-action --yes
+with-dkml opam pin -k version dune-private-libs     2.9.3 --no-action --yes
+echo not in 2.9.3 - with-dkml opam pin -k version dune-rpc-lwt          2.9.3 --no-action --yes
+echo not in 2.9.3 - with-dkml opam pin -k version dune-rpc              2.9.3 --no-action --yes
+with-dkml opam pin -k version dune-site             2.9.3 --no-action --yes
+
+with-dkml opam install dkml-installer-network-ocaml
+
+with-dkml opam pin git+file://Z:/source/ #main --no-action --yes
+with-dkml opam pin git+file://Z:/source/ #main --no-action --yes
+with-dkml opam pin git+file://Z:/source/ #main --no-action --yes
+
+
 # As admin
 Z:\source\dkml-install-api\_opam\bin\dkml-install-admin-runner.exe install-admin-network-ocamlcompiler --opam-context --prefix Z:\temp\prefix -v
 ```

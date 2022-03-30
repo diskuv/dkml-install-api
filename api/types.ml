@@ -17,7 +17,7 @@ module Context = struct
       | Windows_x86
       | Windows_arm64
       | Windows_arm32
-    [@@deriving show, eq, ord]
+    [@@deriving eq, ord]
 
     let of_string = function
       | "Android_arm64v8a" -> Result.ok Android_arm64v8a
@@ -55,6 +55,27 @@ module Context = struct
       | Windows_x86 -> "windows_x86"
       | Windows_arm64 -> "windows_arm64"
       | Windows_arm32 -> "windows_arm32"
+
+    let show = to_canonical_string
+
+    let pp fmt abi = Format.pp_print_string fmt (to_canonical_string abi)
+
+    let is_windows = function
+      | Windows_x86_64 | Windows_x86 | Windows_arm64 | Windows_arm32 -> true
+      | _ -> false
+
+    let is_linux = function
+      | Linux_arm64 | Linux_arm32v6 | Linux_arm32v7 | Linux_x86_64 | Linux_x86
+        ->
+          true
+      | _ -> false
+
+    let is_darwin = function Darwin_arm64 | Darwin_x86_64 -> true | _ -> false
+
+    let is_android = function
+      | Android_arm64v8a | Android_arm32v7a | Android_x86 | Android_x86_64 ->
+          true
+      | _ -> false
   end
 
   type t = {
