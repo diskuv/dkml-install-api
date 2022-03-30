@@ -30,6 +30,7 @@ opam install dkml-install-api
 On Windows with Diskuv OCaml:
 
 ```powershell
+with-dkml opam dkml init
 with-dkml opam install . --with-test --with-doc --deps-only
 with-dkml dune build
 with-dkml dune build `@doc
