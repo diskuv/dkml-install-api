@@ -48,7 +48,7 @@ let setup log_config name prefix component_selector static_files_source
         ~prefix ~staging_files_source
     then
       Textarchive_common.spawn
-      @@ Textarchive_common.elevated_cmd
+      @@ Textarchive_common.elevated_cmd ~staging_files_source
            Cmd.(
              exe_cmd "dkml-install-admin-runner.exe"
              % "install-adminall" %% args)
@@ -73,7 +73,7 @@ let setup log_config name prefix component_selector static_files_source
           let module Cfg = (val cfg : Component_config) in
           let* static_dir_fp =
             map_msg_error_to_string @@ Fpath.of_string
-            @@ Runner.Component_utils.absdir_static_files
+            @@ Runner.Path_location.absdir_static_files
                  ~component_name:Cfg.component_name static_files_source
           in
           let* exists =

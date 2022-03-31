@@ -51,10 +51,13 @@ type install_files_source = Opam_context | Install_files_dir of string
 
 type install_files_type = Staging | Static
 
+type package_selector = Package | Component
+
 (** [absdir_install_files ~component_name install_files_type install_files_source] is
     the [component_name] component's static-files or staging-files directory
     for Staging or Static [install_files_type], respectively *)
-let absdir_install_files ~component_name install_files_type = function
+let absdir_install_files ?(package_selector = Component) ~component_name
+    install_files_type = function
   | Opam_context ->
       let opam_switch_prefix = OS.Env.opt_var "OPAM_SWITCH_PREFIX" ~absent:"" in
       if opam_switch_prefix = "" then
@@ -70,7 +73,9 @@ let absdir_install_files ~component_name install_files_type = function
         to_string
         @@ string_to_norm_fpath opam_switch_prefix
            / "share"
-           / ("dkml-component-" ^ component_name)
+           / (match package_selector with
+             | Component -> "dkml-component-" ^ component_name
+             | Package -> "dkml-package-" ^ component_name)
            / stem)
   | Install_files_dir install_files ->
       Fpath.(to_string @@ (string_to_norm_fpath install_files / component_name))

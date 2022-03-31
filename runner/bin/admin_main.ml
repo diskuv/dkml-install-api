@@ -68,7 +68,7 @@ let uninstall_admin_cmds ~selector =
    User Account Control prompt and on Unix we only want one sudo password
    prompt. Drawback is that progress is a bit harder to track; we'll survive! *)
 
-let run_terms acc (term_t, term_info) =
+let run_terms_with_global_argv acc (term_t, term_info) =
   match acc with
   | `Ok () -> (
       let name = Term.name term_info in
@@ -87,22 +87,30 @@ let run_terms acc (term_t, term_info) =
 
 let install_all_cmd =
   let doc = "install all components" in
-  let runall (_ : Log_config.t) selector =
-    List.fold_left run_terms (`Ok ())
+  let runall (_ : Log_config.t) selector (_prefix : string)
+      (_staging_files_opt : string option) (_opam_context : bool) =
+    List.fold_left run_terms_with_global_argv (`Ok ())
       (install_admin_cmds ~selector:(to_selector selector))
   in
   Term.
-    ( ret (const runall $ setup_log_t $ component_selector_t ~install:true),
+    ( ret
+        (const runall $ setup_log_t
+        $ component_selector_t ~install:true
+        $ prefix_t $ staging_files_opt_t $ opam_context_t),
       info "install-adminall" ~version:"%%VERSION%%" ~doc )
 
 let uninstall_all_cmd =
   let doc = "uninstall all components" in
-  let runall (_ : Log_config.t) selector =
-    List.fold_left run_terms (`Ok ())
+  let runall (_ : Log_config.t) selector (_prefix : string)
+      (_staging_files_opt : string option) (_opam_context : bool) =
+    List.fold_left run_terms_with_global_argv (`Ok ())
       (uninstall_admin_cmds ~selector:(to_selector selector))
   in
   Term.
-    ( ret (const runall $ setup_log_t $ component_selector_t ~install:false),
+    ( ret
+        (const runall $ setup_log_t
+        $ component_selector_t ~install:false
+        $ prefix_t $ staging_files_opt_t $ opam_context_t),
       info "uninstall-adminall" ~version:"%%VERSION%%" ~doc )
 
 let () =

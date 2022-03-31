@@ -1,5 +1,3 @@
-type staging_files_source = Opam_context | Staging_files_dir of string
-
 module Global_context : sig
   type t
   (** the type of the global context *)
@@ -16,7 +14,7 @@ module Interpreter : sig
     Global_context.t ->
     self_component_name:string ->
     abi:Dkml_install_api.Context.Abi_v2.t ->
-    staging_files_source:staging_files_source ->
+    staging_files_source:Path_location.staging_files_source ->
     prefix:string ->
     t
   (** [create global_ctx ~self_component_name ~abi ~staging_files_source ~prefix]
@@ -29,7 +27,7 @@ module Interpreter : sig
   val create_minimal :
     self_component_name:string ->
     abi:Dkml_install_api.Context.Abi_v2.t ->
-    staging_files_source:staging_files_source ->
+    staging_files_source:Path_location.staging_files_source ->
     prefix:string ->
     t
   (** [create_minimal ~self_component_name ~abi ~staging_files_source ~prefix]

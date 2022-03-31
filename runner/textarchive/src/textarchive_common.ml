@@ -1,16 +1,17 @@
 open Bos
 
+let host_abi_v2 () =
+  match Runner.Host_abi.create_v2 () with
+  | Ok abi -> abi
+  | Error s ->
+      raise
+        (Dkml_install_api.Installation_error
+           (Fmt.str "Could not detect the host ABI. %s" s))
+
 let create_minimal_context ~self_component_name ~log_config ~prefix
     ~staging_files_source =
   let open Runner.Path_eval in
-  let host_abi_v2 =
-    match Runner.Host_abi.create_v2 () with
-    | Ok abi -> abi
-    | Error s ->
-        raise
-          (Dkml_install_api.Installation_error
-             (Fmt.str "Could not detect the host ABI. %s" s))
-  in
+  let host_abi_v2 = host_abi_v2 () in
   let interpreter =
     Interpreter.create_minimal ~self_component_name ~abi:host_abi_v2
       ~staging_files_source ~prefix
@@ -78,7 +79,7 @@ let common_runner_args ~log_config ~prefix ~staging_files_source =
   in
   let args =
     match staging_files_source with
-    | Runner.Path_eval.Opam_context ->
+    | Runner.Path_location.Opam_context_staging ->
         Cmd.(args % z Runner.Cmdliner_common.opam_context_args)
     | Staging_files_dir staging_files ->
         Cmd.(
@@ -106,16 +107,27 @@ let spawn cmd =
       | `Signaled v ->
           Rresult.R.error_msgf "Signaled with signal %d: %a" v Cmd.pp cmd)
 
-let elevated_cmd cmd =
-  if Sys.win32 then
+let elevated_cmd ~staging_files_source cmd =
+  let host_abi_v2 = host_abi_v2 () in
+  if Dkml_install_api.Context.Abi_v2.is_windows host_abi_v2 then
     (* dkml-install-admin.exe on Win32 has a UAC manifest injected
        by link.exe in dune. But still will get
        "The requested operation requires elevation" if dkml-install-admin.exe
        is spawned from another process rather than directly from
        Command Prompt or PowerShell.
-       So use `start`. But `start` does not like non-Windows arguments
-       like `--an-option` so we have to use a batch script. *)
-    Cmd.(v "start" % "/wait" %% cmd)
+       So use `gsudo` from dkml-package-textarchive. *)
+    let component_dir =
+      Runner.Path_location.absdir_staging_files ~package_selector:Package
+        ~component_name:"textarchive" ~abi_selector:(Abi host_abi_v2)
+        staging_files_source
+    in
+    let gsudo = Fpath.(v component_dir / "bin" / "gsudo.exe") in
+    match Logs.level () with
+    | Some Debug ->
+        Cmd.(
+          v (Fpath.to_string gsudo) % "--wait" % "--direct" % "--debug" %% cmd)
+    | Some _ | None ->
+        Cmd.(v (Fpath.to_string gsudo) % "--wait" % "--direct" %% cmd)
   else
     match OS.Cmd.find_tool (Cmd.v "doas") with
     | Ok (Some fpath) -> Cmd.(v (Fpath.to_string fpath) %% cmd)

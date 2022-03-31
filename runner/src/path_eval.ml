@@ -5,10 +5,6 @@ open Bos
 open Os_utils
 module StringMap = Map.Make (String)
 
-type staging_files_source = Opam_context | Staging_files_dir of string
-
-type abi_selector = Generic | Abi of Context.Abi_v2.t
-
 module Global_context = struct
   type t = {
     global_vars : (string * string) list;
@@ -49,24 +45,6 @@ module Interpreter = struct
     all_pathonly_vars : (string * string) list;
   }
 
-  (** [absdir_staging_files ~component_name ~abi_selector staging_files_source] is
-    the [component_name] component's staging-files/(generic|<arch>) directory *)
-  let absdir_staging_files ~component_name ~abi_selector staging_files_source =
-    let append_with_abi s =
-      match abi_selector with
-      | Generic -> Fpath.(v s / "generic" |> to_string)
-      | Abi abi ->
-          Fpath.(v s / Context.Abi_v2.to_canonical_string abi |> to_string)
-    in
-    match staging_files_source with
-    | Opam_context ->
-        append_with_abi
-          (Os_utils.absdir_install_files ~component_name Staging Opam_context)
-    | Staging_files_dir staging_files ->
-        append_with_abi
-          (Os_utils.absdir_install_files ~component_name Staging
-             (Install_files_dir staging_files))
-
   let create_minimal ~self_component_name ~abi ~staging_files_source ~prefix =
     let name_var = ("name", self_component_name) in
     let temp_var =
@@ -77,12 +55,12 @@ module Interpreter = struct
     let prefix_var = ("prefix", normalize_path prefix) in
     let current_share_generic_var =
       ( "_:share-generic",
-        absdir_staging_files ~component_name:self_component_name
+        Path_location.absdir_staging_files ~component_name:self_component_name
           ~abi_selector:Generic staging_files_source )
     in
     let current_share_arch_var =
       ( "_:share-abi",
-        absdir_staging_files ~component_name:self_component_name
+        Path_location.absdir_staging_files ~component_name:self_component_name
           ~abi_selector:(Abi abi) staging_files_source )
     in
     let local_pathonly_vars =
@@ -105,12 +83,12 @@ module Interpreter = struct
     let prefix_var = ("prefix", normalize_path prefix) in
     let current_share_generic_var =
       ( "_:share-generic",
-        absdir_staging_files ~component_name:self_component_name
+        Path_location.absdir_staging_files ~component_name:self_component_name
           ~abi_selector:Generic staging_files_source )
     in
     let current_share_abi_var =
       ( "_:share-abi",
-        absdir_staging_files ~component_name:self_component_name
+        Path_location.absdir_staging_files ~component_name:self_component_name
           ~abi_selector:(Abi abi) staging_files_source )
     in
     let local_pathonly_vars =
@@ -130,11 +108,13 @@ module Interpreter = struct
           Result.ok
             [
               ( Cfg.component_name ^ ":share-generic",
-                absdir_staging_files ~component_name:Cfg.component_name
-                  ~abi_selector:Generic staging_files_source );
+                Path_location.absdir_staging_files
+                  ~component_name:Cfg.component_name ~abi_selector:Generic
+                  staging_files_source );
               ( Cfg.component_name ^ ":share-abi",
-                absdir_staging_files ~component_name:Cfg.component_name
-                  ~abi_selector:(Abi abi) staging_files_source );
+                Path_location.absdir_staging_files
+                  ~component_name:Cfg.component_name ~abi_selector:(Abi abi)
+                  staging_files_source );
             ])
     in
     let self_share_vars =
@@ -175,7 +155,8 @@ end
 
 let mock_default_tmp_dir = OS.Dir.default_tmp ()
 
-let mock_staging_files_sources = Staging_files_dir "/test/staging-files"
+let mock_staging_files_sources =
+  Path_location.Staging_files_dir "/test/staging-files"
 
 let mock_global_ctx =
   {
@@ -194,10 +175,10 @@ let interpreter () =
   let extra_pathonly_vars =
     [
       ( "ocamlrun:share-generic",
-        Interpreter.absdir_staging_files ~component_name:"ocamlrun"
+        Path_location.absdir_staging_files ~component_name:"ocamlrun"
           ~abi_selector:Generic mock_staging_files_sources );
       ( "ocamlrun:share-abi",
-        Interpreter.absdir_staging_files ~component_name:"ocamlrun"
+        Path_location.absdir_staging_files ~component_name:"ocamlrun"
           ~abi_selector:(Abi Windows_x86) mock_staging_files_sources );
     ]
   in

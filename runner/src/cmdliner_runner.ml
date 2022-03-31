@@ -45,7 +45,7 @@ let create_context self_component_name reg log_config prefix staging_files_opt
     opam_context =
   let open Path_eval in
   let staging_files_source =
-    Component_utils.staging_files_source ~opam_context ~staging_files_opt
+    Path_location.staging_files_source ~opam_context ~staging_files_opt
   in
   let global_context = Global_context.create reg in
   let host_abi_v2 =
@@ -147,7 +147,7 @@ let staging_files_source_for_setup_and_uninstaller_t =
   (* The Opam context staging file directory takes priority over
      any staging_files from the command line. *)
   let _staging_files_source opam_context staging_files =
-    Component_utils.staging_files_source ~opam_context
+    Path_location.staging_files_source ~opam_context
       ~staging_files_opt:(Some staging_files)
   in
   Term.(
@@ -156,7 +156,7 @@ let staging_files_source_for_setup_and_uninstaller_t =
 
 let static_files_source_for_setup_and_uninstaller_t =
   let static_files_source opam_context static_files =
-    if opam_context then Component_utils.Opam_context_static
+    if opam_context then Path_location.Opam_context_static
     else Static_files_dir static_files
   in
   Term.(

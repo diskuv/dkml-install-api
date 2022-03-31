@@ -46,7 +46,7 @@ let uninstall log_config name prefix component_selector staging_files_source =
         ~prefix ~staging_files_source
     then
       Textarchive_common.spawn
-      @@ Textarchive_common.elevated_cmd
+      @@ Textarchive_common.elevated_cmd ~staging_files_source
            Cmd.(
              exe_cmd "dkml-install-admin-runner.exe"
              % "uninstall-adminall" %% args)
