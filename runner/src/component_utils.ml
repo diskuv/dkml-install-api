@@ -19,10 +19,6 @@ let staging_files_source ~opam_context ~staging_files_opt =
 let create_minimal_context ~self_component_name ~log_config ~prefix
     ~staging_files_source =
   let open Path_eval in
-  let interpreter =
-    Interpreter.create_minimal ~self_component_name ~staging_files_source
-      ~prefix
-  in
   let host_abi_v2 =
     match Host_abi.create_v2 () with
     | Ok abi -> abi
@@ -30,6 +26,10 @@ let create_minimal_context ~self_component_name ~log_config ~prefix
         raise
           (Dkml_install_api.Installation_error
              (Fmt.str "Could not detect the host ABI. %s" s))
+  in
+  let interpreter =
+    Interpreter.create_minimal ~self_component_name ~abi:host_abi_v2
+      ~staging_files_source ~prefix
   in
   {
     Dkml_install_api.Context.eval = Interpreter.eval interpreter;

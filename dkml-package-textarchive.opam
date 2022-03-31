@@ -37,15 +37,19 @@ build: [
 dev-repo: "git+https://github.com/diskuv/dkml-install-api.git"
 name: "dkml-install-runner-textarchive"
 install: [
-  ["install" "-d" "%{_:share}%/staging-files/generic/bin"] {os = "win32"}
+  ["install" "-d"
+    "%{_:share}%/staging-files/windows_x86/bin"
+    "%{_:share}%/staging-files/windows_x86_64/bin"]
   [
-    "unzip"
-    "-o"
-    "-d"
-    "%{_:share}%/staging-files"
+    "unzip" "-o" "-d" "%{_:share}%/staging-files/windows_x86/bin"
     "dl/gsudo.v1.2.0.zip"
     "gsudo.exe"
-  ] {os = "win32"}
+  ]
+  [
+    "unzip" "-o" "-d" "%{_:share}%/staging-files/windows_x86_64/bin"
+    "dl/gsudo.v1.2.0.zip"
+    "gsudo.exe"
+  ]
 ]
 extra-source "dl/gsudo.v1.2.0.zip" {
   src: "https://github.com/gerardog/gsudo/releases/download/v1.2.0/gsudo.v1.2.0.zip"

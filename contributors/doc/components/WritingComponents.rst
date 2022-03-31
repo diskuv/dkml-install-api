@@ -36,6 +36,7 @@ used in the installation lifecycle and in the installer generators.
 For example, when the following configuration values are defined:
 
 .. code:: ocaml
+
     open Cmdliner
 
     let component_name = "something"
@@ -55,7 +56,8 @@ For example, when the following configuration values are defined:
 the ``dkml-install-runner.exe`` executable will be generated so that
 the following can occur:
 
-.. code:: session
+.. code:: console
+
     $ dkml-install-runner.exe something
     Installing ... okay, it is done!
 
@@ -77,6 +79,7 @@ Copy Scenario
     In your ``dune`` file you would use:
 
     .. code:: lisp
+
         (install (TODO StaticFiles))
 
     Your ``execute`` should do nothing (ex. ``let execute () = () in``).
@@ -90,12 +93,14 @@ Transform Scenario
     In your ``dune`` files you would copy the original files into staging:
 
     .. code:: lisp
+
         (install (TODO StagingFiles))
 
     Then in your ``execute`` you would use the ``bos`` package to copy
     from staging into static with something like the following:
 
     .. code:: ocaml
+
         let execute () = (* TODO copy from staging to static *)
         in
 
@@ -111,6 +116,7 @@ Compute Scenario
     compiler on the end-user's machine.
 
     .. code:: lisp
+
         (executable (TODO bytecode))
         (install (TODO StagingFiles))
 
@@ -118,6 +124,7 @@ Compute Scenario
     package to invoke your bytecode executable:
 
     .. code:: ocaml
+
         let execute () = (* TODO invoke ocamlrun using api *)
         in
 
@@ -171,6 +178,85 @@ specific shared libraries pre-installed.
 On Windows and Linux you should build bytecode executables built from a 32-bit
 OCaml compiler. 32-bit bytecode works on 64-bit machines, but not all
 64-bit bytecode will work on 32-bit machines.
+
+The structure of the staging files directory is:
+
+.. code:: text
+
+    staging-files/
+
+        generic/ - Files that will be bundled in all installers
+
+        windows_x86/ - Files that will
+            be bundled in all Windows 32-bit installers.
+
+        windows_x86_64/ - Files that will
+            be bundled in all Windows 64-bit installers.
+
+The goal is simplicity even though it will lead to duplication. For example the
+Windows ``curl.exe`` binary is available from its official download site as a
+``PE32 executable (console) Intel 80386 (stripped to external PDB), for MS Windows``
+executable, as reported by the Unix/MSYS2/Cygwin tool ``/usr/bin/file``.
+That is, it works on any 32-bit or 64-bit Windows machines. So a copy of the
+32-bit ``curl.exe`` would be in both ``windows_x86/`` and ``windows_x86_64/``.
+
+A common way to populate the Staging Files is to use Opam. Using the same
+``curl.exe`` example, the following ``dkml-component-staging-curl.opam`` snippet
+demonstrates how ``curl.exe`` and all its native files (DLLs) can be placed in
+the appropriate Staging Files folders:
+
+.. code:: ocaml
+
+    install: [
+        ["install" "-d"
+            "%{_:share}%/staging-files/windows_x86/bin"
+            "%{_:share}%/staging-files/windows_x86_64/bin"]
+        [
+            "unzip"
+            "-o"
+            "-d"
+            "%{_:share}%/staging-files"
+            "curl-7.81.0_1-win32-mingw.zip"
+            "curl-7.81.0-win32-mingw/bin/curl.exe"
+            "curl-7.81.0-win32-mingw/bin/curl-ca-bundle.crt"
+            "curl-7.81.0-win32-mingw/bin/libcurl.def"
+            "curl-7.81.0-win32-mingw/bin/libcurl.dll"
+        ]
+        [
+            "sh"
+            "-euc"
+            """
+            install \\
+                '%{_:share}%'/staging-files/curl-7.81.0-win32-mingw/bin/* \\
+                '%{_:share}%'/staging-files/windows_x86/bin/
+            install \\
+                '%{_:share}%'/staging-files/curl-7.81.0-win32-mingw/bin/* \\
+                '%{_:share}%'/staging-files/windows_x86_64/bin/
+            rm -rf '%{_:share}%'/staging-files/curl-7.81.0-win32-mingw
+            """
+        ]
+    ]
+
+    extra-source "curl-7.81.0_1-win32-mingw.zip" {
+        src: "https://curl.se/windows/dl-7.81.0_1/curl-7.81.0_1-win32-mingw.zip"
+        checksum: [
+            "sha256=4e810ae4d8d1195d0ab06e8be97e5629561497f5de2f9a497867a5b02540b576"
+        ]
+    }
+
+Since there are no Opam operating system selectors (ex. ``{os = "win32"}``), the
+Windows staging-files/ directories are populated even if the build machine is
+not Windows. In fact, using ``{os = "win32"}`` would have been incorrect:
+
+.. code:: ocaml
+
+    install: [
+        ["install" "-d" "%{_:share}%/staging-files/windows/bin"] {os = "win32"}
+    ...
+
+The use of a Opam operating system selector like ``{os = "win32"}`` means
+that Linux or macOS build machines cannot cross-compile to Windows. Instead,
+have your build machines compile into as many architectures as it supports.
 
 .. _StaticFiles:
 

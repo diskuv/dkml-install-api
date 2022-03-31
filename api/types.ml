@@ -104,26 +104,36 @@ The following fields are available from the context:
   Templates:
 
   - ["%{prefix}"] is the absolute path of the final installation directory. If you
-  are following {{:https://www.gnu.org/prep/standards/html_node/Directory-Variables.html} GNU directory standards},
-  you should populate ["%{prefix}"] with subdirectories "bin/", "share/", etc.
+    are following {{:https://www.gnu.org/prep/standards/html_node/Directory-Variables.html} GNU directory standards},
+    you should populate ["%{prefix}"] with subdirectories "bin/", "share/", etc.
   - ["%{tmp}"] is the absolute path to a temporary directory unique to the
-  component that is currently being installed. No other component will use the
-  same temporary directory.
-  - ["%{_:share}"] is the absolute path within the staging directory of the
-  component currently being installed.
+    component that is currently being installed. No other component will use the
+    same temporary directory.
+  - ["%{_:share-generic}"] is the absolute path to the ``generic`` Staging Files
+    directory of the component currently being installed.
+  - ["%{_:share-abi}"] is the absolute path to the ``<abi>`` Staging Files
+    of the component currently being installed, where ``<abi>`` is the
+    ABI currently being installed
 
   More templates available to all [ctx] except [needs_admin ctx]:
 
-  - ["%{COMPONENT_NAME:share}"] is the absolute path within
-    the staging directory of the named component, respectively.
-    Usually the staging files include a bytecode executable to run a component's
-    installation logic.
+  - ["%{COMPONENT_NAME:share-generic}"] is the absolute path to
+    the ``generic`` Staging Files of the named component.
     {e {b Only COMPONENT_NAMEs that are transitive dependencies
     of the currently-being-installed component will be resolved.}}
+  - ["%{COMPONENT_NAME:share-abi}"] is the absolute path to
+    the ``<abi>`` Staging Files of the named component, where
+    ``<abi>`` is the ABI currently being installed
+
+  {e {b Only COMPONENT_NAMEs that are transitive dependencies
+  of the currently-being-installed component will be resolved.}}
+
+  Usually the staging files include a bytecode executable to run a component's
+  installation logic.
 
   Variations:
 
-  - {b Staging Files}:    
+  - {b Staging Files}:
     When dkml-install-runner.exe is run with the ["--staging-files DIR"] option
     then the staging directory is simply ["<DIR>/<COMPONENT_NAME>"]. During an
     end-user installation the ["--staging-files DIR"] option is automatically
@@ -180,7 +190,7 @@ The following fields are available from the context:
   }
 
   {- [ctx.log_config]
-  
+
   The logging configuration. See the Logging section of {!Dkml_install_api}
   for how to use it.
   }

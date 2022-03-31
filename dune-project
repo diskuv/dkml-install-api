@@ -62,12 +62,4 @@
   ; runner/textarchive/bin/dune site requires dkml-install-runner package
   (dkml-install-runner (= :version))
   (dune (>= 2.9))
-  (dune-site (>= 2.9))
-  ; (ppx_expect (>= v0.14.1))
-  ; (astring (>= 0.8.5))
-  ; (bos (>= 0.2.0))
-  ; (cmdliner (= 1.0.4))
-  ; (fmt (>= 0.8.9))
-  ; (logs (>= 0.7.0))
-  
-  ))
+  (dune-site (>= 2.9))))

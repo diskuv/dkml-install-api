@@ -48,10 +48,6 @@ let create_context self_component_name reg log_config prefix staging_files_opt
     Component_utils.staging_files_source ~opam_context ~staging_files_opt
   in
   let global_context = Global_context.create reg in
-  let interpreter =
-    Interpreter.create global_context ~self_component_name ~staging_files_source
-      ~prefix
-  in
   let host_abi_v2 =
     match Host_abi.create_v2 () with
     | Ok abi -> abi
@@ -59,6 +55,10 @@ let create_context self_component_name reg log_config prefix staging_files_opt
         raise
           (Dkml_install_api.Installation_error
              (Fmt.str "Could not detect the host ABI. %s" s))
+  in
+  let interpreter =
+    Interpreter.create global_context ~self_component_name ~abi:host_abi_v2
+      ~staging_files_source ~prefix
   in
   {
     Dkml_install_api.Context.eval = Interpreter.eval interpreter;

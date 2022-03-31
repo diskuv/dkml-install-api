@@ -15,10 +15,11 @@ module Interpreter : sig
   val create :
     Global_context.t ->
     self_component_name:string ->
+    abi:Dkml_install_api.Context.Abi_v2.t ->
     staging_files_source:staging_files_source ->
     prefix:string ->
     t
-  (** [create global_ctx ~self_component_name ~staging_files_source ~prefix]
+  (** [create global_ctx ~self_component_name ~abi ~staging_files_source ~prefix]
       creates an interpreter
       for the component [self_component_name] for installations into
       the [prefix] directory. 
@@ -27,10 +28,11 @@ module Interpreter : sig
 
   val create_minimal :
     self_component_name:string ->
+    abi:Dkml_install_api.Context.Abi_v2.t ->
     staging_files_source:staging_files_source ->
     prefix:string ->
     t
-  (** [create_minimal ~self_component_name ~staging_files_source ~prefix]
+  (** [create_minimal ~self_component_name ~abi ~staging_files_source ~prefix]
       creates a "minimal" interpreter with only one [self_component_name]
       component. The interpreter also has access to non-component
       specific variables. *)

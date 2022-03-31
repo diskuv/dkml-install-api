@@ -7,6 +7,8 @@ module StringMap = Map.Make (String)
 
 type staging_files_source = Opam_context | Staging_files_dir of string
 
+type abi_selector = Generic | Abi of Context.Abi_v2.t
+
 module Global_context = struct
   type t = {
     global_vars : (string * string) list;
@@ -47,16 +49,25 @@ module Interpreter = struct
     all_pathonly_vars : (string * string) list;
   }
 
-  (** [absdir_staging_files ~component_name staging_files_source] is
-    the [component_name] component's staging-files directory *)
-  let absdir_staging_files ~component_name = function
+  (** [absdir_staging_files ~component_name ~abi_selector staging_files_source] is
+    the [component_name] component's staging-files/(generic|<arch>) directory *)
+  let absdir_staging_files ~component_name ~abi_selector staging_files_source =
+    let append_with_abi s =
+      match abi_selector with
+      | Generic -> Fpath.(v s / "generic" |> to_string)
+      | Abi abi ->
+          Fpath.(v s / Context.Abi_v2.to_canonical_string abi |> to_string)
+    in
+    match staging_files_source with
     | Opam_context ->
-        Os_utils.absdir_install_files ~component_name Staging Opam_context
+        append_with_abi
+          (Os_utils.absdir_install_files ~component_name Staging Opam_context)
     | Staging_files_dir staging_files ->
-        Os_utils.absdir_install_files ~component_name Staging
-          (Install_files_dir staging_files)
+        append_with_abi
+          (Os_utils.absdir_install_files ~component_name Staging
+             (Install_files_dir staging_files))
 
-  let create_minimal ~self_component_name ~staging_files_source ~prefix =
+  let create_minimal ~self_component_name ~abi ~staging_files_source ~prefix =
     let name_var = ("name", self_component_name) in
     let temp_var =
       ( "tmp",
@@ -64,17 +75,27 @@ module Interpreter = struct
         @@ OS.Dir.tmp "path_eval_%s" )
     in
     let prefix_var = ("prefix", normalize_path prefix) in
-    let current_share_var =
-      ( "_:share",
+    let current_share_generic_var =
+      ( "_:share-generic",
         absdir_staging_files ~component_name:self_component_name
-          staging_files_source )
+          ~abi_selector:Generic staging_files_source )
     in
-    let local_pathonly_vars = [ temp_var; prefix_var; current_share_var ] in
+    let current_share_arch_var =
+      ( "_:share-abi",
+        absdir_staging_files ~component_name:self_component_name
+          ~abi_selector:(Abi abi) staging_files_source )
+    in
+    let local_pathonly_vars =
+      [
+        temp_var; prefix_var; current_share_generic_var; current_share_arch_var;
+      ]
+    in
     let local_vars = [ name_var ] @ local_pathonly_vars in
 
     { all_vars = local_vars; all_pathonly_vars = local_pathonly_vars }
 
-  let create global_ctx ~self_component_name ~staging_files_source ~prefix =
+  let create global_ctx ~self_component_name ~abi ~staging_files_source ~prefix
+      =
     let name_var = ("name", self_component_name) in
     let temp_var =
       ( "tmp",
@@ -82,12 +103,19 @@ module Interpreter = struct
         @@ Global_context.tmp_dir global_ctx )
     in
     let prefix_var = ("prefix", normalize_path prefix) in
-    let current_share_var =
-      ( "_:share",
+    let current_share_generic_var =
+      ( "_:share-generic",
         absdir_staging_files ~component_name:self_component_name
-          staging_files_source )
+          ~abi_selector:Generic staging_files_source )
     in
-    let local_pathonly_vars = [ temp_var; prefix_var; current_share_var ] in
+    let current_share_abi_var =
+      ( "_:share-abi",
+        absdir_staging_files ~component_name:self_component_name
+          ~abi_selector:(Abi abi) staging_files_source )
+    in
+    let local_pathonly_vars =
+      [ temp_var; prefix_var; current_share_generic_var; current_share_abi_var ]
+    in
     let local_vars = [ name_var ] @ local_pathonly_vars in
 
     (* Only the self component plus its dependencies will be interpreted *)
@@ -100,12 +128,18 @@ module Interpreter = struct
         ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Result.ok
-            ( Cfg.component_name ^ ":share",
-              absdir_staging_files ~component_name:Cfg.component_name
-                staging_files_source ))
+            [
+              ( Cfg.component_name ^ ":share-generic",
+                absdir_staging_files ~component_name:Cfg.component_name
+                  ~abi_selector:Generic staging_files_source );
+              ( Cfg.component_name ^ ":share-abi",
+                absdir_staging_files ~component_name:Cfg.component_name
+                  ~abi_selector:(Abi abi) staging_files_source );
+            ])
     in
     let self_share_vars =
-      Error_handling.get_ok_or_raise_string self_component_vars_res
+      List.flatten
+        (Error_handling.get_ok_or_raise_string self_component_vars_res)
     in
 
     let all_vars =
@@ -154,14 +188,17 @@ let mock_global_ctx =
 let interpreter () =
   let orig =
     Interpreter.create mock_global_ctx
-      ~self_component_name:"component_under_test"
+      ~self_component_name:"component_under_test" ~abi:Windows_x86
       ~staging_files_source:mock_staging_files_sources ~prefix:"/test/prefix"
   in
   let extra_pathonly_vars =
     [
-      ( "ocamlrun:share",
+      ( "ocamlrun:share-generic",
         Interpreter.absdir_staging_files ~component_name:"ocamlrun"
-          mock_staging_files_sources );
+          ~abi_selector:Generic mock_staging_files_sources );
+      ( "ocamlrun:share-abi",
+        Interpreter.absdir_staging_files ~component_name:"ocamlrun"
+          ~abi_selector:(Abi Windows_x86) mock_staging_files_sources );
     ]
   in
   {
@@ -183,8 +220,8 @@ let%test "%{tmp}% is a prefix of the temp directory" =
   Fpath.(is_prefix mock_default_tmp_dir r)
 
 let%test "%{name}% is the component under test" =
-  let r = Interpreter.path_eval (interpreter ()) "%{name}%" in
-  r = Fpath.v "component_under_test"
+  let r = Interpreter.eval (interpreter ()) "%{name}%" in
+  r = "component_under_test"
 
 let%test "%{prefix}% is the installation prefix" =
   let r = Interpreter.path_eval (interpreter ()) "%{prefix}%" in
@@ -194,7 +231,22 @@ let%test "%{prefix}%/bin is the bin/ folder under the installation prefix" =
   let r = Interpreter.path_eval (interpreter ()) "%{prefix}%/bin" in
   Fpath.(compare (v "/test/prefix/bin") r) = 0
 
-let%test "%{ocamlrun:share}% is the staging prefix of the ocamlrun component" =
-  let r = Interpreter.path_eval (interpreter ()) "%{ocamlrun:share}%" in
-  Fmt.pr "[inline test debug] %s = %a@\n" "%{ocamlrun:share}%" Fpath.pp r;
-  Fpath.(compare (v "/test/staging-files/ocamlrun") r) = 0
+let%test "%{ocamlrun:share-generic}% is the staging-files/generic of the \
+          ocamlrun component" =
+  let r = Interpreter.path_eval (interpreter ()) "%{ocamlrun:share-generic}%" in
+  Fmt.pr "[inline test debug] %s = %a@\n" "%{ocamlrun:share-generic}%" Fpath.pp
+    r;
+  Fpath.(compare (v "/test/staging-files/ocamlrun/generic") r) = 0
+
+let%test "%{ocamlrun:share-abi}% is the staging-files/<abi> of the ocamlrun \
+          component" =
+  let r = Interpreter.path_eval (interpreter ()) "%{ocamlrun:share-abi}%" in
+  Fmt.pr "[inline test debug] %s = %a@\n" "%{ocamlrun:share-abi}%" Fpath.pp r;
+  Fpath.(compare (v "/test/staging-files/ocamlrun/windows_x86") r) = 0
+
+let%test "%{_:share-abi}% is the staging-files/<abi> of the component under \
+          test" =
+  let r = Interpreter.path_eval (interpreter ()) "%{_:share-abi}%" in
+  Fmt.pr "[inline test debug] %s = %a@\n" "%{_:share-abi}%" Fpath.pp r;
+  Fpath.(compare (v "/test/staging-files/component_under_test/windows_x86") r)
+  = 0
