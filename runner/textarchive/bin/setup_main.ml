@@ -35,7 +35,7 @@ let setup log_config name prefix component_selector static_files_source
   let selector = to_selector component_selector in
 
   let args =
-    Runner.Component_utils.common_runner_args ~log_config ~prefix
+    Textarchive_common.common_runner_args ~log_config ~prefix
       ~staging_files_source
   in
 
@@ -44,11 +44,11 @@ let setup log_config name prefix component_selector static_files_source
   let prefix_fp = Runner.Os_utils.string_to_norm_fpath prefix in
   let spawn_admin_if_needed () =
     if
-      Runner.Component_utils.needs_install_admin ~reg ~selector ~log_config
+      Textarchive_common.needs_install_admin ~reg ~selector ~log_config
         ~prefix ~staging_files_source
     then
-      Runner.Component_utils.spawn
-      @@ Runner.Component_utils.elevated_cmd
+      Textarchive_common.spawn
+      @@ Textarchive_common.elevated_cmd
            Cmd.(
              exe_cmd "dkml-install-admin-runner.exe"
              % "install-adminall" %% args)
@@ -89,7 +89,7 @@ let setup log_config name prefix component_selector static_files_source
     let+ (_ : unit list) =
       Component_registry.eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
-          Runner.Component_utils.spawn
+          Textarchive_common.spawn
             Cmd.(
               exe_cmd "dkml-install-user-runner.exe"
               % ("install-user-" ^ Cfg.component_name)

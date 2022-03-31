@@ -6,6 +6,7 @@
  (libraries
   dkml-install.register
   runner
+  textarchive_common
   dkml-install-runner.sites
   dune-site
   dune-site.plugins
@@ -19,6 +20,7 @@
  (libraries
   dkml-install.register
   runner
+  textarchive_common
   dkml-install-runner.sites
   dune-site
   dune-site.plugins

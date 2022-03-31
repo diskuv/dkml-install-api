@@ -1,0 +1,3 @@
+(library
+ (name textarchive_common)
+ (libraries bos runner dkml-install.api dkml-install.register))
