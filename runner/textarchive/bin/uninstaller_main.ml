@@ -38,7 +38,7 @@ let uninstall log_config name prefix component_selector staging_files_source =
       ~staging_files_source
   in
 
-  let exe_cmd s = Cmd.v Fpath.(to_string @@ (archive_dir_for_setup / s)) in
+  let exe_cmd s = Cmd.v Fpath.(to_string @@ (installer_archive_dir / s)) in
 
   let spawn_admin_if_needed () =
     if
@@ -80,7 +80,7 @@ let uninstall_cmd =
   ( Term.(
       const uninstall $ setup_log_t $ name_t $ prefix_t
       $ component_selector_t ~install:false
-      $ staging_files_source_for_setup_and_uninstaller_t),
+      $ staging_files_source_for_package_t),
     Term.info "dkml-install-uninstaller" ~version:"%%VERSION%%" ~doc )
 
 let () =

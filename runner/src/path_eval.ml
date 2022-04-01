@@ -156,7 +156,7 @@ end
 let mock_default_tmp_dir = OS.Dir.default_tmp ()
 
 let mock_staging_files_sources =
-  Path_location.Staging_files_dir "/test/staging-files"
+  Path_location.Staging_files_dir (Fpath.v "/test/staging-files")
 
 let mock_global_ctx =
   {

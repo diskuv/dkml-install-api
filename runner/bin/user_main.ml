@@ -45,14 +45,14 @@ let component_cmds =
           let module Cfg = (val cfg : Component_config) in
           Cfg.install_user_subcommand ~component_name:Cfg.component_name
             ~subcommand_name:(Fmt.str "install-user-%s" Cfg.component_name)
-            ~ctx_t:(ctx_t Cfg.component_name reg))
+            ~ctx_t:(ctx_for_runner_t Cfg.component_name reg))
     in
     let* uninstall_user_cmds =
       Component_registry.reverse_eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Cfg.uninstall_user_subcommand ~component_name:Cfg.component_name
             ~subcommand_name:(Fmt.str "uninstall-user-%s" Cfg.component_name)
-            ~ctx_t:(ctx_t Cfg.component_name reg))
+            ~ctx_t:(ctx_for_runner_t Cfg.component_name reg))
     in
     Result.ok (install_user_cmds @ uninstall_user_cmds)
   in

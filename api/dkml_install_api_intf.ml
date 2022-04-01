@@ -32,7 +32,7 @@ module type Component_config_defaultable = sig
         let execute_install ctx =
           Format.printf
             "We can run bytecode using: %s@\n"
-            (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share}/bin/ocamlrun.exe")
+            (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share-abi}/bin/ocamlrun")
 
         let install_user_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Install the pieces that don't require Administrative rights" in
@@ -69,7 +69,7 @@ module type Component_config_defaultable = sig
         let execute_uninstall ctx =
           Format.printf
           "We can run bytecode using: %s@\n"
-          (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share}/bin/ocamlrun.exe")
+          (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share-abi}/bin/ocamlrun")
 
       let uninstall_user_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Uninstall the pieces that don't require Administrative rights" in
@@ -120,7 +120,7 @@ module type Component_config_defaultable = sig
         let execute_install_admin ctx =
           Format.printf
           "We can run bytecode using: %s@\n"
-          (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share}/bin/ocamlrun.exe")
+          (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share-abi}/bin/ocamlrun")
 
         let install_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Install the pieces requiring Administrative rights" in
@@ -157,7 +157,7 @@ module type Component_config_defaultable = sig
         let execute_uninstall_admin ctx =
           Format.printf
           "We can run bytecode using: %s@\n"
-          (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share}/bin/ocamlrun.exe")
+          (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share-abi}/bin/ocamlrun")
 
         let uninstall_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Install the pieces requiring Administrative rights" in
@@ -275,12 +275,12 @@ module type Intf = sig
   {[
     let execute ctx =
       let ocamlrun =
-        ctx.Context.path_eval "%{staging-ocamlrun:share}%/generic/bin/ocamlrun"
+        ctx.Context.path_eval "%{staging-ocamlrun:share-abi}/bin/ocamlrun"
       in
       log_spawn_and_raise
         Cmd.(
           v (Fpath.to_string
-              (ctx.Context.path_eval "%{staging-ocamlrun:share}%/generic/bin/ocamlrun"))
+              (ctx.Context.path_eval "%{staging-ocamlrun:share-abi}/bin/ocamlrun"))
           % Fpath.to_string
               (ctx.Context.path_eval "%{_:share}%/generic/your_bytecode.bc")
           (* Pass --verbosity and --color to your bytecode *)

@@ -44,7 +44,7 @@ For example, when the following configuration values are defined:
     let execute_install ctx =
         Format.printf
           "Here is where we would install using bytecode run with: %s@\n"
-          (ctx.path_eval "%{ocamlrun:share}/bin/ocamlrun.exe")
+          (ctx.path_eval "%{ocamlrun:share-abi}/bin/ocamlrun")
 
     let install_user_subcommand ~component_name ~subcommand_name =
         let doc = "Install a component called " ^ component_name in

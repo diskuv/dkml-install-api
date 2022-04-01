@@ -48,8 +48,8 @@ let copy_dir src dst =
            Fpath.pp src Fpath.pp dst s)
 
 type install_files_source =
-  | Opam_switch_prefix of string
-  | Install_files_dir of string
+  | Opam_switch_prefix of Fpath.t
+  | Install_files_dir of Fpath.t
 
 type install_files_type = Staging | Static
 
@@ -68,15 +68,13 @@ let absdir_install_files ?(package_selector = Component) ~component_name
     in
     Fpath.(
       to_string
-      @@ string_to_norm_fpath opam_switch_prefix
-         / "share"
+      @@ opam_switch_prefix / "share"
          / (match package_selector with
            | Component -> "dkml-component-" ^ component_name
            | Package -> "dkml-package-" ^ component_name)
          / stem)
   in
   match install_files_source with
-  | Opam_switch_prefix opam_switch_prefix ->
-      do_opam_context opam_switch_prefix
+  | Opam_switch_prefix opam_switch_prefix -> do_opam_context opam_switch_prefix
   | Install_files_dir install_files ->
-      Fpath.(to_string @@ (string_to_norm_fpath install_files / component_name))
+      Fpath.(to_string @@ (install_files / component_name))

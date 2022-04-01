@@ -1,23 +1,46 @@
 type static_files_source =
-  | Opam_static_switch_prefix of string
-  | Static_files_dir of string
+  | Opam_static_switch_prefix of Fpath.t
+  | Static_files_dir of Fpath.t
 
 type staging_files_source =
-  | Opam_staging_switch_prefix of string
-  | Staging_files_dir of string
+  | Opam_staging_switch_prefix of Fpath.t
+  | Staging_files_dir of Fpath.t
 
 type abi_selector = Generic | Abi of Dkml_install_api.Context.Abi_v2.t
 
-let staging_files_source ~opam_context_opt ~staging_files_opt =
-  match (opam_context_opt, staging_files_opt) with
-  | None, None ->
+type staging_default = No_staging_default | Staging_default_dir of Fpath.t
+
+type static_default = No_static_default | Static_default_dir of Fpath.t
+
+let static_files_source ~static_default ~opam_context_opt ~static_files_opt =
+  match (opam_context_opt, static_files_opt, static_default) with
+  | None, None, No_static_default ->
+      raise
+        (Dkml_install_api.Installation_error
+           "Either `--opam-context [SWITCH_PREFIX]` or `--static-files DIR` \
+            must be specified")
+  | None, None, Static_default_dir fp -> Static_files_dir fp
+  | Some switch_prefix, None, _ ->
+      Opam_static_switch_prefix (Fpath.v switch_prefix)
+  | None, Some static_files, _ -> Static_files_dir (Fpath.v static_files)
+  | Some _, Some _, _ ->
+      raise
+        (Dkml_install_api.Installation_error
+           "Only one, not both, of `--opam-context [SWITCH_PREFIX]` and \
+            `--static-files DIR` should be specified.")
+
+let staging_files_source ~staging_default ~opam_context_opt ~staging_files_opt =
+  match (opam_context_opt, staging_files_opt, staging_default) with
+  | None, None, No_staging_default ->
       raise
         (Dkml_install_api.Installation_error
            "Either `--opam-context [SWITCH_PREFIX]` or `--staging-files DIR` \
             must be specified")
-  | Some switch_prefix, None -> Opam_staging_switch_prefix switch_prefix
-  | None, Some staging_files -> Staging_files_dir staging_files
-  | Some _, Some _ ->
+  | None, None, Staging_default_dir fp -> Staging_files_dir fp
+  | Some switch_prefix, None, _ ->
+      Opam_staging_switch_prefix (Fpath.v switch_prefix)
+  | None, Some staging_files, _ -> Staging_files_dir (Fpath.v staging_files)
+  | Some _, Some _, _ ->
       raise
         (Dkml_install_api.Installation_error
            "Only one, not both, of `--opam-context [SWITCH_PREFIX]` and \

@@ -41,11 +41,12 @@ let setup_log_t =
 
 (* Define a context that includes all component-based fields *)
 
-let create_context self_component_name reg log_config prefix staging_files_opt
-    opam_context_opt =
+let create_context ~staging_default self_component_name reg log_config prefix
+    staging_files_opt opam_context_opt =
   let open Path_eval in
   let staging_files_source =
-    Path_location.staging_files_source ~opam_context_opt ~staging_files_opt
+    Path_location.staging_files_source ~staging_default ~opam_context_opt
+      ~staging_files_opt
   in
   let global_context = Global_context.create reg in
   let host_abi_v2 =
@@ -98,43 +99,25 @@ let prefix_t =
     & info [ Cmdliner_common.prefix_arg ] ~docv:"PREFIX" ~doc)
 
 (* Directory containing dkml-install-setup.exe *)
-let archive_dir_for_setup = Fpath.(v OS.Arg.exec |> parent)
+let installer_archive_dir = Fpath.(v OS.Arg.exec |> parent)
+
+let staging_default_dir_for_package =
+  Fpath.(installer_archive_dir / "staging")
+
+let static_default_dir_for_package = Fpath.(installer_archive_dir / "static")
 
 let staging_files_opt_t =
-  let doc =
-    Fmt.str
-      "$(docv) is the staging files directory for the installation. Takes \
-       priority over $(b,--%s)"
-      Cmdliner_common.opam_context_args
-  in
+  let doc = "$(docv) is the staging files directory for the installation" in
   Arg.(
     value
     & opt (some raw_dir) None
     & info [ Cmdliner_common.staging_files_arg ] ~docv:"DIR" ~doc)
 
-(** [staging_files_for_setup_and_uninstaller_t] is the dkml-install-setup.exe Term for the
-    staging files directory.  It defaults to the sibling directory "staging". *)
-let staging_files_for_setup_and_uninstaller_t =
-  let default_dir = Fpath.(archive_dir_for_setup / "staging") in
-  let doc =
-    Fmt.str
-      "$(docv) is the staging files directory of the installation. Takes \
-       priority over $(b,--%s)"
-      Cmdliner_common.opam_context_args
-  in
-  Arg.(
-    value
-    & opt raw_dir (Fpath.to_string default_dir)
-    & info [ Cmdliner_common.staging_files_arg ] ~docv:"DIR" ~doc)
-
-(** [static_files_for_setup_and_uninstaller_t] is the dkml-install-setup.exe Term for the
-    static files directory.  It defaults to the sibling directory "static". *)
-let static_files_for_setup_and_uninstaller_t =
-  let default_dir = Fpath.(archive_dir_for_setup / "static") in
+let static_files_opt_t =
   let doc = "$(docv) is the static files directory of the installation" in
   Arg.(
     value
-    & opt raw_dir (Fpath.to_string default_dir)
+    & opt (some raw_dir) None
     & info [ Cmdliner_common.static_files_arg ] ~docv:"DIR" ~doc)
 
 let opam_context_opt_t =
@@ -165,35 +148,49 @@ let opam_context_opt_t =
         (some dir) None
     & info [ Cmdliner_common.opam_context_args ] ~docv:"OPAM_SWITCH_PREFIX" ~doc)
 
-let staging_files_source_for_setup_and_uninstaller_t =
-  (* The Opam context staging file directory takes priority over
-     any staging_files from the command line. *)
-  let _staging_files_source opam_context_opt staging_files =
-    Path_location.staging_files_source ~opam_context_opt
-      ~staging_files_opt:(Some staging_files)
+(** [staging_files_source_for_package_t] is the
+    setup.exe/uninstall.exe {!Term.t} for the staging files directory.  It
+    defaults to the sibling directory "staging". *)
+let staging_files_source_for_package_t =
+  let staging_files_source' opam_context_opt staging_files_opt =
+    Path_location.staging_files_source
+      ~staging_default:(Staging_default_dir staging_default_dir_for_package)
+      ~opam_context_opt ~staging_files_opt
   in
-  Term.(
-    const _staging_files_source
-    $ opam_context_opt_t $ staging_files_for_setup_and_uninstaller_t)
+  Term.(const staging_files_source' $ opam_context_opt_t $ staging_files_opt_t)
 
-let static_files_source_for_setup_and_uninstaller_t =
-  let static_files_source opam_context_opt static_files =
-    match opam_context_opt with
-    | Some switch_prefix ->
-        Path_location.Opam_static_switch_prefix switch_prefix
-    | None -> Static_files_dir static_files
+(** [static_files_source_for_package_t] is the
+    setup.exe/uninstall.exe {!Term.t} for the static files directory.  It
+    defaults to the sibling directory "static". *)
+let static_files_source_for_package_t =
+  let static_files_source' opam_context_opt static_files_opt =
+    Path_location.static_files_source
+      ~static_default:(Static_default_dir static_default_dir_for_package)
+      ~opam_context_opt ~static_files_opt
   in
-  Term.(
-    const static_files_source $ opam_context_opt_t
-    $ static_files_for_setup_and_uninstaller_t)
+  Term.(const static_files_source' $ opam_context_opt_t $ static_files_opt_t)
 
-(** [ctx_t component_name reg] creates a [Term] for component [component_name]
+(** [ctx_for_runner_t component_name reg] creates a user.exe/admin.exe [Term]
+    for component [component_name]
     that sets up logging and any other global state, and defines the context
     record *)
-let ctx_t component_name reg =
+let ctx_for_runner_t component_name reg =
   Term.(
-    const create_context $ const component_name $ const reg $ setup_log_t
-    $ prefix_t $ staging_files_opt_t $ opam_context_opt_t)
+    const (create_context ~staging_default:No_staging_default)
+    $ const component_name $ const reg $ setup_log_t $ prefix_t
+    $ staging_files_opt_t $ opam_context_opt_t)
+
+(** [ctx_for_package_t component_name reg] creates a setup.exe/uninstall.exe [Term]
+    for component [component_name]
+    that sets up logging and any other global state, and defines the context
+    record *)
+let ctx_for_package_t component_name reg =
+  Term.(
+    const
+      (create_context
+         ~staging_default:(Staging_default_dir staging_default_dir_for_package))
+    $ const component_name $ const reg $ setup_log_t $ prefix_t
+    $ staging_files_opt_t $ opam_context_opt_t)
 
 let to_selector component_selector =
   if component_selector = [] then
@@ -230,12 +227,12 @@ let common_runner_args ~log_config ~prefix ~staging_files_source =
         Cmd.(
           args
           % z Cmdliner_common.opam_context_args
-          % normalize_path switch_prefix)
+          % Fpath.to_string switch_prefix)
     | Staging_files_dir staging_files ->
         Cmd.(
           args
           % z Cmdliner_common.staging_files_arg
-          % normalize_path staging_files)
+          % Fpath.to_string staging_files)
   in
   args
 

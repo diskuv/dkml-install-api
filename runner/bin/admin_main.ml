@@ -45,7 +45,7 @@ let install_admin_cmds ~selector =
         let module Cfg = (val cfg : Component_config) in
         Cfg.install_admin_subcommand ~component_name:Cfg.component_name
           ~subcommand_name:(Fmt.str "install-admin-%s" Cfg.component_name)
-          ~ctx_t:(ctx_t Cfg.component_name reg))
+          ~ctx_t:(ctx_for_runner_t Cfg.component_name reg))
   in
   match cmd_results with
   | Ok cmds -> cmds
@@ -57,7 +57,7 @@ let uninstall_admin_cmds ~selector =
         let module Cfg = (val cfg : Component_config) in
         Cfg.uninstall_admin_subcommand ~component_name:Cfg.component_name
           ~subcommand_name:(Fmt.str "uninstall-admin-%s" Cfg.component_name)
-          ~ctx_t:(ctx_t Cfg.component_name reg))
+          ~ctx_t:(ctx_for_runner_t Cfg.component_name reg))
   in
   match cmd_results with
   | Ok cmds -> cmds
@@ -98,8 +98,8 @@ let run_terms_with_common_runner_args ~log_config ~prefix ~staging_files_source
 let helper_all_cmd ~doc ~name ~install f =
   let runall log_config selector prefix staging_files_opt opam_context_opt =
     let staging_files_source =
-      Runner.Path_location.staging_files_source ~opam_context_opt
-        ~staging_files_opt
+      Runner.Path_location.staging_files_source
+        ~staging_default:No_staging_default ~opam_context_opt ~staging_files_opt
     in
     List.fold_left
       (run_terms_with_common_runner_args ~log_config ~prefix

@@ -39,7 +39,7 @@ let setup log_config name prefix component_selector static_files_source
       ~staging_files_source
   in
 
-  let exe_cmd s = Cmd.v Fpath.(to_string @@ (archive_dir_for_setup / s)) in
+  let exe_cmd s = Cmd.v Fpath.(to_string @@ (installer_archive_dir / s)) in
 
   let prefix_fp = Runner.Os_utils.string_to_norm_fpath prefix in
   let spawn_admin_if_needed () =
@@ -109,8 +109,8 @@ let setup_cmd =
   ( Term.(
       const setup $ setup_log_t $ name_t $ prefix_t
       $ component_selector_t ~install:true
-      $ static_files_source_for_setup_and_uninstaller_t
-      $ staging_files_source_for_setup_and_uninstaller_t),
+      $ static_files_source_for_package_t
+      $ staging_files_source_for_package_t),
     Term.info "dkml-install-setup" ~version:"%%VERSION%%" ~doc )
 
 let () =
