@@ -1,6 +1,6 @@
 (library
- (name runner)
- (package dkml-install-runner)
+ (name dkml_install_runner)
+ (public_name dkml-install-runner)
  (libraries
   dkml-install.register
   dkml-install.api

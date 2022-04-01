@@ -15,7 +15,7 @@ module Interpreter : sig
     self_component_name:string ->
     abi:Dkml_install_api.Context.Abi_v2.t ->
     staging_files_source:Path_location.staging_files_source ->
-    prefix:string ->
+    prefix:Fpath.t ->
     t
   (** [create global_ctx ~self_component_name ~abi ~staging_files_source ~prefix]
       creates an interpreter
@@ -28,7 +28,7 @@ module Interpreter : sig
     self_component_name:string ->
     abi:Dkml_install_api.Context.Abi_v2.t ->
     staging_files_source:Path_location.staging_files_source ->
-    prefix:string ->
+    prefix:Fpath.t ->
     t
   (** [create_minimal ~self_component_name ~abi ~staging_files_source ~prefix]
       creates a "minimal" interpreter with only one [self_component_name]

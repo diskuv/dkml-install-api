@@ -52,7 +52,7 @@ module Interpreter = struct
         Fpath.to_string @@ Rresult.R.error_msg_to_invalid_arg
         @@ OS.Dir.tmp "path_eval_%s" )
     in
-    let prefix_var = ("prefix", normalize_path prefix) in
+    let prefix_var = ("prefix", Fpath.to_string prefix) in
     let current_share_generic_var =
       ( "_:share-generic",
         Path_location.absdir_staging_files ~component_name:self_component_name
@@ -80,7 +80,7 @@ module Interpreter = struct
         Fpath.to_string @@ Rresult.R.error_msg_to_invalid_arg
         @@ Global_context.tmp_dir global_ctx )
     in
-    let prefix_var = ("prefix", normalize_path prefix) in
+    let prefix_var = ("prefix", Fpath.to_string prefix) in
     let current_share_generic_var =
       ( "_:share-generic",
         Path_location.absdir_staging_files ~component_name:self_component_name
@@ -170,7 +170,7 @@ let interpreter () =
   let orig =
     Interpreter.create mock_global_ctx
       ~self_component_name:"component_under_test" ~abi:Windows_x86
-      ~staging_files_source:mock_staging_files_sources ~prefix:"/test/prefix"
+      ~staging_files_source:mock_staging_files_sources ~prefix:(Fpath.v "/test/prefix")
   in
   let extra_pathonly_vars =
     [

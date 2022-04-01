@@ -1,9 +1,9 @@
 open Cmdliner
 open Dkml_install_register
 open Dkml_install_api
-open Runner.Cmdliner_runner
-open Runner.Error_handling
-open Runner.Error_handling.Monad_syntax
+open Dkml_install_runner.Cmdliner_runner
+open Dkml_install_runner.Error_handling
+open Dkml_install_runner.Error_handling.Monad_syntax
 
 let default_cmd =
   let doc = "the OCaml CLI user installer" in
@@ -24,7 +24,7 @@ let (_ : string list) = Default_component_config.depends_on
 
 (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
    reset the logger to what was given on the command line. *)
-let (_ : Log_config.t) = Runner.Cmdliner_runner.setup_log None None
+let (_ : Log_config.t) = Dkml_install_runner.Cmdliner_runner.setup_log None None
 
 (* Load all the available components *)
 let () = Dkml_install_runner_sites.load_all ()
@@ -32,7 +32,8 @@ let () = Dkml_install_runner_sites.load_all ()
 let reg = Component_registry.get ()
 
 let () =
-  Runner.Error_handling.get_ok_or_raise_string (Component_registry.validate reg)
+  Dkml_install_runner.Error_handling.get_ok_or_raise_string
+    (Component_registry.validate reg)
 
 (** Install all non-administrative CLI subcommands for all the components.
   Even though all CLI subcommands are registered, setup.exe (setup_main) will

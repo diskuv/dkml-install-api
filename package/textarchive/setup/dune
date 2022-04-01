@@ -1,0 +1,10 @@
+(library
+ (name dkml_package_textarchive_setup)
+ (public_name dkml-package-textarchive.setup)
+ (libraries
+  dkml-install.register
+  dkml-install-runner
+  dkml-package-textarchive.common
+  dkml-install-runner.sites
+  dune-site
+  dune-site.plugins))

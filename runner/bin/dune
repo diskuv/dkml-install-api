@@ -6,7 +6,7 @@
  (libraries
   dkml-install.register
   dkml-install-runner.sites
-  runner
+  dkml-install-runner
   dune-site
   dune-site.plugins
   cmdliner))
@@ -38,7 +38,7 @@
  (libraries
   dkml-install.register
   dkml-install-runner.sites
-  runner
+  dkml-install-runner
   dune-site
   dune-site.plugins
   cmdliner))

@@ -1,8 +1,8 @@
 open Cmdliner
 open Dkml_install_register
 open Dkml_install_api
-open Runner.Cmdliner_runner
-open Runner.Error_handling
+open Dkml_install_runner.Cmdliner_runner
+open Dkml_install_runner.Error_handling
 
 let default_cmd =
   let doc = "the OCaml CLI administrator installer" in
@@ -23,7 +23,7 @@ let (_ : string list) = Default_component_config.depends_on
 
 (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
    reset the logger to what was given on the command line. *)
-let (_ : Log_config.t) = Runner.Cmdliner_runner.setup_log None None
+let (_ : Log_config.t) = Dkml_install_runner.Cmdliner_runner.setup_log None None
 
 (* Load all the available components *)
 let () = Dkml_install_runner_sites.load_all ()
@@ -31,7 +31,8 @@ let () = Dkml_install_runner_sites.load_all ()
 let reg = Component_registry.get ()
 
 let () =
-  Runner.Error_handling.get_ok_or_raise_string (Component_registry.validate reg)
+  Dkml_install_runner.Error_handling.get_ok_or_raise_string
+    (Component_registry.validate reg)
 
 (** {1 Setup}
 
@@ -71,7 +72,7 @@ let uninstall_admin_cmds ~selector =
 let run_terms_with_common_runner_args ~log_config ~prefix ~staging_files_source
     acc (term_t, term_info) =
   let common_runner_cmd =
-    Runner.Cmdliner_runner.common_runner_args ~log_config ~prefix
+    Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config ~prefix
       ~staging_files_source
   in
   let common_runner_args =
@@ -98,11 +99,11 @@ let run_terms_with_common_runner_args ~log_config ~prefix ~staging_files_source
 let helper_all_cmd ~doc ~name ~install f =
   let runall log_config selector prefix staging_files_opt opam_context_opt =
     let staging_files_source =
-      Runner.Path_location.staging_files_source
+      Dkml_install_runner.Path_location.staging_files_source
         ~staging_default:No_staging_default ~opam_context_opt ~staging_files_opt
     in
     List.fold_left
-      (run_terms_with_common_runner_args ~log_config ~prefix
+      (run_terms_with_common_runner_args ~log_config ~prefix:(Fpath.v prefix)
          ~staging_files_source)
       (`Ok ())
       (f ~selector:(to_selector selector))

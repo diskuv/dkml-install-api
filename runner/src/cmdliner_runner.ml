@@ -59,7 +59,7 @@ let create_context ~staging_default self_component_name reg log_config prefix
   in
   let interpreter =
     Interpreter.create global_context ~self_component_name ~abi:host_abi_v2
-      ~staging_files_source ~prefix
+      ~staging_files_source ~prefix:(Fpath.v prefix)
   in
   {
     Dkml_install_api.Context.eval = Interpreter.eval interpreter;
@@ -101,8 +101,7 @@ let prefix_t =
 (* Directory containing dkml-install-setup.exe *)
 let installer_archive_dir = Fpath.(v OS.Arg.exec |> parent)
 
-let staging_default_dir_for_package =
-  Fpath.(installer_archive_dir / "staging")
+let staging_default_dir_for_package = Fpath.(installer_archive_dir / "staging")
 
 let static_default_dir_for_package = Fpath.(installer_archive_dir / "static")
 
@@ -233,13 +232,12 @@ let component_selector_t ~install =
 (* Misc *)
 
 let common_runner_args ~log_config ~prefix ~staging_files_source =
-  let open Os_utils in
   let z s = "--" ^ s in
   let args =
     Cmd.(
       Dkml_install_api.Log_config.to_args log_config
       % z Cmdliner_common.prefix_arg
-      % normalize_path prefix)
+      % Fpath.to_string prefix)
   in
   let args =
     match staging_files_source with
