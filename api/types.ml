@@ -17,7 +17,7 @@ module Context = struct
       | Windows_x86
       | Windows_arm64
       | Windows_arm32
-    [@@deriving eq, ord]
+    [@@deriving eq, ord, enum]
 
     let of_string = function
       | "Android_arm64v8a" -> Result.ok Android_arm64v8a
