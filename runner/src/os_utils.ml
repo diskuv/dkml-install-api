@@ -47,7 +47,9 @@ let copy_dir src dst =
             @[%s@]"
            Fpath.pp src Fpath.pp dst s)
 
-type install_files_source = Opam_context | Install_files_dir of string
+type install_files_source =
+  | Opam_switch_prefix of string
+  | Install_files_dir of string
 
 type install_files_type = Staging | Static
 
@@ -57,25 +59,24 @@ type package_selector = Package | Component
     the [component_name] component's static-files or staging-files directory
     for Staging or Static [install_files_type], respectively *)
 let absdir_install_files ?(package_selector = Component) ~component_name
-    install_files_type = function
-  | Opam_context ->
-      let opam_switch_prefix = OS.Env.opt_var "OPAM_SWITCH_PREFIX" ~absent:"" in
-      if opam_switch_prefix = "" then
-        failwith
-          "When using --opam-context the OPAM_SWITCH_PREFIX environment \
-           variable must be defined by evaluating the `opam env` command.";
-      let stem =
-        match install_files_type with
-        | Staging -> "staging-files"
-        | Static -> "static-files"
-      in
-      Fpath.(
-        to_string
-        @@ string_to_norm_fpath opam_switch_prefix
-           / "share"
-           / (match package_selector with
-             | Component -> "dkml-component-" ^ component_name
-             | Package -> "dkml-package-" ^ component_name)
-           / stem)
+    install_files_type install_files_source =
+  let do_opam_context opam_switch_prefix =
+    let stem =
+      match install_files_type with
+      | Staging -> "staging-files"
+      | Static -> "static-files"
+    in
+    Fpath.(
+      to_string
+      @@ string_to_norm_fpath opam_switch_prefix
+         / "share"
+         / (match package_selector with
+           | Component -> "dkml-component-" ^ component_name
+           | Package -> "dkml-package-" ^ component_name)
+         / stem)
+  in
+  match install_files_source with
+  | Opam_switch_prefix opam_switch_prefix ->
+      do_opam_context opam_switch_prefix
   | Install_files_dir install_files ->
       Fpath.(to_string @@ (string_to_norm_fpath install_files / component_name))

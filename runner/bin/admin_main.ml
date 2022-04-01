@@ -68,11 +68,21 @@ let uninstall_admin_cmds ~selector =
    User Account Control prompt and on Unix we only want one sudo password
    prompt. Drawback is that progress is a bit harder to track; we'll survive! *)
 
-let run_terms_with_global_argv acc (term_t, term_info) =
+let run_terms_with_common_runner_args ~log_config ~prefix ~staging_files_source
+    acc (term_t, term_info) =
+  let common_runner_cmd =
+    Runner.Cmdliner_runner.common_runner_args ~log_config ~prefix
+      ~staging_files_source
+  in
+  let common_runner_args =
+    Array.of_list (Term.name term_info :: Bos.Cmd.to_list common_runner_cmd)
+  in
   match acc with
   | `Ok () -> (
       let name = Term.name term_info in
-      match Term.(eval ~catch:false (term_t, term_info)) with
+      match
+        Term.(eval ~argv:common_runner_args ~catch:false (term_t, term_info))
+      with
       | `Ok () -> `Ok ()
       | `Error `Exn ->
           `Error (false, Fmt.str "Terminated with an exception in %s" name)
@@ -85,33 +95,33 @@ let run_terms_with_global_argv acc (term_t, term_info) =
       | `Help -> `Help (`Pager, None))
   | _ as a -> a
 
+let helper_all_cmd ~doc ~name ~install f =
+  let runall log_config selector prefix staging_files_opt opam_context_opt =
+    let staging_files_source =
+      Runner.Path_location.staging_files_source ~opam_context_opt
+        ~staging_files_opt
+    in
+    List.fold_left
+      (run_terms_with_common_runner_args ~log_config ~prefix
+         ~staging_files_source)
+      (`Ok ())
+      (f ~selector:(to_selector selector))
+  in
+  ( Term.(
+      ret
+        (const runall $ setup_log_t
+        $ component_selector_t ~install
+        $ prefix_t $ staging_files_opt_t $ opam_context_opt_t)),
+    Term.info name ~version:"%%VERSION%%" ~doc )
+
 let install_all_cmd =
   let doc = "install all components" in
-  let runall (_ : Log_config.t) selector (_prefix : string)
-      (_staging_files_opt : string option) (_opam_context : bool) =
-    List.fold_left run_terms_with_global_argv (`Ok ())
-      (install_admin_cmds ~selector:(to_selector selector))
-  in
-  Term.
-    ( ret
-        (const runall $ setup_log_t
-        $ component_selector_t ~install:true
-        $ prefix_t $ staging_files_opt_t $ opam_context_t),
-      info "install-adminall" ~version:"%%VERSION%%" ~doc )
+  helper_all_cmd ~name:"install-adminall" ~doc ~install:true install_admin_cmds
 
 let uninstall_all_cmd =
   let doc = "uninstall all components" in
-  let runall (_ : Log_config.t) selector (_prefix : string)
-      (_staging_files_opt : string option) (_opam_context : bool) =
-    List.fold_left run_terms_with_global_argv (`Ok ())
-      (uninstall_admin_cmds ~selector:(to_selector selector))
-  in
-  Term.
-    ( ret
-        (const runall $ setup_log_t
-        $ component_selector_t ~install:false
-        $ prefix_t $ staging_files_opt_t $ opam_context_t),
-      info "uninstall-adminall" ~version:"%%VERSION%%" ~doc )
+  helper_all_cmd ~name:"uninstall-adminall" ~doc ~install:false
+    uninstall_admin_cmds
 
 let () =
   Term.(

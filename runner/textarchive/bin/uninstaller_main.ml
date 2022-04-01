@@ -34,7 +34,7 @@ let uninstall log_config name prefix component_selector staging_files_source =
   let selector = to_selector component_selector in
 
   let args =
-    Textarchive_common.common_runner_args ~log_config ~prefix
+    Runner.Cmdliner_runner.common_runner_args ~log_config ~prefix
       ~staging_files_source
   in
 

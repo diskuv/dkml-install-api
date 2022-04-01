@@ -42,10 +42,10 @@ let setup_log_t =
 (* Define a context that includes all component-based fields *)
 
 let create_context self_component_name reg log_config prefix staging_files_opt
-    opam_context =
+    opam_context_opt =
   let open Path_eval in
   let staging_files_source =
-    Path_location.staging_files_source ~opam_context ~staging_files_opt
+    Path_location.staging_files_source ~opam_context_opt ~staging_files_opt
   in
   let global_context = Global_context.create reg in
   let host_abi_v2 =
@@ -101,7 +101,12 @@ let prefix_t =
 let archive_dir_for_setup = Fpath.(v OS.Arg.exec |> parent)
 
 let staging_files_opt_t =
-  let doc = "$(docv) is the staging files directory for the installation" in
+  let doc =
+    Fmt.str
+      "$(docv) is the staging files directory for the installation. Takes \
+       priority over $(b,--%s)"
+      Cmdliner_common.opam_context_args
+  in
   Arg.(
     value
     & opt (some raw_dir) None
@@ -113,9 +118,9 @@ let staging_files_for_setup_and_uninstaller_t =
   let default_dir = Fpath.(archive_dir_for_setup / "staging") in
   let doc =
     Fmt.str
-      "$(docv) is the staging files directory of the installation. The \
-       $(b,--%s) option will take priority if $(b,--%s) is used."
-      Cmdliner_common.opam_context_args Cmdliner_common.opam_context_args
+      "$(docv) is the staging files directory of the installation. Takes \
+       priority over $(b,--%s)"
+      Cmdliner_common.opam_context_args
   in
   Arg.(
     value
@@ -132,35 +137,54 @@ let static_files_for_setup_and_uninstaller_t =
     & opt raw_dir (Fpath.to_string default_dir)
     & info [ Cmdliner_common.static_files_arg ] ~docv:"DIR" ~doc)
 
-let opam_context_t =
+let opam_context_opt_t =
   let doc =
     Manpage.escape
-      "Obtain staging files from the currently activated Opam switch defined \
-       by the OPAM_SWITCH_PREFIX environment variable. A command like `(& opam \
-       env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression $_ }` for \
-       Windows PowerShell or `eval $(opam env)` is necessary to activate an \
-       Opam switch and set the OPAM_SWITCH_PREFIX environment variable"
+      (Fmt.str
+         "Obtain staging files from an Opam switch. Ignored if $(b,--%s) \
+          specified. The Opam switch prefix can be unspecified which indicates \
+          to use the Opam default switch (if any) or the Opam switch prefix \
+          can be specified as an option argument. 1) A switch prefix is either \
+          the {b _opam} subdirectory of a local Opam switch or {b \
+          $OPAMROOT/<switchname>} for a global Opam switch. 2) The default \
+          Opam switch is the currently activated Opam switch defined by the \
+          OPAM_SWITCH_PREFIX environment variable; the OPAM_SWITCH_PREFIX \
+          environment variable is set automatically by commands like `(& opam \
+          env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression $_ }` for \
+          Windows PowerShell or `eval $(opam env)`."
+         Cmdliner_common.staging_files_arg)
   in
-  Arg.(value & flag & info [ Cmdliner_common.opam_context_args ] ~doc)
+  let hack_cmdliner_backslash = function
+    | None -> None
+    | Some s -> Some (String.map (function '\\' -> '/' | c -> c) s)
+  in
+  Arg.(
+    value
+    & opt
+        ~vopt:(hack_cmdliner_backslash (OS.Env.var "OPAM_SWITCH_PREFIX"))
+        (some dir) None
+    & info [ Cmdliner_common.opam_context_args ] ~docv:"OPAM_SWITCH_PREFIX" ~doc)
 
 let staging_files_source_for_setup_and_uninstaller_t =
   (* The Opam context staging file directory takes priority over
      any staging_files from the command line. *)
-  let _staging_files_source opam_context staging_files =
-    Path_location.staging_files_source ~opam_context
+  let _staging_files_source opam_context_opt staging_files =
+    Path_location.staging_files_source ~opam_context_opt
       ~staging_files_opt:(Some staging_files)
   in
   Term.(
     const _staging_files_source
-    $ opam_context_t $ staging_files_for_setup_and_uninstaller_t)
+    $ opam_context_opt_t $ staging_files_for_setup_and_uninstaller_t)
 
 let static_files_source_for_setup_and_uninstaller_t =
-  let static_files_source opam_context static_files =
-    if opam_context then Path_location.Opam_context_static
-    else Static_files_dir static_files
+  let static_files_source opam_context_opt static_files =
+    match opam_context_opt with
+    | Some switch_prefix ->
+        Path_location.Opam_static_switch_prefix switch_prefix
+    | None -> Static_files_dir static_files
   in
   Term.(
-    const static_files_source $ opam_context_t
+    const static_files_source $ opam_context_opt_t
     $ static_files_for_setup_and_uninstaller_t)
 
 (** [ctx_t component_name reg] creates a [Term] for component [component_name]
@@ -169,7 +193,7 @@ let static_files_source_for_setup_and_uninstaller_t =
 let ctx_t component_name reg =
   Term.(
     const create_context $ const component_name $ const reg $ setup_log_t
-    $ prefix_t $ staging_files_opt_t $ opam_context_t)
+    $ prefix_t $ staging_files_opt_t $ opam_context_opt_t)
 
 let to_selector component_selector =
   if component_selector = [] then
@@ -188,6 +212,32 @@ let component_selector_t ~install =
        all components are uninstalled."
   in
   Arg.(value & opt_all string [] & info [ "component" ] ~doc)
+
+(* Misc *)
+
+let common_runner_args ~log_config ~prefix ~staging_files_source =
+  let open Os_utils in
+  let z s = "--" ^ s in
+  let args =
+    Cmd.(
+      Dkml_install_api.Log_config.to_args log_config
+      % z Cmdliner_common.prefix_arg
+      % normalize_path prefix)
+  in
+  let args =
+    match staging_files_source with
+    | Path_location.Opam_staging_switch_prefix switch_prefix ->
+        Cmd.(
+          args
+          % z Cmdliner_common.opam_context_args
+          % normalize_path switch_prefix)
+    | Staging_files_dir staging_files ->
+        Cmd.(
+          args
+          % z Cmdliner_common.staging_files_arg
+          % normalize_path staging_files)
+  in
+  args
 
 (* Commands *)
 

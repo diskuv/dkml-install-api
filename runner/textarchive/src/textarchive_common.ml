@@ -68,27 +68,6 @@ let needs_uninstall_admin ~reg ~selector ~log_config ~prefix
   | Ok bools -> List.exists Fun.id bools
   | Error msg -> raise (Dkml_install_api.Installation_error msg)
 
-let common_runner_args ~log_config ~prefix ~staging_files_source =
-  let open Runner.Os_utils in
-  let z s = "--" ^ s in
-  let args =
-    Cmd.(
-      Dkml_install_api.Log_config.to_args log_config
-      % z Runner.Cmdliner_common.prefix_arg
-      % normalize_path prefix)
-  in
-  let args =
-    match staging_files_source with
-    | Runner.Path_location.Opam_context_staging ->
-        Cmd.(args % z Runner.Cmdliner_common.opam_context_args)
-    | Staging_files_dir staging_files ->
-        Cmd.(
-          args
-          % z Runner.Cmdliner_common.staging_files_arg
-          % normalize_path staging_files)
-  in
-  args
-
 let spawn cmd =
   let open Runner.Error_handling.Monad_syntax in
   Logs.info (fun m -> m "Running: %a" Cmd.pp cmd);
