@@ -173,7 +173,19 @@ let static_files_source_for_package_t =
 (** [ctx_for_runner_t component_name reg] creates a user.exe/admin.exe [Term]
     for component [component_name]
     that sets up logging and any other global state, and defines the context
-    record *)
+    record.
+    
+    The package (setup.exe/uninstall.exe) will typically use sudo on Unix
+    or gsudo on Windows to elevate the privileges of `admin.exe`. However
+    it is very unlikely that the environment variables are propagated from
+    the user (setup.exe) to the elevated process (admin.exe). So the
+    staging directory must be specified (`No_staging_default`) when the runner
+    user.exe/admin.exe is launched.
+    
+    That is, the user process setup.exe can pass its
+    environment variable OPAM_SWITCH_PREFIX (if specified with the no argument
+    `--opam-context` option of setup.exe) into the staging directory argument
+    for admin.exe. *)
 let ctx_for_runner_t component_name reg =
   Term.(
     const (create_context ~staging_default:No_staging_default)
@@ -183,7 +195,15 @@ let ctx_for_runner_t component_name reg =
 (** [ctx_for_package_t component_name reg] creates a setup.exe/uninstall.exe [Term]
     for component [component_name]
     that sets up logging and any other global state, and defines the context
-    record *)
+    record.
+    
+    Unlike {!ctx_for_runner_t} the expectation is that setup.exe/uninstall.exe
+    will be directly launched by the user and have access to the user's
+    environment variables, especially OPAM_SWITCH_PREFIX. So the no argument
+    --opam-context option of setup.exe can default to OPAM_SWITCH_PREFIX.
+
+    Unlike {!ctx_for_runner_t} the staging directory has a default
+    (`Staging_default_dir`) based on relative paths from setup.exe. *)
 let ctx_for_package_t component_name reg =
   Term.(
     const
