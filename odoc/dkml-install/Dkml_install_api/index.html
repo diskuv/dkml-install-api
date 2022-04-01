@@ -22,12 +22,12 @@
 let setup_log_t =
   Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())</code></pre><p>Finally, with a <a href="Log_config/index.html#type-t"><code>Log_config.t</code></a> you can use <a href="Log_config/index.html#val-to_args"><code>Log_config.to_args</code></a> to pass the correct command line options into your own executables. For components that are configured to spawn bytecode programs you can locate the <a href="Log_config/index.html#type-t"><code>Log_config.t</code></a> in the <a href="Context/index.html#type-t.log_config"><code>Dkml_install_api.Context.t.log_config</code></a> (<code>ctx.Dkml_install_api.Context.log_config</code>) context field. That could look like:</p><pre><code>let execute ctx =
   let ocamlrun =
-    ctx.Context.path_eval &quot;%{staging-ocamlrun:share}%/generic/bin/ocamlrun&quot;
+    ctx.Context.path_eval &quot;%{staging-ocamlrun:share-abi}/bin/ocamlrun&quot;
   in
   log_spawn_and_raise
     Cmd.(
       v (Fpath.to_string
-          (ctx.Context.path_eval &quot;%{staging-ocamlrun:share}%/generic/bin/ocamlrun&quot;))
+          (ctx.Context.path_eval &quot;%{staging-ocamlrun:share-abi}/bin/ocamlrun&quot;))
       % Fpath.to_string
           (ctx.Context.path_eval &quot;%{_:share}%/generic/your_bytecode.bc&quot;)
       (* Pass --verbosity and --color to your bytecode *)

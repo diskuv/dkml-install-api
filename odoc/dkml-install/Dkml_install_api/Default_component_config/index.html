@@ -6,7 +6,7 @@
   <span><span>( <span>unit <span class="xref-unresolved">Cmdliner</span>.Term.t</span> * <span class="xref-unresolved">Cmdliner</span>.Term.info, string )</span> <span class="xref-unresolved">Result</span>.t</span></span></code></div><div class="spec-doc"><p><code>install_user_subcommand ~component_name ~subcommand_name ~ctx_t</code> defines a subcommand that should be added to <b>dkml-install-runner.exe</b> that, when invoked, will install the component with non-privileged user permissions.</p><p><code>~component_name</code>: This will correspond to the component name defined in the full <code>Component_config</code> module type.</p><p><code>~subcommand_name</code>: Typically but not always the subcommand name is <code>&quot;install-user-&quot; ^ component_name</code>.</p><p><code>~ctx_t</code>: A Cmdliner term that sets up common options and delivers a context record. The common options include options for logging. The context record is described at <a href="../index.html"><code>Dkml_install_api</code></a>.</p><p>You must include the <code>ctx_t</code> term in your returned <code>Term.t * Term.info</code>, as in:</p><pre><code>let execute_install ctx =
   Format.printf
     &quot;We can run bytecode using: %s@\n&quot;
-    (ctx.Dkml_install_api.Context.path_eval &quot;%{ocamlrun:share}/bin/ocamlrun.exe&quot;)
+    (ctx.Dkml_install_api.Context.path_eval &quot;%{ocamlrun:share-abi}/bin/ocamlrun&quot;)
 
 let install_user_subcommand ~component_name ~subcommand_name ~ctx_t =
   let doc = &quot;Install the pieces that don't require Administrative rights&quot; in
@@ -17,7 +17,7 @@ let install_user_subcommand ~component_name ~subcommand_name ~ctx_t =
   <span><span>( <span>unit <span class="xref-unresolved">Cmdliner</span>.Term.t</span> * <span class="xref-unresolved">Cmdliner</span>.Term.info, string )</span> <span class="xref-unresolved">Result</span>.t</span></span></code></div><div class="spec-doc"><p><code>uninstall_user_subcommand ~component_name ~ctx_t</code> defines a subcommand that should be added to <b>dkml-install-runner.exe</b> that, when invoked, will uninstall the component with non-privileged user permissions.</p><p><code>~component_name</code>: This will correspond to the component name defined in the full <code>Component_config</code> module type.</p><p><code>~subcommand_name</code>: Typically but not always the subcommand name is <code>&quot;uninstall-user-&quot; ^ component_name</code>.</p><p><code>~ctx_t</code>: A Cmdliner term that sets up common options and delivers a context record. The common options include options for logging. The context record is described at <a href="../index.html"><code>Dkml_install_api</code></a>.</p><p>You must include the <code>ctx_t</code> term in your returned <code>Term.t * Term.info</code>, as in:</p><pre><code>  let execute_uninstall ctx =
     Format.printf
     &quot;We can run bytecode using: %s@\n&quot;
-    (ctx.Dkml_install_api.Context.path_eval &quot;%{ocamlrun:share}/bin/ocamlrun.exe&quot;)
+    (ctx.Dkml_install_api.Context.path_eval &quot;%{ocamlrun:share-abi}/bin/ocamlrun&quot;)
 
 let uninstall_user_subcommand ~component_name ~subcommand_name ~ctx_t =
     let doc = &quot;Uninstall the pieces that don't require Administrative rights&quot; in
@@ -28,7 +28,7 @@ let uninstall_user_subcommand ~component_name ~subcommand_name ~ctx_t =
   <span><span>( <span>unit <span class="xref-unresolved">Cmdliner</span>.Term.t</span> * <span class="xref-unresolved">Cmdliner</span>.Term.info, string )</span> <span class="xref-unresolved">Result</span>.t</span></span></code></div><div class="spec-doc"><p><code>install_admin_subcommand ~component_name ~subcommand_name ~ctx_t</code> defines a subcommand that should be added to <b>dkml-install-runner.exe</b> that, when invoked, will install the component with privileged administrator (`root` or `sudo` on Unix) permissions.</p><p><code>~component_name</code>: This will correspond to the component name defined in the full <code>Component_config</code> module type.</p><p><code>~subcommand_name</code>: Typically but not always the subcommand name is <code>&quot;install-admin-&quot; ^ component_name</code>.</p><p><code>~ctx_t</code>: A Cmdliner term that sets up common options and delivers a context record. The common options include options for logging. The context record is described at <a href="../index.html"><code>Dkml_install_api</code></a>.</p><p>You must include the <code>ctx_t</code> term in your returned <code>Term.t * Term.info</code>, as in:</p><pre><code>let execute_install_admin ctx =
   Format.printf
   &quot;We can run bytecode using: %s@\n&quot;
-  (ctx.Dkml_install_api.Context.path_eval &quot;%{ocamlrun:share}/bin/ocamlrun.exe&quot;)
+  (ctx.Dkml_install_api.Context.path_eval &quot;%{ocamlrun:share-abi}/bin/ocamlrun&quot;)
 
 let install_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
   let doc = &quot;Install the pieces requiring Administrative rights&quot; in
@@ -39,7 +39,7 @@ let install_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
   <span><span>( <span>unit <span class="xref-unresolved">Cmdliner</span>.Term.t</span> * <span class="xref-unresolved">Cmdliner</span>.Term.info, string )</span> <span class="xref-unresolved">Result</span>.t</span></span></code></div><div class="spec-doc"><p><code>uninstall_admin_subcommand ~component_name ~ctx_t</code> defines a subcommand that should be added to <b>dkml-install-runner.exe</b> that, when invoked, will uninstall the component with privileged administrator (`root` or `sudo` on Unix) permissions.</p><p><code>~component_name</code>: This will correspond to the component name defined in the full <code>Component_config</code> module type.</p><p><code>~subcommand_name</code>: Typically but not always the subcommand name is <code>&quot;uninstall-&quot; ^ component_name</code>.</p><p><code>~ctx_t</code>: A Cmdliner term that sets up common options and delivers a context record. The common options include options for logging. The context record is described at <a href="../index.html"><code>Dkml_install_api</code></a>.</p><p>You must include the <code>ctx_t</code> term in your returned <code>Term.t * Term.info</code>, as in:</p><pre><code>let execute_uninstall_admin ctx =
   Format.printf
   &quot;We can run bytecode using: %s@\n&quot;
-  (ctx.Dkml_install_api.Context.path_eval &quot;%{ocamlrun:share}/bin/ocamlrun.exe&quot;)
+  (ctx.Dkml_install_api.Context.path_eval &quot;%{ocamlrun:share-abi}/bin/ocamlrun&quot;)
 
 let uninstall_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
   let doc = &quot;Install the pieces requiring Administrative rights&quot; in
