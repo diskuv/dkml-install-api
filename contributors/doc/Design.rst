@@ -139,12 +139,12 @@ Here is what the ``opam install ...`` step does in detail:
    :ref:`UserPhases`
 
 4. The last step depends on what type of installer
-   generator has been configured. *As of Jan 2022 only the CLI Archive
+   generator has been configured. *As of Apr 2022 only the Console
    installer generator is available, and no configuration is needed. But
    regardless of which installer generator is available, the Component packages
    should not change.*
 
-   CLI Archive Installer Generator
+   Console Installer Generator
         This installer will produce a ``$OPAM_SWITCH_PREFIX/share/$I/dist/$I.zip``
         file or a ``$OPAM_SWITCH_PREFIX/share/$I/dist/$I.tar.gz`` file.
 
@@ -197,7 +197,7 @@ User runs the installer
    .. note::
 
      This is a underspecified spot in the design. There needs to be a
-     "selections" artifact created by the CLI Archive Installer or GUI installer
+     "selections" artifact created by the Console Installer or GUI installer
      to describe the end-user choices. And there needs to be some mapping
      from that "selections" artifact into command line options for
      ``dkml-install-user-runner.exe`` and  ``dkml-install-admin-runner.exe``.

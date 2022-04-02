@@ -8,7 +8,7 @@ with-dkml opam pin dkml-component-network-ocamlcompiler git+file://Z:/source/dkm
 with-dkml opam pin dkml-component-staging-ocamlrun      git+file://Z:/source/dkml-component-ocamlcompiler#main --no-action --yes
 with-dkml opam pin dkml-install                         git+file://Z:/source/dkml-install-api#main --no-action --yes
 with-dkml opam pin dkml-install-runner                  git+file://Z:/source/dkml-install-api#main --no-action --yes
-with-dkml opam pin dkml-package-textarchive             git+file://Z:/source/dkml-install-api#main --no-action --yes
+with-dkml opam pin dkml-package-console             git+file://Z:/source/dkml-install-api#main --no-action --yes
 with-dkml opam pin dkml-component-staging-curl          git+file://Z:/source/dkml-component-curl#main --no-action --yes
 with-dkml opam pin dkml-installer-network-ocaml         git+file://Z:/source/dkml-installer-ocaml#main --no-action --yes
 with-dkml opam pin dkml-component-staging-unixutils     git+file://Z:/source/dkml-component-unixutils#main --no-action --yes
@@ -26,7 +26,7 @@ with-dkml opam pin -k version uuidm                 0.9.7 --no-action --yes
 
 with-dkml opam upgrade `
     dkml-base-compiler ocaml ocaml-config `
-    dkml-install dkml-install-runner dkml-package-textarchive `
+    dkml-install dkml-install-runner dkml-package-console `
     dkml-component-network-ocamlcompiler dkml-component-staging-ocamlrun `
     dkml-component-staging-curl `
     dkml-component-staging-unixutils dkml-component-network-unixutils `

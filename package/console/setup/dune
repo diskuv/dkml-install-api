@@ -1,0 +1,10 @@
+(library
+ (name dkml_package_console_setup)
+ (public_name dkml-package-console.setup)
+ (libraries
+  dkml-install.register
+  dkml-install-runner
+  dkml-package-console.common
+  dkml-install-runner.sites
+  dune-site
+  dune-site.plugins))

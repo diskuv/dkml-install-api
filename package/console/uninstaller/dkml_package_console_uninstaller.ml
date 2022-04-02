@@ -21,7 +21,7 @@ let (_ : string list) = Default_component_config.depends_on
 let uninstall program_name package_args =
   (* deconstruct *)
   let prefix_opt, component_selector, staging_files_source, log_config =
-    ( package_args.Dkml_package_textarchive_common.prefix_opt,
+    ( package_args.Dkml_package_console_common.prefix_opt,
       package_args.component_selector,
       package_args.staging_files_source,
       package_args.log_config )
@@ -37,7 +37,7 @@ let uninstall program_name package_args =
   in
 
   let prefix =
-    Dkml_package_textarchive_common.get_user_installation_prefix ~program_name
+    Dkml_package_console_common.get_user_installation_prefix ~program_name
       ~prefix_opt
   in
   let args =
@@ -54,11 +54,11 @@ let uninstall program_name package_args =
 
   let spawn_admin_if_needed () =
     if
-      Dkml_package_textarchive_common.needs_uninstall_admin ~reg ~selector
+      Dkml_package_console_common.needs_uninstall_admin ~reg ~selector
         ~log_config ~prefix ~staging_files_source
     then
-      Dkml_package_textarchive_common.spawn
-      @@ Dkml_package_textarchive_common.elevated_cmd ~staging_files_source
+      Dkml_package_console_common.spawn
+      @@ Dkml_package_console_common.elevated_cmd ~staging_files_source
            Cmd.(
              exe_cmd "dkml-install-admin-runner.exe"
              % "uninstall-adminall" %% args)
@@ -71,7 +71,7 @@ let uninstall program_name package_args =
     let* (_ : unit list) =
       Component_registry.eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
-          Dkml_package_textarchive_common.spawn
+          Dkml_package_console_common.spawn
             Cmd.(
               exe_cmd "dkml-install-user-runner.exe"
               % ("uninstall-user-" ^ Cfg.component_name)

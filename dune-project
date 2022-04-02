@@ -51,15 +51,15 @@
   (logs (>= 0.7.0))))
 
 (package
- (name dkml-package-textarchive)
- (synopsis "Text archive setup and uninstall executables for Diskuv OCaml (DKML) installation")
+ (name dkml-package-console)
+ (synopsis "Console setup and uninstall executables for Diskuv OCaml (DKML) installation")
  (description
   "The setup and uninstall executables are responsible for launching the DKML runners.")
  (depends
   (alcotest (and (>= 1.4.0) :with-test))
   (odoc (and (>= 1.5.3) :with-doc))
   (dkml-install (= :version))
-  ; runner/textarchive/bin/dune site requires dkml-install-runner package
+  ; runner/console/bin/dune site requires dkml-install-runner package
   (dkml-install-runner (= :version))
   (dune (>= 2.9))
   (dune-site (>= 2.9))))

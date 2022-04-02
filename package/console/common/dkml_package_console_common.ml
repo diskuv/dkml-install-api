@@ -93,10 +93,10 @@ let elevated_cmd ~staging_files_source cmd =
        "The requested operation requires elevation" if dkml-install-admin.exe
        is spawned from another process rather than directly from
        Command Prompt or PowerShell.
-       So use `gsudo` from dkml-package-textarchive. *)
+       So use `gsudo` from dkml-package-console. *)
     let component_dir =
       Dkml_install_runner.Path_location.absdir_staging_files
-        ~package_selector:Package ~component_name:"textarchive"
+        ~package_selector:Package ~component_name:"console"
         ~abi_selector:(Abi host_abi_v2) staging_files_source
     in
     let gsudo = Fpath.(v component_dir / "bin" / "gsudo.exe") in

@@ -1,10 +1,10 @@
 (library
- (name dkml_package_textarchive_setup)
- (public_name dkml-package-textarchive.setup)
+ (name dkml_package_console_uninstaller)
+ (public_name dkml-package-console.uninstaller)
  (libraries
   dkml-install.register
   dkml-install-runner
-  dkml-package-textarchive.common
+  dkml-package-console.common
   dkml-install-runner.sites
   dune-site
   dune-site.plugins))

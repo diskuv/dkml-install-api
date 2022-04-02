@@ -1,4 +1,0 @@
-(library
- (name dkml_package_textarchive_common)
- (public_name dkml-package-textarchive.common)
- (libraries bos dkml-install-runner dkml-install.api dkml-install.register))
