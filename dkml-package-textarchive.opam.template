@@ -3,6 +3,8 @@ install: [
   ["install" "-d"
     "%{_:share}%/staging-files/windows_x86/bin"
     "%{_:share}%/staging-files/windows_x86_64/bin"]
+
+  # gsudo
   [
     "unzip" "-o" "-d" "%{_:share}%/staging-files/windows_x86/bin"
     "dl/gsudo.v1.2.0.zip"
@@ -13,10 +15,26 @@ install: [
     "dl/gsudo.v1.2.0.zip"
     "gsudo.exe"
   ]
+
+  # 7zip (not as staging files because 7z used during dkml-installer-* packaging)
+  [ "install" "dl/7z2107.exe"  "%{_:share}%/7z.exe" ]
+  [ "install" "dl/lzma2107.7z" "%{_:share}%/lzma.7z" ]
 ]
 extra-source "dl/gsudo.v1.2.0.zip" {
   src: "https://github.com/gerardog/gsudo/releases/download/v1.2.0/gsudo.v1.2.0.zip"
   checksum: [
     "sha256=57c90d138200214a4f662925175d451f41c208f7960ed2c1652561eaa9e7c15c"
+  ]
+}
+extra-source "dl/7z2107.exe" {
+  src: "https://www.7-zip.org/a/7z2107.exe"
+  checksum: [
+    "sha256=71e94e6038f4d42ed8f0f38c0e6c3846f21d13527139efa9ef8b8f6312ab6c90"
+  ]
+}
+extra-source "dl/lzma2107.7z" {
+  src: "https://www.7-zip.org/a/lzma2107.7z"
+  checksum: [
+    "sha256=833888f03c6628c8a062ce5844bb8012056e7ab7ba294c7ea232e20ddadf0d75"
   ]
 }
