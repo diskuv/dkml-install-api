@@ -204,12 +204,12 @@ named <code class="docutils literal notranslate"><span class="pre">dkml-install-
 <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code> that will perform the steps in
 <a class="reference internal" href="#userphases"><span class="std std-ref">User runs the installer</span></a></p></li>
 <li><p>The last step depends on what type of installer
-generator has been configured. <em>As of Jan 2022 only the CLI Archive
+generator has been configured. <em>As of Apr 2022 only the Console
 installer generator is available, and no configuration is needed. But
 regardless of which installer generator is available, the Component packages
 should not change.</em></p>
 <dl>
-<dt>CLI Archive Installer Generator</dt><dd><p>This installer will produce a <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/dist/$I.zip</span></code>
+<dt>Console Installer Generator</dt><dd><p>This installer will produce a <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/dist/$I.zip</span></code>
 file or a <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/dist/$I.tar.gz</span></code> file.</p>
 <p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/static-files/</span></code> will go
 into the <code class="docutils literal notranslate"><span class="pre">static</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
@@ -259,7 +259,7 @@ will be used in both executables.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This is a underspecified spot in the design. There needs to be a
-“selections” artifact created by the CLI Archive Installer or GUI installer
+“selections” artifact created by the Console Installer or GUI installer
 to describe the end-user choices. And there needs to be some mapping
 from that “selections” artifact into command line options for
 <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and  <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>.
