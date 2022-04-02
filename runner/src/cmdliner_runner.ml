@@ -121,30 +121,29 @@ let static_files_opt_t =
 
 let opam_context_opt_t =
   let doc =
-    Manpage.escape
-      (Fmt.str
-         "Obtain staging files from an Opam switch. Ignored if $(b,--%s) \
-          specified. The Opam switch prefix can be unspecified which indicates \
-          to use the Opam default switch (if any) or the Opam switch prefix \
-          can be specified as an option argument. 1) A switch prefix is either \
-          the {b _opam} subdirectory of a local Opam switch or {b \
-          $OPAMROOT/<switchname>} for a global Opam switch. 2) The default \
-          Opam switch is the currently activated Opam switch defined by the \
-          OPAM_SWITCH_PREFIX environment variable; the OPAM_SWITCH_PREFIX \
-          environment variable is set automatically by commands like `(& opam \
-          env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression $_ }` for \
-          Windows PowerShell or `eval $(opam env)`."
-         Cmdliner_common.staging_files_arg)
+    Fmt.str
+      "Obtain staging files from an Opam switch. Ignored if $(b,--%s) \
+       specified. The Opam switch prefix can be unspecified which indicates to \
+       use the Opam default switch (if any) or the Opam switch prefix can be \
+       specified as an option argument. 1) A switch prefix is either the \
+       $(b,_opam) subdirectory of a local Opam switch or $(b,%s/<switchname>) \
+       for a global Opam switch. 2) The default Opam switch is the currently \
+       activated Opam switch defined by the OPAM_SWITCH_PREFIX environment \
+       variable; the OPAM_SWITCH_PREFIX environment variable is set \
+       automatically by commands like `%s`."
+      Cmdliner_common.staging_files_arg
+      (Manpage.escape "$OPAMROOT")
+      (Manpage.escape
+         "(& opam env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression \
+          $_ }` for Windows PowerShell or `eval $(opam env)")
   in
-  let hack_cmdliner_backslash = function
+  let opt_escaped = function
     | None -> None
-    | Some s -> Some (String.map (function '\\' -> '/' | c -> c) s)
+    | Some s -> Some (Manpage.escape s)
   in
   Arg.(
     value
-    & opt
-        ~vopt:(hack_cmdliner_backslash (OS.Env.var "OPAM_SWITCH_PREFIX"))
-        (some dir) None
+    & opt ~vopt:(opt_escaped (OS.Env.var "OPAM_SWITCH_PREFIX")) (some dir) None
     & info [ Cmdliner_common.opam_context_args ] ~docv:"OPAM_SWITCH_PREFIX" ~doc)
 
 (** [staging_files_source_for_package_t] is the

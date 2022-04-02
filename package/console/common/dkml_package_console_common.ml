@@ -126,43 +126,6 @@ let elevated_cmd ~staging_files_source cmd =
             (* su -c "dkml-install-admin-runner ..." *)
             Cmd.(su % "-c" % to_string cmd))
 
-(* Command Line Processing *)
-
-type package_args = {
-  log_config : Log_config.t;
-  prefix_opt : string option;
-  component_selector : string list;
-  static_files_source : Dkml_install_runner.Path_location.static_files_source;
-  staging_files_source : Dkml_install_runner.Path_location.staging_files_source;
-}
-
-let prefix_opt_t =
-  let doc = "$(docv) is the installation directory" in
-  Cmdliner.Arg.(
-    value
-    & opt (some string) None
-    & info
-        [ Dkml_install_runner.Cmdliner_common.prefix_arg ]
-        ~docv:"PREFIX" ~doc)
-
-let package_args_t =
-  let package_args log_config prefix_opt component_selector static_files_source
-      staging_files_source =
-    {
-      log_config;
-      prefix_opt;
-      component_selector;
-      static_files_source;
-      staging_files_source;
-    }
-  in
-  Cmdliner.Term.(
-    const package_args $ Dkml_install_runner.Cmdliner_runner.setup_log_t
-    $ prefix_opt_t
-    $ Dkml_install_runner.Cmdliner_runner.component_selector_t ~install:true
-    $ Dkml_install_runner.Cmdliner_runner.static_files_source_for_package_t
-    $ Dkml_install_runner.Cmdliner_runner.staging_files_source_for_package_t)
-
 let home_dir_fp () =
   let open Dkml_install_runner.Error_handling in
   let open Dkml_install_runner.Error_handling.Monad_syntax in
@@ -230,3 +193,48 @@ let get_user_installation_prefix ~program_name ~prefix_opt =
               prefix of the ABI %a"
              Context.Abi_v2.pp host_abi_v2))
       |> get_ok_or_raise_string
+
+(* Command Line Processing *)
+
+type package_args = {
+  log_config : Log_config.t;
+  prefix_opt : string option;
+  component_selector : string list;
+  static_files_source : Dkml_install_runner.Path_location.static_files_source;
+  staging_files_source : Dkml_install_runner.Path_location.staging_files_source;
+}
+
+let prefix_opt_t ~program_name =
+  let doc =
+    Fmt.str
+      "$(docv) is the installation directory. If not set and $(b,--%s) is also \
+       not set, then $(i,%s) will be used as the installation directory"
+      Dkml_install_runner.Cmdliner_common.opam_context_args
+      (Cmdliner.Manpage.escape
+         (Fpath.to_string
+            (get_user_installation_prefix ~program_name ~prefix_opt:None)))
+  in
+  Cmdliner.Arg.(
+    value
+    & opt (some string) None
+    & info
+        [ Dkml_install_runner.Cmdliner_common.prefix_arg ]
+        ~docv:"PREFIX" ~doc)
+
+let package_args_t ~program_name =
+  let package_args log_config prefix_opt component_selector static_files_source
+      staging_files_source =
+    {
+      log_config;
+      prefix_opt;
+      component_selector;
+      static_files_source;
+      staging_files_source;
+    }
+  in
+  Cmdliner.Term.(
+    const package_args $ Dkml_install_runner.Cmdliner_runner.setup_log_t
+    $ prefix_opt_t ~program_name
+    $ Dkml_install_runner.Cmdliner_runner.component_selector_t ~install:true
+    $ Dkml_install_runner.Cmdliner_runner.static_files_source_for_package_t
+    $ Dkml_install_runner.Cmdliner_runner.staging_files_source_for_package_t)

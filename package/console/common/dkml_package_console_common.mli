@@ -46,21 +46,6 @@ val elevated_cmd :
     files [staging_files_source] on Windows machines, or ["doas"], ["sudo"] or
     ["su"] on the PATH on Unix machines. *)
 
-(** {1 Command Line Processing} *)
-
-type package_args = {
-  log_config : Dkml_install_api.Log_config.t;
-  prefix_opt : string option;
-  component_selector : string list;
-  static_files_source : Dkml_install_runner.Path_location.static_files_source;
-  staging_files_source : Dkml_install_runner.Path_location.staging_files_source;
-}
-(** Common options between setup.exe and uninstaller.exe *)
-
-val package_args_t : package_args Cmdliner.Term.t
-(** {!Cmdliner.Term.t} for the common options between setup.exe and
-    uninstaller.exe *)
-
 (** {1 Installation Paths} *)
 
 type program_name = {
@@ -105,3 +90,18 @@ val get_user_installation_prefix :
       ["$XDG_DATA_HOME/<name_kebab_lower_case>"]
       otherwise ["$HOME/.local/share/<name_kebab_lower_case>"]
     *)
+
+(** {1 Command Line Processing} *)
+
+type package_args = {
+  log_config : Dkml_install_api.Log_config.t;
+  prefix_opt : string option;
+  component_selector : string list;
+  static_files_source : Dkml_install_runner.Path_location.static_files_source;
+  staging_files_source : Dkml_install_runner.Path_location.staging_files_source;
+}
+(** Common options between setup.exe and uninstaller.exe *)
+
+val package_args_t : program_name:program_name -> package_args Cmdliner.Term.t
+(** {!Cmdliner.Term.t} for the common options between setup.exe and
+    uninstaller.exe *)
