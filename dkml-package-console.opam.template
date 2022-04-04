@@ -15,10 +15,6 @@ install: [
     "dl/gsudo.v1.2.0.zip"
     "gsudo.exe"
   ]
-
-  # 7zip (not as staging files because 7z used during dkml-installer-* packaging)
-  [ "install" "dl/7z2107.exe"  "%{_:share}%/7z.exe" ]
-  [ "install" "dl/lzma2107.7z" "%{_:share}%/lzma.7z" ]
 ]
 extra-source "dl/gsudo.v1.2.0.zip" {
   src: "https://github.com/gerardog/gsudo/releases/download/v1.2.0/gsudo.v1.2.0.zip"
