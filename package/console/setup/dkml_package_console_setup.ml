@@ -11,6 +11,10 @@ open Dkml_install_runner.Error_handling.Monad_syntax
    https://ocaml.org/api/Dynlink.html#1_Accesscontrol "set_allowed_units" *)
 let (_ : string list) = Default_component_config.depends_on
 
+let box_err s =
+  Logs.err (fun l -> l "FATAL: %s" s);
+  failwith s
+
 (* Create command line options for dkml-install-{user,admin}-runner.exe *)
 
 (* Entry point of CLI.
@@ -59,8 +63,8 @@ let setup program_name package_args =
 
   let spawn_admin_if_needed () =
     if
-      Dkml_package_console_common.needs_install_admin ~reg ~selector
-        ~log_config ~prefix ~staging_files_source
+      Dkml_package_console_common.needs_install_admin ~reg ~selector ~log_config
+        ~prefix ~staging_files_source
     then
       Dkml_package_console_common.spawn
       @@ Dkml_package_console_common.elevated_cmd ~staging_files_source
@@ -86,11 +90,9 @@ let setup program_name package_args =
     let* (_ : unit list) =
       Component_registry.eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
-          let* static_dir_fp =
-            Dkml_install_runner.Error_handling.map_msg_error_to_string
-            @@ Fpath.of_string
-            @@ Dkml_install_runner.Path_location.absdir_static_files
-                 ~component_name:Cfg.component_name static_files_source
+          let static_dir_fp =
+            Dkml_install_runner.Path_location.absdir_static_files
+              ~component_name:Cfg.component_name static_files_source
           in
           let* exists =
             Dkml_install_runner.Error_handling.map_msg_error_to_string
@@ -98,7 +100,8 @@ let setup program_name package_args =
           in
           let+ () =
             if exists then
-              Dkml_install_runner.Os_utils.copy_dir static_dir_fp prefix
+              Diskuvbox.copy_dir ~err:box_err ~src:static_dir_fp
+                ~dst:prefix ()
             else Result.ok ()
           in
           ())
@@ -122,3 +125,5 @@ let setup program_name package_args =
         (Installation_error
            (Fmt.str "@[Could not install %s.@]@,@[%a@]" program_name.name_full
               Fmt.lines e))
+
+let create_installers = Create_installers.create_installers

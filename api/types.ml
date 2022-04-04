@@ -76,6 +76,13 @@ module Context = struct
       | Android_arm64v8a | Android_arm32v7a | Android_x86 | Android_x86_64 ->
           true
       | _ -> false
+
+    let values =
+      List.init
+        (max - min + 1)
+        (fun i ->
+          match of_enum (min + i) with Some v -> Some v | None -> None)
+      |> List.filter_map Fun.id
   end
 
   type t = {

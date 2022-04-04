@@ -1,7 +1,3 @@
-open Bos
-open Error_handling
-open Error_handling.Monad_syntax
-
 (** [string_to_fpath str] converts [str] into a [Fpath.t]. On Windows the
     [str] is normalized to a regular Windows file path (ex. backslashes). *)
 let string_to_norm_fpath str =
@@ -10,42 +6,6 @@ let string_to_norm_fpath str =
 (** [normalize_path] normalizes a path so on Windows it is a regular
     Windows path with backslashes. *)
 let normalize_path str = Fpath.(to_string (string_to_norm_fpath str))
-
-(* TODO: Place in separate installutils library (not API) *)
-let copy_dir src dst =
-  let raise_fold_error fpath result =
-    Rresult.R.error_msgf
-      "@[A copy directory operation errored out while visiting %a.@]@,\
-       @[  @[%a@]@]" Fpath.pp fpath
-      (Rresult.R.pp
-         ~ok:(Fmt.any "<unknown copydir problem>")
-         ~error:Rresult.R.pp_msg)
-      result
-  in
-  let cp rel = function
-    | Error _ as e ->
-        (* no more copying if we had an error *)
-        e
-    | Ok () ->
-        let src = Fpath.(src // rel) and dst = Fpath.(dst // rel) in
-        let* mode = map_rresult_error_to_string @@ OS.Path.Mode.get src in
-        let* data = map_rresult_error_to_string @@ OS.File.read src in
-        let* (_ : bool) =
-          map_rresult_error_to_string @@ OS.Dir.create (Fpath.parent dst)
-        in
-        let+ () = map_rresult_error_to_string @@ OS.File.write ~mode dst data in
-        ()
-  in
-  map_rresult_error_to_string
-  @@ OS.Path.fold ~err:raise_fold_error cp (Result.ok ()) [ src ]
-  >>= function
-  | Ok () -> Result.ok ()
-  | Error s ->
-      Result.error
-        (Fmt.str
-           "@[@[Failed to copy the directory@]@[@ from %a@]@[@ to %a@]@ .@]@ \
-            @[%s@]"
-           Fpath.pp src Fpath.pp dst s)
 
 type install_files_source =
   | Opam_switch_prefix of Fpath.t
@@ -67,14 +27,12 @@ let absdir_install_files ?(package_selector = Component) ~component_name
       | Static -> "static-files"
     in
     Fpath.(
-      to_string
-      @@ opam_switch_prefix / "share"
-         / (match package_selector with
-           | Component -> "dkml-component-" ^ component_name
-           | Package -> "dkml-package-" ^ component_name)
-         / stem)
+      opam_switch_prefix / "share"
+      / (match package_selector with
+        | Component -> "dkml-component-" ^ component_name
+        | Package -> "dkml-package-" ^ component_name)
+      / stem)
   in
   match install_files_source with
   | Opam_switch_prefix opam_switch_prefix -> do_opam_context opam_switch_prefix
-  | Install_files_dir install_files ->
-      Fpath.(to_string @@ (install_files / component_name))
+  | Install_files_dir install_files -> Fpath.(install_files / component_name)

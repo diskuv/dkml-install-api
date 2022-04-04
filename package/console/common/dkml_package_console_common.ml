@@ -99,7 +99,7 @@ let elevated_cmd ~staging_files_source cmd =
         ~package_selector:Package ~component_name:"console"
         ~abi_selector:(Abi host_abi_v2) staging_files_source
     in
-    let gsudo = Fpath.(v component_dir / "bin" / "gsudo.exe") in
+    let gsudo = Fpath.(component_dir / "bin" / "gsudo.exe") in
     match Logs.level () with
     | Some Debug ->
         Cmd.(

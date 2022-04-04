@@ -26,15 +26,3 @@ extra-source "dl/gsudo.v1.2.0.zip" {
     "sha256=57c90d138200214a4f662925175d451f41c208f7960ed2c1652561eaa9e7c15c"
   ]
 }
-extra-source "dl/7z2107.exe" {
-  src: "https://www.7-zip.org/a/7z2107.exe"
-  checksum: [
-    "sha256=71e94e6038f4d42ed8f0f38c0e6c3846f21d13527139efa9ef8b8f6312ab6c90"
-  ]
-}
-extra-source "dl/lzma2107.7z" {
-  src: "https://www.7-zip.org/a/lzma2107.7z"
-  checksum: [
-    "sha256=833888f03c6628c8a062ce5844bb8012056e7ab7ba294c7ea232e20ddadf0d75"
-  ]
-}

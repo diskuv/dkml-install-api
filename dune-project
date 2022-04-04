@@ -1,5 +1,6 @@
 (lang dune 2.9)
 (using dune_site 0.1)
+(cram enable)
 
 (name dkml-install-api)
 (version 0.1.0)
@@ -62,4 +63,5 @@
   ; runner/console/bin/dune site requires dkml-install-runner package
   (dkml-install-runner (= :version))
   (dune (>= 2.9))
-  (dune-site (>= 2.9))))
+  (dune-site (>= 2.9))
+  (diskuvbox (>= 0.1.0))))

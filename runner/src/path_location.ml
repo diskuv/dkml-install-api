@@ -8,6 +8,12 @@ type staging_files_source =
 
 type abi_selector = Generic | Abi of Dkml_install_api.Context.Abi_v2.t
 
+let show_abi_selector = function
+  | Generic -> "generic"
+  | Abi abi -> Dkml_install_api.Context.Abi_v2.to_canonical_string abi
+
+let pp_abi_selector fmter a = Format.pp_print_string fmter (show_abi_selector a)
+
 type staging_default = No_staging_default | Staging_default_dir of Fpath.t
 
 type static_default = No_static_default | Static_default_dir of Fpath.t
@@ -60,13 +66,9 @@ let absdir_static_files ~component_name = function
     the [component_name] component's staging-files/(generic|<arch>) directory *)
 let absdir_staging_files ?(package_selector = Os_utils.Component)
     ~component_name ~abi_selector staging_files_source =
-  let append_with_abi s =
-    match abi_selector with
-    | Generic -> Fpath.(v s / "generic" |> to_string)
-    | Abi abi ->
-        Fpath.(
-          v s / Dkml_install_api.Context.Abi_v2.to_canonical_string abi
-          |> to_string)
+  let append_with_abi path =
+    let abi = show_abi_selector abi_selector in
+    Fpath.(path / abi)
   in
   match staging_files_source with
   | Opam_staging_switch_prefix switch_prefix ->

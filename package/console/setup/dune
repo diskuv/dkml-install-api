@@ -7,4 +7,5 @@
   dkml-package-console.common
   dkml-install-runner.sites
   dune-site
-  dune-site.plugins))
+  dune-site.plugins
+  diskuvbox))

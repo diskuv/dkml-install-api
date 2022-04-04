@@ -101,9 +101,10 @@ let prefix_t =
 (* Directory containing dkml-install-setup.exe *)
 let installer_archive_dir = Fpath.(v OS.Arg.exec |> parent)
 
-let staging_default_dir_for_package = Fpath.(installer_archive_dir / "staging")
+let staging_default_dir_for_package ~archive_dir =
+  Fpath.(archive_dir / "staging")
 
-let static_default_dir_for_package = Fpath.(installer_archive_dir / "static")
+let static_default_dir_for_package ~archive_dir = Fpath.(archive_dir / "static")
 
 let staging_files_opt_t =
   let doc = "$(docv) is the staging files directory for the installation" in
@@ -152,7 +153,9 @@ let opam_context_opt_t =
 let staging_files_source_for_package_t =
   let staging_files_source' opam_context_opt staging_files_opt =
     Path_location.staging_files_source
-      ~staging_default:(Staging_default_dir staging_default_dir_for_package)
+      ~staging_default:
+        (Staging_default_dir
+           (staging_default_dir_for_package ~archive_dir:installer_archive_dir))
       ~opam_context_opt ~staging_files_opt
   in
   Term.(const staging_files_source' $ opam_context_opt_t $ staging_files_opt_t)
@@ -163,7 +166,9 @@ let staging_files_source_for_package_t =
 let static_files_source_for_package_t =
   let static_files_source' opam_context_opt static_files_opt =
     Path_location.static_files_source
-      ~static_default:(Static_default_dir static_default_dir_for_package)
+      ~static_default:
+        (Static_default_dir
+           (static_default_dir_for_package ~archive_dir:installer_archive_dir))
       ~opam_context_opt ~static_files_opt
   in
   Term.(const static_files_source' $ opam_context_opt_t $ static_files_opt_t)
@@ -191,9 +196,8 @@ let ctx_for_runner_t component_name reg =
     $ staging_files_opt_t $ opam_context_opt_t)
 
 (** [ctx_for_package_t component_name reg] creates a setup.exe/uninstall.exe [Term]
-    for component [component_name]
-    that sets up logging and any other global state, and defines the context
-    record.
+    for component [component_name] that sets up logging and any other global
+    state, and defines the context record.
     
     Unlike {!ctx_for_runner_t} the expectation is that setup.exe/uninstall.exe
     will be directly launched by the user and have access to the user's
@@ -206,7 +210,10 @@ let ctx_for_package_t component_name reg =
   Term.(
     const
       (create_context
-         ~staging_default:(Staging_default_dir staging_default_dir_for_package))
+         ~staging_default:
+           (Staging_default_dir
+              (staging_default_dir_for_package
+                 ~archive_dir:installer_archive_dir)))
     $ const component_name $ const reg $ setup_log_t $ prefix_t
     $ staging_files_opt_t $ opam_context_opt_t)
 
