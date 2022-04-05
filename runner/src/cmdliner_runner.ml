@@ -101,10 +101,13 @@ let prefix_t =
 (* Directory containing dkml-install-setup.exe *)
 let installer_archive_dir = Fpath.(v OS.Arg.exec |> parent)
 
-let staging_default_dir_for_package ~archive_dir =
-  Fpath.(archive_dir / "staging")
+(** [staging_default_dir_for_package ~archive_dir].
+    For the benefit of Windows and macOS we keep the directory name ("sg") small. *)
+let staging_default_dir_for_package ~archive_dir = Fpath.(archive_dir / "sg")
 
-let static_default_dir_for_package ~archive_dir = Fpath.(archive_dir / "static")
+(** [static_default_dir_for_package ~archive_dir].
+    For the benefit of Windows and macOS we keep the directory name ("st") small. *)
+let static_default_dir_for_package ~archive_dir = Fpath.(archive_dir / "st")
 
 let staging_files_opt_t =
   let doc = "$(docv) is the staging files directory for the installation" in

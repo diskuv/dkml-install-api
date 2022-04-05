@@ -59,9 +59,10 @@ let generate_installer_from_archive_dir ~archive_dir ~abi_selector
 
 let create_forone_abi ~abi_selector ~all_component_names ~installer_name
     ~installer_version ~opam_context ~work_dir ~target_dir =
-  (* Create a temporary archive directory where we'll build the installer *)
+  (* Create a temporary archive directory where we'll build the installer.contents
+     For the benefit of Windows and macOS we keep the directory name ("a") small. *)
   let abi = Dkml_install_runner.Path_location.show_abi_selector abi_selector in
-  let archive_dir = Fpath.(work_dir / "archive" / abi) in
+  let archive_dir = Fpath.(work_dir / "a" / abi) in
   let archive_staging_dir =
     Dkml_install_runner.Cmdliner_runner.staging_default_dir_for_package
       ~archive_dir
