@@ -1,4 +1,10 @@
+(* Documentation: https://info.nrao.edu/computing/guide/file-access-and-archiving/7zip/7z-7za-command-line-guide
+
+   Beware that the 7zip configuration file is usually CRLF, and must always be
+   UTF-8. *)
+
 open Bos
+open Astring
 
 let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
   let pwd = Error_utils.get_ok_or_failwith_rresult (OS.Dir.current ()) in
@@ -53,13 +59,68 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
       Logs.err (fun l -> l "FATAL: %s" msg);
       failwith msg
 
-let generate ~archive_dir ~target_dir ~abi_selector ~installer_name
-    ~installer_version ~work_dir =
+let get_config_text ~program_title ~program_version =
+  let text =
+    {|;!@Install@!UTF-8!
+Title="__TITLE__"
+BeginPrompt="Do you want to install __TITLE__?"
+ExecuteFile="msiexec.exe"
+ExecuteParameters="/i blahblah.msi REINSTALL=ALL REINSTALLMODE=vomus"
+;!@InstallEnd@!|}
+  in
+  let text' =
+    Str.global_replace
+      (Str.regexp_string "__TITLE__")
+      (program_title ^ " " ^ program_version)
+      text
+  in
+  let lines = String.cuts ~sep:"\n" text' in
+  (* Remove trailing carriage returns, if any, and then add in CRLF *)
+  let trimmed_lines = List.map (fun s -> String.trim s ^ "\r\n") lines in
+  (* Reconstitute as one string *)
+  String.concat trimmed_lines
+
+let create_7z_sfx ~sfx ~archive_path ~installer_path ~program_title
+    ~program_version =
+  Error_utils.get_ok_or_failwith_rresult
+  @@ Error_utils.get_ok_or_failwith_rresult
+  @@ OS.File.with_output installer_path
+       (fun output () ->
+         (* Mimic DOS command given in 7z documentation:
+             copy /b 7zS.sfx + config.txt + archive.7z archive.exe *)
+
+         (* 7zCon.sfx *)
+         output (Some (sfx, 0, Bytes.length sfx));
+
+         (* config.txt. none currently. *)
+         let config_txt =
+           Bytes.of_string (get_config_text ~program_title ~program_version)
+         in
+         output (Some (config_txt, 0, Bytes.length config_txt));
+
+         (* archive.7z. just copy it block by block *)
+         let rec helper input =
+           match input () with
+           | Some (b, pos, len) ->
+               output (Some (b, pos, len));
+               helper input
+           | None -> ()
+         in
+         Error_utils.get_ok_or_failwith_rresult
+         @@ OS.File.with_input archive_path (fun input () -> helper input) ();
+
+         (* EOF *)
+         output None;
+         Ok ())
+       ()
+
+let generate ~archive_dir ~target_dir ~abi_selector ~program_title ~program_name
+    ~program_version ~work_dir =
   let abi_name =
     Dkml_install_runner.Path_location.show_abi_selector abi_selector
   in
   let installer_basename =
-    Fmt.str "setup-%s-%s-%s.exe" installer_name abi_name installer_version
+    Fmt.str "setup-%s-%s-%s.exe" program_name abi_name program_version
   in
   Logs.info (fun l -> l "Generating %s" installer_basename);
   Error_utils.get_ok_or_failwith_rresult
@@ -68,8 +129,9 @@ let generate ~archive_dir ~target_dir ~abi_selector ~installer_name
      let archive_path =
        Fpath.(
          target_dir
-         / Fmt.str "%s-%s-%s.7z" installer_name abi_name installer_version)
+         / Fmt.str "%s-%s-%s.7z" program_name abi_name program_version)
      in
+     let installer_path = Fpath.(target_dir / installer_basename) in
      let sevenz_exe = Fpath.(sfx_dir / "7z.exe") in
      let sevenz_dll = Fpath.(sfx_dir / "7z.dll") in
      let* (_was_created : bool) = OS.Dir.create sfx_dir in
@@ -79,5 +141,8 @@ let generate ~archive_dir ~target_dir ~abi_selector ~installer_name
      let* () =
        OS.File.write ~mode:0o750 sevenz_dll (Option.get (Seven_z.read "7z.dll"))
      in
-
-     Ok (create_7z_archive ~sevenz_exe ~archive_path ~archive_dir))
+     let sfx = Bytes.of_string (Option.get (Seven_z.read "7zSD.sfx")) in
+     create_7z_archive ~sevenz_exe ~archive_path ~archive_dir;
+     create_7z_sfx ~sfx ~archive_path ~installer_path ~program_title
+       ~program_version;
+     Ok ())

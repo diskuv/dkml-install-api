@@ -6,16 +6,16 @@
 
 open Bos
 
-let generate ~archive_dir ~target_dir ~abi_selector ~installer_name
-    ~installer_version =
+let generate ~archive_dir ~target_dir ~abi_selector ~program_name
+    ~program_version =
   let abi_name =
     Dkml_install_runner.Path_location.show_abi_selector abi_selector
   in
   let installer_basename_without_ver =
-    Fmt.str "%s-%s" installer_name abi_name
+    Fmt.str "%s-%s" program_name abi_name
   in
   let installer_basename_with_ver =
-    Fmt.str "%s-%s-%s" installer_name abi_name installer_version
+    Fmt.str "%s-%s-%s" program_name abi_name program_version
   in
   let installer_create_sh =
     Fpath.(target_dir / ("bundle-" ^ installer_basename_without_ver ^ ".sh"))

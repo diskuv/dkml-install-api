@@ -80,7 +80,7 @@ TODO: built and downloaded from ABI asset repository, or built as bytecode.
 
 Run the create_installers.exe executable. Actually, there is one modification
 we did to this executable: it has two test components defined.
-  $ ./test_windows_create_installers.exe --program-name testme --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --verbose | tr '\\' '/' | grep -v "Archive size"
+  $ ./test_windows_create_installers.exe --program-title "Test Me" --program-name testme --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --verbose | tr '\\' '/' | grep -v "Archive size"
   test_windows_create_installers.exe: [INFO] Installers will be created that include the components: 
                                              [staging-ocamlrun; offline-test1]
   test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: 
@@ -1049,12 +1049,16 @@ the end of the bundle script to customize the archive.
   |-- bundle-testme-windows_arm64.sh
   |-- bundle-testme-windows_x86.sh
   |-- bundle-testme-windows_x86_64.sh
+  |-- setup-testme-windows_arm32-0.1.0.exe
+  |-- setup-testme-windows_arm64-0.1.0.exe
+  |-- setup-testme-windows_x86-0.1.0.exe
+  |-- setup-testme-windows_x86_64-0.1.0.exe
   |-- testme-windows_arm32-0.1.0.7z
   |-- testme-windows_arm64-0.1.0.7z
   |-- testme-windows_x86-0.1.0.7z
   `-- testme-windows_x86_64-0.1.0.7z
   
-  0 directories, 20 files
+  0 directories, 24 files
 
   $ target/bundle-testme-linux_x86_64.sh -o target tar
   $ tar tvf target/testme-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $1, $NF}'
@@ -1110,3 +1114,14 @@ There are also fully built setup.exe installers available.
   st\offline-test1\README.txt
   ------------------------
   folders
+
+  $ target/setup-testme-windows_x86_64-0.1.0.exe -h
+
+  $ install -d enduser
+  $ target/setup-testme-windows_x86_64-0.1.0.exe x -oenduser | grep -v setup-testme
+  [1]
+Everything is Ok
+  $ tree enduser
+  enduser
+  
+  0 directories, 0 files
