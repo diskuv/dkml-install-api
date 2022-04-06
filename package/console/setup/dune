@@ -20,10 +20,9 @@
 (rule
  (deps
   (:assets
-   assets/7z2107/7z.exe
-   assets/7z2107/7z.dll
-   assets/7z2107/7zCon.sfx
-   assets/lzma2107/bin/7zSD.sfx))
+   assets/lzma2107/bin/7zr.exe
+   assets/lzma2107/bin/7zSD.sfx
+   assets/lzma2107/bin/7zS2con.sfx))
  (target seven_z.ml)
  (action
   (progn

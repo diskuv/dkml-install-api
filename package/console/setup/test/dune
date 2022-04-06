@@ -1,5 +1,8 @@
-(executable
- (name test_windows_create_installers)
+(executables
+ (names
+  test_windows_create_installers
+  setup_print_hello
+  uninstaller_print_bye)
  (libraries dkml-package-console.setup))
 
 (cram
@@ -7,5 +10,8 @@
   (= %{os_type} Win32))
  (deps
   ./test_windows_create_installers.exe
-  ../assets/7z2107/7z.exe
-  ../assets/7z2107/7z.dll))
+  ./setup_print_hello.exe
+  ./setup_print_hello.ml
+  ./uninstaller_print_bye.exe
+  ../assets/lzma2107/bin/7zr.exe
+  ))

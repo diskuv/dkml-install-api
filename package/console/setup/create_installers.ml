@@ -28,20 +28,20 @@ let set_dune_site_env ~opam_context =
        (Some Fpath.(v opam_context / "lib" |> to_string)))
 
 let generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
-    ~program_title ~program_name ~program_version ~target_dir =
+    ~program_name ~program_version ~target_dir =
   (* For Windows create a self-extracting executable *)
   (match abi_selector with
   | Dkml_install_runner.Path_location.Abi abi
     when Dkml_install_api.Context.Abi_v2.is_windows abi ->
       Installer_sfx.generate ~archive_dir ~target_dir ~abi_selector
-      ~program_title ~program_name ~program_version ~work_dir
+         ~program_name ~program_version ~work_dir
   | _ -> ());
   (* All operating systems can have an archive *)
   Installer_archive.generate ~archive_dir ~target_dir ~abi_selector
     ~program_name ~program_version
 
-let create_forone_abi ~abi_selector ~all_component_names ~program_title ~program_name
-    ~program_version ~opam_context ~work_dir ~target_dir =
+let create_forone_abi ~abi_selector ~all_component_names
+    ~program_name ~program_version ~opam_context ~work_dir ~target_dir =
   (* Create a temporary archive directory where we'll build the installer.contents
      For the benefit of Windows and macOS we keep the directory name ("a") small. *)
   let abi = Dkml_install_runner.Path_location.show_abi_selector abi_selector in
@@ -93,11 +93,10 @@ let create_forone_abi ~abi_selector ~all_component_names ~program_title ~program
     all_component_names;
   (* Assemble for one ABI *)
   generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
-    ~program_title ~program_name ~program_version ~target_dir
+     ~program_name ~program_version ~target_dir
 
-let create_forall_abi (_log_config : Dkml_install_api.Log_config.t)
-    program_title program_name program_version work_dir target_dir opam_context
-    =
+let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) program_name
+    program_version work_dir target_dir opam_context =
   (* Setup dune site *)
   set_dune_site_env ~opam_context;
   (* Load component plugins; logging already setup *)
@@ -132,17 +131,10 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t)
         abi_selectors);
   List.iter
     (fun abi_selector ->
-      create_forone_abi ~abi_selector ~all_component_names ~program_title
+      create_forone_abi ~abi_selector ~all_component_names
         ~program_name ~program_version ~opam_context
         ~work_dir:(Fpath.v work_dir) ~target_dir:(Fpath.v target_dir))
     abi_selectors
-
-let program_title_t =
-  let doc =
-    "The title of the program that will be installed. A space (ASCII 0x20) and \
-     the version number are appended to the title"
-  in
-  Arg.(required & opt (some string) None & info [ "program-title" ] ~doc)
 
 let program_name_t =
   let doc =
@@ -211,7 +203,7 @@ let create_installers () =
   let t =
     Term.(
       const create_forall_abi $ Dkml_install_runner.Cmdliner_runner.setup_log_t
-      $ program_title_t $ program_name_t $ program_version_t $ work_dir_t
-      $ target_dir_t $ opam_context_t)
+      $ program_name_t $ program_version_t $ work_dir_t $ target_dir_t
+      $ opam_context_t)
   in
   Term.(eval (t, info ~version:"%%VERSION%%" "dkml-create-console-installers"))

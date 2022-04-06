@@ -11,7 +11,14 @@ let copy_dir_if_exists ~src ~dst =
       failwith (Fmt.str "%a" Rresult.R.pp_msg msg)
 
 let populate_archive ~archive_dir ~opam_context ~all_component_names =
-  (* Copy runner binaries. TODO: These should be bytecode, not .exe! *)
+  (* Make a `.archivetree` empty file so executables like
+     bin/dkml-install-setup.exe can be renamed setup.exe, but still
+     setup.exe will be able to locate all the other archive files. *)
+  get_ok_or_failwith_string
+    (Diskuvbox.touch_file ~err:box_err
+       ~file:Fpath.(archive_dir / ".archivetree")
+       ());
+  (* Copy runner binaries. TODO: Should these be bytecode, not .exe? *)
   get_ok_or_failwith_string
     (Diskuvbox.copy_file ~err:box_err
        ~src:Fpath.(opam_context / "bin" / "dkml-install-admin-runner.exe")
@@ -21,6 +28,17 @@ let populate_archive ~archive_dir ~opam_context ~all_component_names =
     (Diskuvbox.copy_file ~err:box_err
        ~src:Fpath.(opam_context / "bin" / "dkml-install-user-runner.exe")
        ~dst:Fpath.(archive_dir / "bin" / "dkml-install-user-runner.exe")
+       ());
+  (* Copy dkml-install-setup/uninstaller binaries. TODO: Should these be bytecode, not .exe? *)
+  get_ok_or_failwith_string
+    (Diskuvbox.copy_file ~err:box_err
+       ~src:Fpath.(opam_context / "bin" / "dkml-install-setup.exe")
+       ~dst:Fpath.(archive_dir / "bin" / "dkml-install-setup.exe")
+       ());
+  get_ok_or_failwith_string
+    (Diskuvbox.copy_file ~err:box_err
+       ~src:Fpath.(opam_context / "bin" / "dkml-install-uninstaller.exe")
+       ~dst:Fpath.(archive_dir / "bin" / "dkml-install-uninstaller.exe")
        ());
   (* Copy lib/dkml-install-runner/plugins *)
   get_ok_or_failwith_string
