@@ -27,35 +27,18 @@ let set_dune_site_env ~opam_context =
     (OS.Env.set_var "DUNE_OCAML_HARDCODED"
        (Some Fpath.(v opam_context / "lib" |> to_string)))
 
-let generate_sfx_from_archive_dir ~archive_dir:_ ~target_dir:_ ~abi_selector:_
-    ~installer_basename:_ =
-  ()
-
-let generate_targz_from_archive_dir ~archive_dir:_ ~target_dir:_ ~abi_selector:_
-    ~installer_basename:_ =
-  ()
-
 let generate_installer_from_archive_dir ~archive_dir ~abi_selector
     ~installer_name ~installer_version ~target_dir =
-  let abi_name =
-    match abi_selector with
-    | Dkml_install_runner.Path_location.Generic -> "generic"
-    | Abi abi -> Dkml_install_api.Context.Abi_v2.to_canonical_string abi
-  in
-  match abi_selector with
+  (* For Windows create a self-extracting executable *)
+  (match abi_selector with
   | Dkml_install_runner.Path_location.Abi abi
     when Dkml_install_api.Context.Abi_v2.is_windows abi ->
-      let installer_basename =
-        Fmt.str "setup-%s-%s-%s-.exe" installer_name abi_name installer_version
-      in
-      generate_sfx_from_archive_dir ~archive_dir ~target_dir ~abi_selector
-        ~installer_basename
-  | _ ->
-      let installer_basename =
-        Fmt.str "dist-%s-%s-%s.zip" installer_name abi_name installer_version
-      in
-      generate_targz_from_archive_dir ~archive_dir ~target_dir ~abi_selector
-        ~installer_basename
+      Installer_sfx.generate ~archive_dir ~target_dir ~abi_selector
+        ~installer_name ~installer_version
+  | _ -> ());
+  (* All operating systems can have an archive *)
+  Installer_archive.generate ~archive_dir ~target_dir ~abi_selector
+    ~installer_name ~installer_version
 
 let create_forone_abi ~abi_selector ~all_component_names ~installer_name
     ~installer_version ~opam_context ~work_dir ~target_dir =

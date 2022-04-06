@@ -1,0 +1,46 @@
+(** Creates archives meant to be unpacked by an end-user, with a setup
+    executable inside.
+    
+    This module creates a shell script that you need to run to produce
+    a final archive.tar.gz, archive.tar.bz2, etc. *)
+
+open Bos
+
+let generate ~archive_dir ~target_dir ~abi_selector ~installer_name
+    ~installer_version =
+  let abi_name =
+    Dkml_install_runner.Path_location.show_abi_selector abi_selector
+  in
+  let installer_basename_without_ver =
+    Fmt.str "%s-%s" installer_name abi_name
+  in
+  let installer_basename_with_ver =
+    Fmt.str "%s-%s-%s" installer_name abi_name installer_version
+  in
+  let installer_create_sh =
+    Fpath.(target_dir / ("bundle-" ^ installer_basename_without_ver ^ ".sh"))
+  in
+  let buildhost_abi =
+    match Dkml_install_runner.Host_abi.create_v2 () with
+    | Ok v -> Dkml_install_api.Context.Abi_v2.to_canonical_string v
+    | _ -> "unknown_abi"
+  in
+  let translate s =
+    Str.(
+      s
+      |> global_replace
+           (regexp_string "__PLACEHOLDER_BASENAME__")
+           installer_basename_with_ver
+      |> global_replace
+           (regexp_string "__PLACEHOLDER_BUILDHOST_ABI__")
+           buildhost_abi
+      |> global_replace
+           (regexp_string "__PLACEHOLDER_ARCHIVE_DIR__")
+           (Fpath.to_string archive_dir))
+  in
+  Logs.info (fun l ->
+      l "Generating script %a that can produce %s.tar.gz (etc.) archives"
+        Fpath.pp installer_create_sh installer_basename_with_ver);
+  Error_utils.get_ok_or_failwith_rresult
+    (OS.File.write ~mode:0o750 installer_create_sh
+       (translate (Option.get (Scripts.read "bundle.sh"))))

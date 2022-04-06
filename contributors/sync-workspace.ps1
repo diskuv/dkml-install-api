@@ -3,6 +3,7 @@
 with-dkml opam pin dkml-base-compiler                   https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
 with-dkml opam pin ocaml                                https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
 with-dkml opam pin ocaml-config                         https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
+with-dkml opam pin conf-dkml-cross-toolchain            https://github.com/diskuv/conf-dkml-cross-toolchain.git#main --no-action --yes
 
 with-dkml opam pin dkml-component-network-ocamlcompiler git+file://Z:/source/dkml-component-ocamlcompiler#main --no-action --yes
 with-dkml opam pin dkml-component-staging-ocamlrun      git+file://Z:/source/dkml-component-ocamlcompiler#main --no-action --yes

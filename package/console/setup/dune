@@ -8,4 +8,11 @@
   dkml-install-runner.sites
   dune-site
   dune-site.plugins
-  diskuvbox))
+  diskuvbox
+  str))
+
+(rule
+ (deps scripts/bundle.sh)
+ (target scripts.ml)
+ (action
+  (run ocaml-crunch -m plain -o %{target} scripts)))

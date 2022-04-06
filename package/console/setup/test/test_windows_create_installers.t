@@ -80,7 +80,7 @@ TODO: built and downloaded from ABI asset repository, or built as bytecode.
 
 Run the create_installers.exe executable. Actually, there is one modification
 we did to this executable: it has two test components defined.
-  $ ./test_windows_create_installers.exe --program-name test_windows --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --verbose
+  $ ./test_windows_create_installers.exe --program-name testme --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --verbose | tr '\\' '/'
   test_windows_create_installers.exe: [INFO] Installers will be created that include the components: 
                                              [staging-ocamlrun; offline-test1]
   test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: 
@@ -92,52 +92,36 @@ we did to this executable: it has two test components defined.
                                               linux_x86_64; linux_x86;
                                               windows_x86_64; windows_x86;
                                               windows_arm64; windows_arm32]
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-generic.sh that can produce testme-generic-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-android_arm64v8a.sh that can produce testme-android_arm64v8a-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-android_arm32v7a.sh that can produce testme-android_arm32v7a-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-android_x86.sh that can produce testme-android_x86-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-android_x86_64.sh that can produce testme-android_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-darwin_arm64.sh that can produce testme-darwin_arm64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-darwin_x86_64.sh that can produce testme-darwin_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_arm64.sh that can produce testme-linux_arm64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_arm32v6.sh that can produce testme-linux_arm32v6-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_arm32v7.sh that can produce testme-linux_arm32v7-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_x86_64.sh that can produce testme-linux_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_x86.sh that can produce testme-linux_x86-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_x86_64-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86_64.sh that can produce testme-windows_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_x86-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86.sh that can produce testme-windows_x86-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_arm64-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_arm64.sh that can produce testme-windows_arm64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_arm32-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_arm32.sh that can produce testme-windows_arm32-0.1.0.tar.gz (etc.) archives
 
-Postcheck all the directories
-  $ ls target
-  $ ls work
-  archive
-  $ tree _opam work
-  _opam
-  |-- bin
-  |   |-- dkml-install-admin-runner.exe
-  |   `-- dkml-install-user-runner.exe
-  |-- lib
-  |   |-- dkml-component-offline-test1
-  |   |   |-- META
-  |   |   `-- test1.cma
-  |   |-- dkml-component-staging-ocamlrun
-  |   |   |-- META
-  |   |   `-- test2.cma
-  |   `-- dkml-install-runner
-  |       `-- plugins
-  |           |-- dkml-plugin-offline-test1
-  |           |   `-- META
-  |           `-- dkml-plugin-staging-ocamlrun
-  |               `-- META
-  `-- share
-      |-- dkml-component-offline-test1
-      |   |-- staging-files
-      |   |   |-- darwin_arm64
-      |   |   |   `-- libpng.dylib
-      |   |   |-- darwin_x86_64
-      |   |   |   `-- libpng.dylib
-      |   |   `-- generic
-      |   |       `-- install-offline-test1.bc
-      |   `-- static-files
-      |       |-- README.txt
-      |       `-- icon.png
-      `-- dkml-component-staging-ocamlrun
-          `-- staging-files
-              `-- windows_x86_64
-                  |-- bin
-                  |   `-- ocamlrun.exe
-                  `-- lib
-                      `-- ocaml
-                          `-- stublibs
-                              `-- dllthreads.dll
+The --work-dir will have ABI-specific archive trees in its "a" folder. The
+archive tree is what goes directly into the installer file (ex. setup.exe,
+.msi, .rpm, etc.). The archive tree will be unpacked on the end-user's
+machine.
+Each archive tree contains a "sg" folder for the staging files and an "st"
+folder for the static files.
+  $ tree work
   work
-  `-- archive
+  `-- a
       |-- android_arm32v7a
       |   |-- bin
       |   |   |-- dkml-install-admin-runner.exe
@@ -155,11 +139,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -180,11 +164,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -205,11 +189,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -230,11 +214,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -255,13 +239,13 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       |-- darwin_arm64
       |   |       |   `-- libpng.dylib
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -282,13 +266,13 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       |-- darwin_x86_64
       |   |       |   `-- libpng.dylib
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -309,11 +293,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -334,11 +318,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -359,11 +343,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -384,11 +368,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -409,11 +393,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -434,11 +418,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -459,11 +443,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -484,11 +468,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -509,11 +493,11 @@ Postcheck all the directories
       |   |           |   `-- META
       |   |           `-- dkml-plugin-staging-ocamlrun
       |   |               `-- META
-      |   |-- staging
+      |   |-- sg
       |   |   `-- offline-test1
       |   |       `-- generic
       |   |           `-- install-offline-test1.bc
-      |   `-- static
+      |   `-- st
       |       `-- offline-test1
       |           |-- README.txt
       |           `-- icon.png
@@ -534,7 +518,7 @@ Postcheck all the directories
           |           |   `-- META
           |           `-- dkml-plugin-staging-ocamlrun
           |               `-- META
-          |-- staging
+          |-- sg
           |   |-- offline-test1
           |   |   `-- generic
           |   |       `-- install-offline-test1.bc
@@ -546,9 +530,49 @@ Postcheck all the directories
           |               `-- ocaml
           |                   `-- stublibs
           |                       `-- dllthreads.dll
-          `-- static
+          `-- st
               `-- offline-test1
                   |-- README.txt
                   `-- icon.png
   
-  255 directories, 195 files
+  233 directories, 180 files
+
+We create "bundle" scripts that let you generate 'tar' archives specific
+to the target operating systems. You can add tar options like '--gzip' to
+the end of the bundle script to customize the archive.
+  $ tree target
+  target
+  |-- bundle-testme-android_arm32v7a.sh
+  |-- bundle-testme-android_arm64v8a.sh
+  |-- bundle-testme-android_x86.sh
+  |-- bundle-testme-android_x86_64.sh
+  |-- bundle-testme-darwin_arm64.sh
+  |-- bundle-testme-darwin_x86_64.sh
+  |-- bundle-testme-generic.sh
+  |-- bundle-testme-linux_arm32v6.sh
+  |-- bundle-testme-linux_arm32v7.sh
+  |-- bundle-testme-linux_arm64.sh
+  |-- bundle-testme-linux_x86.sh
+  |-- bundle-testme-linux_x86_64.sh
+  |-- bundle-testme-windows_arm32.sh
+  |-- bundle-testme-windows_arm64.sh
+  |-- bundle-testme-windows_x86.sh
+  `-- bundle-testme-windows_x86_64.sh
+  
+  0 directories, 16 files
+
+  $ target/bundle-testme-linux_x86_64.sh -o target tar
+  $ tar tvf target/testme-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $1, $NF}'
+  drwxr-xr-x ./
+  drwxr-xr-x testme-linux_x86_64-0.1.0/bin/
+  -rwxr-xr-x testme-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
+  -rwxr-xr-x testme-linux_x86_64-0.1.0/bin/dkml-install-user-runner.exe
+  drwxr-xr-x testme-linux_x86_64-0.1.0/lib/
+
+  $ target/bundle-testme-linux_x86_64.sh -o target -e .tar.gz tar --gzip
+  $ tar tvfz target/testme-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $1, $NF}'
+  -rw-r--r-- testme-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc
+  drwxr-xr-x testme-linux_x86_64-0.1.0/st/
+  drwxr-xr-x testme-linux_x86_64-0.1.0/st/offline-test1/
+  -rw-r--r-- testme-linux_x86_64-0.1.0/st/offline-test1/icon.png
+  -rw-r--r-- testme-linux_x86_64-0.1.0/st/offline-test1/README.txt
