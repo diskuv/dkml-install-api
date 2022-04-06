@@ -13,5 +13,4 @@
   ./setup_print_hello.exe
   ./setup_print_hello.ml
   ./uninstaller_print_bye.exe
-  ../assets/lzma2107/bin/7zr.exe
-  ))
+  ../assets/lzma2107/bin/7zr.exe))

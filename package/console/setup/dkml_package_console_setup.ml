@@ -100,8 +100,7 @@ let setup program_name package_args =
           in
           let+ () =
             if exists then
-              Diskuvbox.copy_dir ~err:box_err ~src:static_dir_fp
-                ~dst:prefix ()
+              Diskuvbox.copy_dir ~err:box_err ~src:static_dir_fp ~dst:prefix ()
             else Result.ok ()
           in
           ())

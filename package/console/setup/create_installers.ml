@@ -34,14 +34,14 @@ let generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
   | Dkml_install_runner.Path_location.Abi abi
     when Dkml_install_api.Context.Abi_v2.is_windows abi ->
       Installer_sfx.generate ~archive_dir ~target_dir ~abi_selector
-         ~program_name ~program_version ~work_dir
+        ~program_name ~program_version ~work_dir
   | _ -> ());
   (* All operating systems can have an archive *)
   Installer_archive.generate ~archive_dir ~target_dir ~abi_selector
     ~program_name ~program_version
 
-let create_forone_abi ~abi_selector ~all_component_names
-    ~program_name ~program_version ~opam_context ~work_dir ~target_dir =
+let create_forone_abi ~abi_selector ~all_component_names ~program_name
+    ~program_version ~opam_context ~work_dir ~target_dir =
   (* Create a temporary archive directory where we'll build the installer.contents
      For the benefit of Windows and macOS we keep the directory name ("a") small. *)
   let abi = Dkml_install_runner.Path_location.show_abi_selector abi_selector in
@@ -93,7 +93,7 @@ let create_forone_abi ~abi_selector ~all_component_names
     all_component_names;
   (* Assemble for one ABI *)
   generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
-     ~program_name ~program_version ~target_dir
+    ~program_name ~program_version ~target_dir
 
 let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) program_name
     program_version work_dir target_dir opam_context =
@@ -131,9 +131,9 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) program_name
         abi_selectors);
   List.iter
     (fun abi_selector ->
-      create_forone_abi ~abi_selector ~all_component_names
-        ~program_name ~program_version ~opam_context
-        ~work_dir:(Fpath.v work_dir) ~target_dir:(Fpath.v target_dir))
+      create_forone_abi ~abi_selector ~all_component_names ~program_name
+        ~program_version ~opam_context ~work_dir:(Fpath.v work_dir)
+        ~target_dir:(Fpath.v target_dir))
     abi_selectors
 
 let program_name_t =
