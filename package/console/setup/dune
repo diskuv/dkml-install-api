@@ -13,6 +13,15 @@
 
 (rule
  (deps scripts/bundle.sh)
- (target scripts.ml)
+ (target shell_scripts.ml)
  (action
   (run ocaml-crunch -m plain -o %{target} scripts)))
+
+(rule
+ (deps
+  (:assets assets/7z2107/7z.exe assets/7z2107/7z.dll assets/7z2107/7zCon.sfx))
+ (target seven_z.ml)
+ (action
+  (progn
+   (run diskuvbox copy-file-into %{assets} assets-to-crunch)
+   (run ocaml-crunch -m plain -o %{target} assets-to-crunch))))

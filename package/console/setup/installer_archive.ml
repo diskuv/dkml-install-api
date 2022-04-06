@@ -43,4 +43,4 @@ let generate ~archive_dir ~target_dir ~abi_selector ~installer_name
         Fpath.pp installer_create_sh installer_basename_with_ver);
   Error_utils.get_ok_or_failwith_rresult
     (OS.File.write ~mode:0o750 installer_create_sh
-       (translate (Option.get (Scripts.read "bundle.sh"))))
+       (translate (Option.get (Shell_scripts.read "bundle.sh"))))

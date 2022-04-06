@@ -3,5 +3,9 @@
  (libraries dkml-package-console.setup))
 
 (cram
- (enabled_if (= %{os_type} Win32))
- (deps ./test_windows_create_installers.exe))
+ (enabled_if
+  (= %{os_type} Win32))
+ (deps
+  ./test_windows_create_installers.exe
+  ../assets/7z2107/7z.exe
+  ../assets/7z2107/7z.dll))
