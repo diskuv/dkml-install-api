@@ -11,13 +11,14 @@ https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#dire
 * The README.md can also be generated from reStructuredText to markdown with
 `pandoc`, perhaps as part of a `dune runtest --auto-promote` workflow.
 
-==> This file is the authorative source of code examples for Windows.
+==> This file is the authoritative source of code examples for Windows.
 
 --------------------------------------------------------------------------------
 Initial Conditions
 --------------------------------------------------------------------------------
 
 Check what is present in this directory
+[initial_conditions_checkdir]
   $ ls
   setup_print_hello.exe
   setup_print_hello.ml
@@ -25,6 +26,7 @@ Check what is present in this directory
   test_windows_create_installers.ml
   test_windows_create_installers.t
   uninstaller_print_bye.exe
+[initial_conditions_checkdir]
 
 --------------------------------------------------------------------------------
 Generating the installer starts with an Opam switch
@@ -53,6 +55,7 @@ Sidenote:
 | and dkml-install-uninstaller.exe, or we could distribute those two files
 | as OCaml bytecode.
 
+[opam_switch_mimic]
   $ install -d _opam/bin
   $ install -d _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1
   $ install -d _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun
@@ -124,6 +127,7 @@ Sidenote:
                               `-- dllthreads.dll
   
   22 directories, 17 files
+[opam_switch_mimic]
 
 --------------------------------------------------------------------------------
 Section: What are these components?
@@ -140,6 +144,7 @@ For now, we'll define two do-nothing test components:
 and we will also use a library to generate an executable
 called `create_installers.exe`:
 
+[what_are_components]
   $ cat test_windows_create_installers.ml
   open Cmdliner
   
@@ -162,6 +167,7 @@ called `create_installers.exe`:
   
   (* Let's also create an entry point for `create_installers.exe` *)
   let () = Term.(exit @@ Dkml_package_console_setup.create_installers ())
+[what_are_components]
 
 If this were not a demonstration, all your components would be dynamically
 probed from your Opam directory structure using the Dune Site plugin:
@@ -181,9 +187,11 @@ Important:
 | `create_installers.exe` will create installers for you based on the components
 | you registered earlier.
 
-Create the temporary work directory and the target installer directory
+Create the temporary work directory and the target installer directory:
+[create_installers_dirs]
   $ install -d work
   $ install -d target
+[create_installers_dirs]
 
 Run the create_installers.exe executable.
 
@@ -193,7 +201,7 @@ Side note:
 |   [
 |     "%{bin}%/dkml-install-generate.exe"
 |     "--program-name"
-|      name
+|     name
 |     "--program-version"
 |     version
 |     "--work-dir"
@@ -202,6 +210,7 @@ Side note:
 |     "%{_:share}%"
 |   ]
 
+[create_installers_run]
   $ ./test_windows_create_installers.exe --program-name testme --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --verbose
   test_windows_create_installers.exe: [INFO] Installers will be created that include the components: 
                                              [staging-ocamlrun; offline-test1]
@@ -221,6 +230,7 @@ Side note:
                                                bin/dkml-install-setup.exe
                                                setup.exe
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86_64.sh that can produce testme-windows_x86_64-0.1.0.tar.gz (etc.) archives
+[create_installers_run]
 
 The --work-dir will have ABI-specific archive trees in its "a" folder.
 
@@ -235,6 +245,7 @@ installation is finished.
 Each archive tree also contains a "st" folder for the static files ... these
 are files that are directly copied to the end-user's installation directory.
 
+[create_installers_work]
   $ tree work
   work
   |-- a
@@ -331,6 +342,7 @@ are files that are directly copied to the end-user's installation directory.
       `-- 7zr.exe
   
   50 directories, 42 files
+[create_installers_work]
 
 --------------------------------------------------------------------------------
 Section: Bring-your-own-archiver archives
@@ -358,6 +370,7 @@ Sidenote:
 | which will be more performant, maintainable and customizable than doing
 | tar (or RPM, etc.) inside of OCaml.
 
+[archiver_session]
   $ tree work
   work
   |-- a
@@ -480,6 +493,7 @@ Sidenote:
   drwxr-xr-x testme-linux_x86_64-0.1.0/st/offline-test1/
   -rw-r--r-- testme-linux_x86_64-0.1.0/st/offline-test1/icon.png
   -rw-r--r-- testme-linux_x86_64-0.1.0/st/offline-test1/README.txt
+[archiver_session]
 
 --------------------------------------------------------------------------------
 Section: setup.exe installers
@@ -493,6 +507,7 @@ Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
 `bin\dkml-install-setup.exe` has been renamed to `setup.exe`.
 
+[setup_exe_list_7z]
   $ ../assets/lzma2107/bin/7zr.exe l target/testme-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
@@ -533,10 +548,12 @@ contents is exactly the same as the archive tree, except that
   bin\dkml-install-uninstaller.exe
   ------------------------
   folders
+[setup_exe_list_7z]
 
 We would see the same thing if we looked inside the generated
 `setup-NAME-VER.exe` (which is just the SFX module and the .7z archive above):
 
+[setup_exe_list_exe]
   $ ../assets/lzma2107/bin/7zr.exe l target/setup-testme-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
   Name
   ------------------------
@@ -548,6 +565,7 @@ We would see the same thing if we looked inside the generated
   lib\dkml-install-runner\plugins
   lib\dkml-install-runner\plugins\dkml-plugin-offline-test1
   lib\dkml-install-runner\plugins\dkml-plugin-staging-ocamlrun
+[setup_exe_list_exe]
 
 When setup.exe is run, the SFX module knows how to find the 7zip archive stored
 at the end of setup.exe (which you see above), decompress it to a temporary
@@ -560,14 +578,18 @@ If we were to run the `bin\dkml-install-setup.exe` from the original archive
 tree we would just get a "Hello" printed.
 
 Here is the code for that:
+[setup_exe_setup_ml]
   $ cat ./setup_print_hello.ml
   let () = print_endline "Hello"
+[setup_exe_setup_ml]
 
 Since the generated `setup-NAME-VER.exe` will decompress the .7z archive and run
 the `setup.exe` it found in the .7z root directory, we expect to see "Hello"
 printed. Which is what we see:
+[setup_exe_run]
   $ target/setup-testme-windows_x86_64-0.1.0.exe
   Hello
+[setup_exe_run]
 
 To recap:
 1. Opam directory structure is used to build a directory structure for the

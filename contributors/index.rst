@@ -73,6 +73,7 @@ but you will need to accept a learning curve for:
    :caption: Table of Contents
 
    self
+   doc/packages/Console
    doc/components/index
    doc/Design
 
