@@ -1,37 +1,58 @@
 The goal of this CRAM test is to demonstrate, document and test how
 self-extracting archives work on Windows.
 
-The main documentation tool for Diskuv projects is Sphinx, and sections of this
+Documentation:
+
+* The main documentation tool for Diskuv projects is Sphinx, and sections of this
 CRAM test can be directly included into Sphinx documentation using
 the `literalinclude` directive and the `start-after/start-at/end-before/end-at`
 attributes:
 https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude
+* The README.md can also be generated from reStructuredText to markdown with
+`pandoc`, perhaps as part of a `dune runtest --auto-promote` workflow.
+
+==> This file is the authorative source of code examples for Windows.
 
 --------------------------------------------------------------------------------
+Initial Conditions
+--------------------------------------------------------------------------------
 
-Precheck that nothing unusual is in this test build directory
+Check what is present in this directory
   $ ls
   setup_print_hello.exe
+  setup_print_hello.ml
   test_windows_create_installers.exe
+  test_windows_create_installers.ml
   test_windows_create_installers.t
   uninstaller_print_bye.exe
 
-Create the temporary work directory and the target installer directory
-  $ install -d work
-  $ install -d target
+--------------------------------------------------------------------------------
+Generating the installer starts with an Opam switch
+--------------------------------------------------------------------------------
 
-Create an Opam directory structure
+We'll just mimic an Opam switch by creating a directory structure and some
+files.
+
+We want to model an Opam "installer" package that has two components:
+* dkml-component-staging-ocamlrun
+* dkml-component-offline-test1
 
 The files will just be empty files, except for two important files:
 * dkml-install-setup.exe will print "Hello"
 * dkml-install-uninstaller.exe will print "Bye"
 
-Ordinarily the dkml-install-api framework will generate those two files for us.
-However for this test we'll simplify since we are demonstrating how
-self-extracting archives work on Windows.
+If this were not a demonstration, we would let the dkml-install-api framework
+generate those two files for us.
 
-(TODO) dkml-install-admin-runner.exe is ABI native code today. They should be
-built and downloaded from ABI asset repository, or built as bytecode.
+Sidenote:
+| dkml-install-setup.exe is implicitly native code produced by Dune.
+| That means the build machine (the machine generating the Opam directory tree)
+| must be the same ABI as the end-user machine (the machine where the installer
+| runs). That is a sucky sucky limitation!
+| So ... we could either download prebuilt ABI-specific dkml-install-setup.exe
+| and dkml-install-uninstaller.exe, or we could distribute those two files
+| as OCaml bytecode.
+
   $ install -d _opam/bin
   $ install -d _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1
   $ install -d _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun
@@ -104,388 +125,119 @@ built and downloaded from ABI asset repository, or built as bytecode.
   
   22 directories, 17 files
 
-Run the create_installers.exe executable. Actually, there is one modification
-we did to this executable: it has two test components defined.
-  $ ./test_windows_create_installers.exe --program-name testme --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --verbose | tr '\\' '/' | grep -v "Archive size"
+--------------------------------------------------------------------------------
+Section: What are these components?
+--------------------------------------------------------------------------------
+
+In a typical graphical desktop installer, you are able to select which pieces of
+an application are installed on your machine. For example, a Git installer
+could ask whether you wanted to install the "Git LFS" extension for large
+file support. These pieces of an application are called components.
+
+For now, we'll define two do-nothing test components:
+`staging-ocamlrun` and `offline-test1`
+
+and we will also use a library to generate an executable
+called `create_installers.exe`:
+
+  $ cat test_windows_create_installers.ml
+  open Cmdliner
+  
+  (* Create some demonstration components that are immediately registered *)
+  
+  let () =
+    let reg = Dkml_install_register.Component_registry.get () in
+    Dkml_install_register.Component_registry.add_component reg
+      (module struct
+        include Dkml_install_api.Default_component_config
+  
+        let component_name = "offline-test1"
+      end);
+    Dkml_install_register.Component_registry.add_component reg
+      (module struct
+        include Dkml_install_api.Default_component_config
+  
+        let component_name = "staging-ocamlrun"
+      end)
+  
+  (* Let's also create an entry point for `create_installers.exe` *)
+  let () = Term.(exit @@ Dkml_package_console_setup.create_installers ())
+
+If this were not a demonstration, all your components would be dynamically
+probed from your Opam directory structure using the Dune Site plugin:
+https://dune.readthedocs.io/en/latest/sites.html#plugins-and-dynamic-loading-of-packages
+
+You can see a real component at:
+https://github.com/diskuv/dkml-component-curl/blob/1cbecbaf7252e1fbe2ee5f56805fcf03e34fb4b6/src/buildtime_installer/dkml_component_staging_curl.ml
+
+  $ echo
+  
+
+--------------------------------------------------------------------------------
+Section: Use the generated `create_installers.exe`
+--------------------------------------------------------------------------------
+
+Important:
+| `create_installers.exe` will create installers for you based on the components
+| you registered earlier.
+
+Create the temporary work directory and the target installer directory
+  $ install -d work
+  $ install -d target
+
+Run the create_installers.exe executable.
+
+Side note:
+| If this were not a demonstration, you would be doing this in your
+| installer .opam file with something like:
+|   [
+|     "%{bin}%/dkml-install-generate.exe"
+|     "--program-name"
+|      name
+|     "--program-version"
+|     version
+|     "--work-dir"
+|     "_build/iw"
+|     "--target-dir"
+|     "%{_:share}%"
+|   ]
+
+  $ ./test_windows_create_installers.exe --program-name testme --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --verbose
   test_windows_create_installers.exe: [INFO] Installers will be created that include the components: 
                                              [staging-ocamlrun; offline-test1]
   test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: 
-                                             [generic; android_arm64v8a;
-                                              android_arm32v7a; android_x86;
-                                              android_x86_64; darwin_arm64;
-                                              darwin_x86_64; linux_arm64;
-                                              linux_arm32v6; linux_arm32v7;
-                                              linux_x86_64; linux_x86;
-                                              windows_x86_64; windows_x86;
-                                              windows_arm64; windows_arm32]
+                                             [generic; linux_x86_64;
+                                              windows_x86_64]
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-generic.sh that can produce testme-generic-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-android_arm64v8a.sh that can produce testme-android_arm64v8a-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-android_arm32v7a.sh that can produce testme-android_arm32v7a-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-android_x86.sh that can produce testme-android_x86-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-android_x86_64.sh that can produce testme-android_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-darwin_arm64.sh that can produce testme-darwin_arm64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-darwin_x86_64.sh that can produce testme-darwin_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_arm64.sh that can produce testme-linux_arm64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_arm32v6.sh that can produce testme-linux_arm32v6-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_arm32v7.sh that can produce testme-linux_arm32v7-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_x86_64.sh that can produce testme-linux_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_x86.sh that can produce testme-linux_x86-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_x86_64-0.1.0.exe
   test_windows_create_installers.exe: [INFO] Creating 7z archive with: 
-                                             work\sfx\7zr.exe a -bb0 -mx9 -y
+                                             work\sfx\7zr.exe a -bso0 -mx9 -y
                                                target\testme-windows_x86_64-0.1.0.7z
                                                .\work\a\windows_x86_64\*
   test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: 
-                                             work\sfx\7zr.exe rn -bb0 -mx9 -y
+                                             work\sfx\7zr.exe rn -bso0 -mx9 -y
                                                target\testme-windows_x86_64-0.1.0.7z
                                                bin/dkml-install-setup.exe
                                                setup.exe
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86_64.sh that can produce testme-windows_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_x86-0.1.0.exe
-  test_windows_create_installers.exe: [INFO] Creating 7z archive with: 
-                                             work\sfx\7zr.exe a -bb0 -mx9 -y
-                                               target\testme-windows_x86-0.1.0.7z
-                                               .\work\a\windows_x86\*
-  test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: 
-                                             work\sfx\7zr.exe rn -bb0 -mx9 -y
-                                               target\testme-windows_x86-0.1.0.7z
-                                               bin/dkml-install-setup.exe
-                                               setup.exe
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86.sh that can produce testme-windows_x86-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_arm64-0.1.0.exe
-  test_windows_create_installers.exe: [INFO] Creating 7z archive with: 
-                                             work\sfx\7zr.exe a -bb0 -mx9 -y
-                                               target\testme-windows_arm64-0.1.0.7z
-                                               .\work\a\windows_arm64\*
-  test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: 
-                                             work\sfx\7zr.exe rn -bb0 -mx9 -y
-                                               target\testme-windows_arm64-0.1.0.7z
-                                               bin/dkml-install-setup.exe
-                                               setup.exe
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_arm64.sh that can produce testme-windows_arm64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_arm32-0.1.0.exe
-  test_windows_create_installers.exe: [INFO] Creating 7z archive with: 
-                                             work\sfx\7zr.exe a -bb0 -mx9 -y
-                                               target\testme-windows_arm32-0.1.0.7z
-                                               .\work\a\windows_arm32\*
-  test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: 
-                                             work\sfx\7zr.exe rn -bb0 -mx9 -y
-                                               target\testme-windows_arm32-0.1.0.7z
-                                               bin/dkml-install-setup.exe
-                                               setup.exe
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_arm32.sh that can produce testme-windows_arm32-0.1.0.tar.gz (etc.) archives
-  
-  7-Zip (r) 21.07 (x86) : Igor Pavlov : Public domain : 2021-12-26
-  
-  Scanning the drive:
-  19 folders, 16 files, 12295168 bytes (12 MiB)
-  
-  Creating archive: target/testme-windows_x86_64-0.1.0.7z
-  
-  Add new data to archive: 19 folders, 16 files, 12295168 bytes (12 MiB)
-  
-  
-  Files read from disk: 2
-  Everything is Ok
-  
-  7-Zip (r) 21.07 (x86) : Igor Pavlov : Public domain : 2021-12-26
-  
-  Open archive: target/testme-windows_x86_64-0.1.0.7z
-  --
-  Path = target/testme-windows_x86_64-0.1.0.7z
-  Type = 7z
-  Physical Size = 1604649
-  Headers Size = 645
-  Method = LZMA2:12m LZMA:20 BCJ2
-  Solid = +
-  Blocks = 1
-  
-  Updating archive: target/testme-windows_x86_64-0.1.0.7z
-  
-  Keep old data in archive: 19 folders, 16 files, 12295168 bytes (12 MiB)
-  Add new data to archive: 0 files, 0 bytes
-  
-  
-  Files read from disk: 0
-  Everything is Ok
-  
-  7-Zip (r) 21.07 (x86) : Igor Pavlov : Public domain : 2021-12-26
-  
-  Scanning the drive:
-  13 folders, 14 files, 12295168 bytes (12 MiB)
-  
-  Creating archive: target/testme-windows_x86-0.1.0.7z
-  
-  Add new data to archive: 13 folders, 14 files, 12295168 bytes (12 MiB)
-  
-  
-  Files read from disk: 2
-  Everything is Ok
-  
-  7-Zip (r) 21.07 (x86) : Igor Pavlov : Public domain : 2021-12-26
-  
-  Open archive: target/testme-windows_x86-0.1.0.7z
-  --
-  Path = target/testme-windows_x86-0.1.0.7z
-  Type = 7z
-  Physical Size = 1604560
-  Headers Size = 556
-  Method = LZMA2:12m LZMA:20 BCJ2
-  Solid = +
-  Blocks = 1
-  
-  Updating archive: target/testme-windows_x86-0.1.0.7z
-  
-  Keep old data in archive: 13 folders, 14 files, 12295168 bytes (12 MiB)
-  Add new data to archive: 0 files, 0 bytes
-  
-  
-  Files read from disk: 0
-  Everything is Ok
-  
-  7-Zip (r) 21.07 (x86) : Igor Pavlov : Public domain : 2021-12-26
-  
-  Scanning the drive:
-  13 folders, 14 files, 12295168 bytes (12 MiB)
-  
-  Creating archive: target/testme-windows_arm64-0.1.0.7z
-  
-  Add new data to archive: 13 folders, 14 files, 12295168 bytes (12 MiB)
-  
-  
-  Files read from disk: 2
-  Everything is Ok
-  
-  7-Zip (r) 21.07 (x86) : Igor Pavlov : Public domain : 2021-12-26
-  
-  Open archive: target/testme-windows_arm64-0.1.0.7z
-  --
-  Path = target/testme-windows_arm64-0.1.0.7z
-  Type = 7z
-  Physical Size = 1604554
-  Headers Size = 550
-  Method = LZMA2:12m LZMA:20 BCJ2
-  Solid = +
-  Blocks = 1
-  
-  Updating archive: target/testme-windows_arm64-0.1.0.7z
-  
-  Keep old data in archive: 13 folders, 14 files, 12295168 bytes (12 MiB)
-  Add new data to archive: 0 files, 0 bytes
-  
-  
-  Files read from disk: 0
-  Everything is Ok
-  
-  7-Zip (r) 21.07 (x86) : Igor Pavlov : Public domain : 2021-12-26
-  
-  Scanning the drive:
-  13 folders, 14 files, 12295168 bytes (12 MiB)
-  
-  Creating archive: target/testme-windows_arm32-0.1.0.7z
-  
-  Add new data to archive: 13 folders, 14 files, 12295168 bytes (12 MiB)
-  
-  
-  Files read from disk: 2
-  Everything is Ok
-  
-  7-Zip (r) 21.07 (x86) : Igor Pavlov : Public domain : 2021-12-26
-  
-  Open archive: target/testme-windows_arm32-0.1.0.7z
-  --
-  Path = target/testme-windows_arm32-0.1.0.7z
-  Type = 7z
-  Physical Size = 1604555
-  Headers Size = 551
-  Method = LZMA2:12m LZMA:20 BCJ2
-  Solid = +
-  Blocks = 1
-  
-  Updating archive: target/testme-windows_arm32-0.1.0.7z
-  
-  Keep old data in archive: 13 folders, 14 files, 12295168 bytes (12 MiB)
-  Add new data to archive: 0 files, 0 bytes
-  
-  
-  Files read from disk: 0
-  Everything is Ok
 
-The --work-dir will have ABI-specific archive trees in its "a" folder. The
-archive tree is what goes directly into the installer file (ex. setup.exe,
-.msi, .rpm, etc.). The archive tree will be unpacked on the end-user's
-machine.
-Each archive tree contains a "sg" folder for the staging files and an "st"
-folder for the static files.
+The --work-dir will have ABI-specific archive trees in its "a" folder.
+
+The archive tree is the content that is packed into the installer file
+(ex. setup.exe, .msi, .rpm, etc.) and which gets unpacked on the
+end-user's machine.
+
+Each archive tree contains a "sg" folder for the staging files ... these
+are files that are used during the installation but disappear when the
+installation is finished.
+
+Each archive tree also contains a "st" folder for the static files ... these
+are files that are directly copied to the end-user's installation directory.
+
   $ tree work
   work
   |-- a
-  |   |-- android_arm32v7a
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- android_arm64v8a
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- android_x86
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- android_x86_64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- darwin_arm64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       |-- darwin_arm64
-  |   |   |       |   `-- libpng.dylib
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- darwin_x86_64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       |-- darwin_x86_64
-  |   |   |       |   `-- libpng.dylib
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
   |   |-- generic
   |   |   |-- bin
   |   |   |   |-- dkml-install-admin-runner.exe
@@ -513,196 +265,7 @@ folder for the static files.
   |   |       `-- offline-test1
   |   |           |-- README.txt
   |   |           `-- icon.png
-  |   |-- linux_arm32v6
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- linux_arm32v7
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- linux_arm64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- linux_x86
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
   |   |-- linux_x86_64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- windows_arm32
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- windows_arm64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- windows_x86
   |   |   |-- bin
   |   |   |   |-- dkml-install-admin-runner.exe
   |   |   |   |-- dkml-install-setup.exe
@@ -767,7 +330,7 @@ folder for the static files.
   `-- sfx
       `-- 7zr.exe
   
-  234 directories, 213 files
+  50 directories, 42 files
 
 --------------------------------------------------------------------------------
 Section: Bring-your-own-archiver archives
@@ -778,185 +341,26 @@ Currently there is only one "supported" archiver: tar.
 You could use your own tar archiver so you can distribute software for
 *nix machines like Linux and macOS in the common .tar.gz or .tar.bz2 formats.
 
-Eventually there will be:
+There could be others:
 * a zip archiver so you can use builtin zip file support on modern Windows
-machines. (But the setup.exe installers are probably better; see the next section)
+machines. (But the setup.exe installers are probably better; see the next
+section)
 * a RPM/APK/DEB packager on Linux
 
 We create "bundle" scripts that let you generate 'tar' archives specific
-to the target operating systems. You can add tar options like '--gzip' (or RPM
-spec files when we get a RPM packager) to the end of the bundle script to
-customize the archive.
+to the target operating systems. You can add tar options like '--gzip'
+to the end of the bundle script to customize the archive.
+
+Sidenote:
+| The reason we use scripts rather than create the archives directly is
+| to lessen the OCaml dependencies of dkml-install-api. You usually can
+| install or use an archiver (ex. tar.exe + gzip.exe) on a build system,
+| which will be more performant, maintainable and customizable than doing
+| tar (or RPM, etc.) inside of OCaml.
 
   $ tree work
   work
   |-- a
-  |   |-- android_arm32v7a
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- android_arm64v8a
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- android_x86
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- android_x86_64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- darwin_arm64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       |-- darwin_arm64
-  |   |   |       |   `-- libpng.dylib
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- darwin_x86_64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       |-- darwin_x86_64
-  |   |   |       |   `-- libpng.dylib
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
   |   |-- generic
   |   |   |-- bin
   |   |   |   |-- dkml-install-admin-runner.exe
@@ -984,196 +388,7 @@ customize the archive.
   |   |       `-- offline-test1
   |   |           |-- README.txt
   |   |           `-- icon.png
-  |   |-- linux_arm32v6
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- linux_arm32v7
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- linux_arm64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- linux_x86
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
   |   |-- linux_x86_64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- windows_arm32
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- windows_arm64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- windows_x86
   |   |   |-- bin
   |   |   |   |-- dkml-install-admin-runner.exe
   |   |   |   |-- dkml-install-setup.exe
@@ -1238,35 +453,17 @@ customize the archive.
   `-- sfx
       `-- 7zr.exe
   
-  234 directories, 213 files
+  50 directories, 42 files
+
   $ tree target
   target
-  |-- bundle-testme-android_arm32v7a.sh
-  |-- bundle-testme-android_arm64v8a.sh
-  |-- bundle-testme-android_x86.sh
-  |-- bundle-testme-android_x86_64.sh
-  |-- bundle-testme-darwin_arm64.sh
-  |-- bundle-testme-darwin_x86_64.sh
   |-- bundle-testme-generic.sh
-  |-- bundle-testme-linux_arm32v6.sh
-  |-- bundle-testme-linux_arm32v7.sh
-  |-- bundle-testme-linux_arm64.sh
-  |-- bundle-testme-linux_x86.sh
   |-- bundle-testme-linux_x86_64.sh
-  |-- bundle-testme-windows_arm32.sh
-  |-- bundle-testme-windows_arm64.sh
-  |-- bundle-testme-windows_x86.sh
   |-- bundle-testme-windows_x86_64.sh
-  |-- setup-testme-windows_arm32-0.1.0.exe
-  |-- setup-testme-windows_arm64-0.1.0.exe
-  |-- setup-testme-windows_x86-0.1.0.exe
   |-- setup-testme-windows_x86_64-0.1.0.exe
-  |-- testme-windows_arm32-0.1.0.7z
-  |-- testme-windows_arm64-0.1.0.7z
-  |-- testme-windows_x86-0.1.0.7z
   `-- testme-windows_x86_64-0.1.0.7z
   
-  0 directories, 24 files
+  0 directories, 5 files
 
   $ target/bundle-testme-linux_x86_64.sh -o target tar
   $ tar tvf target/testme-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $1, $NF}'
@@ -1285,10 +482,17 @@ customize the archive.
   -rw-r--r-- testme-linux_x86_64-0.1.0/st/offline-test1/README.txt
 
 --------------------------------------------------------------------------------
-setup.exe installers
+Section: setup.exe installers
 --------------------------------------------------------------------------------
 
 There are also fully built setup.exe installers available.
+The setup.exe is just a special version of the decompressor 7z.exe called an
+"SFX" module, with a 7zip archive appended.
+
+Let's start with the 7zip archive that we generate.  You will see that its
+contents is exactly the same as the archive tree, except that
+`bin\dkml-install-setup.exe` has been renamed to `setup.exe`.
+
   $ ../assets/lzma2107/bin/7zr.exe l target/testme-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
@@ -1330,7 +534,58 @@ There are also fully built setup.exe installers available.
   ------------------------
   folders
 
-./setup_print_hello.ml
+We would see the same thing if we looked inside the generated
+`setup-NAME-VER.exe` (which is just the SFX module and the .7z archive above):
+
+  $ ../assets/lzma2107/bin/7zr.exe l target/setup-testme-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
+  Name
+  ------------------------
+  bin
+  lib
+  lib\dkml-component-offline-test1
+  lib\dkml-component-staging-ocamlrun
+  lib\dkml-install-runner
+  lib\dkml-install-runner\plugins
+  lib\dkml-install-runner\plugins\dkml-plugin-offline-test1
+  lib\dkml-install-runner\plugins\dkml-plugin-staging-ocamlrun
+
+When setup.exe is run, the SFX module knows how to find the 7zip archive stored
+at the end of setup.exe (which you see above), decompress it to a temporary
+directory, and then run an executable inside the temporary directory.
+
+To make keep things confusing, the temporary executable that 7zip runs is
+the member "setup.exe" found in the .7z root directory.
+
+If we were to run the `bin\dkml-install-setup.exe` from the original archive
+tree we would just get a "Hello" printed.
+
+Here is the code for that:
   $ cat ./setup_print_hello.ml
+  let () = print_endline "Hello"
+
+Since the generated `setup-NAME-VER.exe` will decompress the .7z archive and run
+the `setup.exe` it found in the .7z root directory, we expect to see "Hello"
+printed. Which is what we see:
   $ target/setup-testme-windows_x86_64-0.1.0.exe
   Hello
+
+To recap:
+1. Opam directory structure is used to build a directory structure for the
+archive tree.
+2. You can create .tar.gz or .tar.bz2 binary distributions from the archive
+tree.
+3. You can also use the setup-NAME-VER.exe which has been designed to
+automatically run `bin\dkml-install-setup.exe`.
+
+Whether manually uncompressing a .tar.gz binary distribution, or letting
+setup-NAME-VER.exe do it automatically, the original
+`bin\dkml-install-setup.exe` will have full access to the archive tree.
+
+That's it for how archives and setup.exe work!
+
+--------------------------------------------------------------------------------
+
+TODO: Use another cram test to show what a the real `bin\dkml-install-setup.exe`
+does, using one or more real component. Perhaps place the cram test in
+dkml-installer-network-ocaml (or a demonstration Opam package that depends on
+dkml-installer-network-ocaml).

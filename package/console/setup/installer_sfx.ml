@@ -6,6 +6,19 @@
 open Bos
 open Astring
 
+(** Highest compression. *)
+let sevenz_compression_level_opts = Cmd.v "-mx9"
+
+let sevenz_log_level_opts =
+  (* 7z is super chatty! *)
+  let output_log_level_min = Cmd.v "-bb0" in
+  let output_log_level_max = Cmd.v "-bb3" in
+  let disable_stdout_stream = Cmd.v "-bso0" in
+  match Logs.level () with
+  | Some Debug -> output_log_level_max
+  | Some Info -> Cmd.(output_log_level_min %% disable_stdout_stream)
+  | _ -> disable_stdout_stream
+
 let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
   let pwd = Error_utils.get_ok_or_failwith_rresult (OS.Dir.current ()) in
   let archive_rel_dir =
@@ -21,13 +34,7 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
           Logs.info (fun l -> l "FATAL: %s" msg);
           failwith msg
   in
-  let log_level =
-    match Logs.level () with
-    | Some Debug -> Cmd.v "-bb3"
-    | Some Info -> Cmd.v "-bb0"
-    | _ -> Cmd.empty
-  in
-  let doit cmd action =
+  let run_7z cmd action =
     let status =
       Error_utils.get_ok_or_failwith_rresult (OS.Cmd.run_status cmd)
     in
@@ -53,13 +60,13 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
   let cmd_create =
     Cmd.(
       v (Fpath.to_string sevenz_exe)
-      % "a" %% log_level % "-mx9" % "-y"
+      % "a" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
       % Fpath.to_string archive_path
       (* DIR/* is 7z's syntax for the contents of DIR *)
       % Fpath.(to_string (archive_rel_dir / "*")))
   in
   Logs.info (fun l -> l "Creating 7z archive with: %a" Cmd.pp cmd_create);
-  doit cmd_create "create a self-extracting archive";
+  run_7z cmd_create "create a self-extracting archive";
 
   (* 7xS2con.sfx and 7xS2.sfx will autolaunch "setup.exe" (or the first .exe,
      which is ambiguous). We'll rename bin/dkml-install-setup.exe so that it
@@ -73,13 +80,13 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
   let cmd_rename =
     Cmd.(
       v (Fpath.to_string sevenz_exe)
-      % "rn" %% log_level % "-mx9" % "-y"
+      % "rn" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
       % Fpath.to_string archive_path
       % "bin/dkml-install-setup.exe" % "setup.exe")
   in
   Logs.info (fun l ->
       l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
-  doit cmd_rename "rename within a self-extracting archive"
+  run_7z cmd_rename "rename within a self-extracting archive"
 
 let get_config_text ~program_title ~program_version =
   let text =

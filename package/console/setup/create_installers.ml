@@ -96,7 +96,7 @@ let create_forone_abi ~abi_selector ~all_component_names ~program_name
     ~program_name ~program_version ~target_dir
 
 let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) program_name
-    program_version work_dir target_dir opam_context =
+    program_version work_dir target_dir opam_context abis =
   (* Setup dune site *)
   set_dune_site_env ~opam_context;
   (* Load component plugins; logging already setup *)
@@ -121,9 +121,7 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) program_name
   (* Get all ABIs, include Generic *)
   let abi_selectors =
     [ Dkml_install_runner.Path_location.Generic ]
-    @ List.map
-        (fun v -> Dkml_install_runner.Path_location.Abi v)
-        Dkml_install_api.Context.Abi_v2.values
+    @ List.map (fun v -> Dkml_install_runner.Path_location.Abi v) abis
   in
   Logs.info (fun l ->
       l "Installers will be created for the ABIs: %a"
@@ -148,6 +146,21 @@ let program_name_t =
 let program_version_t =
   let doc = "The version of the program that will be installed" in
   Arg.(required & opt (some string) None & info [ "program-version" ] ~doc)
+
+let abis_t =
+  let open Dkml_install_api.Context.Abi_v2 in
+  let l =
+    List.map
+      (fun v -> (to_canonical_string v, v))
+      Dkml_install_api.Context.Abi_v2.values
+  in
+  let doc =
+    "An ABI to build an installer for. Defaults to all of the supported ABIs"
+  in
+  Arg.(
+    value
+    & opt_all (enum l) Dkml_install_api.Context.Abi_v2.values
+    & info [ "abi" ] ~doc ~docv:"ABI")
 
 let work_dir_t =
   let doc =
@@ -204,6 +217,6 @@ let create_installers () =
     Term.(
       const create_forall_abi $ Dkml_install_runner.Cmdliner_runner.setup_log_t
       $ program_name_t $ program_version_t $ work_dir_t $ target_dir_t
-      $ opam_context_t)
+      $ opam_context_t $ abis_t)
   in
   Term.(eval (t, info ~version:"%%VERSION%%" "dkml-create-console-installers"))
