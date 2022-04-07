@@ -11,6 +11,33 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: OCaml 4.12.x
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: 4.12.x
+          dune-cache: true
+          opam-pin: true
+          opam-depext: false # will complain that diskuvbox is missing
+      - name: Add Opam pins
+        # opam pin dkml-component-network-ocamlcompiler 'https://github.com/diskuv/dkml-component-ocamlcompiler.git#main' --no-action --yes
+        # opam pin dkml-component-staging-ocamlrun      'https://github.com/diskuv/dkml-component-ocamlcompiler.git#main' --no-action --yes
+        # opam pin dkml-install                         'https://github.com/diskuv/dkml-install-api.git#main' --no-action --yes
+        # opam pin dkml-install-runner                  'https://github.com/diskuv/dkml-install-api.git#main' --no-action --yes
+        # opam pin dkml-package-console                 'https://github.com/diskuv/dkml-install-api.git#main' --no-action --yes
+        # opam pin dkml-component-staging-curl          'https://github.com/diskuv/dkml-component-curl.git#main' --no-action --yes
+        # opam pin dkml-installer-network-ocaml         'https://github.com/diskuv/dkml-installer-ocaml.git#main' --no-action --yes
+        # opam pin dkml-component-staging-unixutils     'https://github.com/diskuv/dkml-component-unixutils.git#main' --no-action --yes
+        # opam pin dkml-component-network-unixutils     'https://github.com/diskuv/dkml-component-unixutils.git#main' --no-action --yes
+        run: |
+          opam pin dkml-base-compiler                   'https://github.com/diskuv/dkml-compiler.git#main' --no-action --yes
+          opam pin ocaml                                'https://github.com/diskuv/dkml-compiler.git#main' --no-action --yes
+          opam pin ocaml-config                         'https://github.com/diskuv/dkml-compiler.git#main' --no-action --yes
+          opam pin conf-dkml-cross-toolchain            'https://github.com/diskuv/conf-dkml-cross-toolchain.git#main' --no-action --yes
+          opam pin diskuvbox                            'https://github.com/diskuv/diskuvbox.git#main' --no-action --yes
+      - name: Install Opam dependencies
+        run: opam install . --deps-only --with-doc
+
       - name: Cache conda
         uses: actions/cache@v2
         env:
@@ -37,13 +64,7 @@ jobs:
       - name: Build Sphinx
         shell: bash -l {0}
         run: cd contributors && make publish-prepare-docs
-      - name: OCaml 4.12.x
-        uses: ocaml/setup-ocaml@v2
-        with:
-          ocaml-compiler: 4.12.x
-          dune-cache: true
-      - name: Install Opam dependencies
-        run: opam install . --deps-only --with-doc
+
       - name: Build odoc
         run: opam exec -- dune build @doc
       - name: Copy odoc into Sphinx site
