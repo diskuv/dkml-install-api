@@ -4,6 +4,7 @@
  (libraries
   dkml-install.register
   dkml-install.api
+  diskuvbox
   bos
   astring
   fpath

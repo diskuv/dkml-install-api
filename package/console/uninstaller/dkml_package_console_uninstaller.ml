@@ -49,7 +49,7 @@ let uninstall program_name package_args =
     Cmd.v
       Fpath.(
         to_string
-        @@ (Dkml_install_runner.Cmdliner_runner.installer_archive_dir / s))
+        @@ (Dkml_install_runner.Cmdliner_runner.enduser_archive_dir () / s))
   in
 
   let spawn_admin_if_needed () =

@@ -98,8 +98,28 @@ let prefix_t =
     & opt (some string) None
     & info [ Cmdliner_common.prefix_arg ] ~docv:"PREFIX" ~doc)
 
-(* Directory containing dkml-install-setup.exe *)
-let installer_archive_dir = Fpath.(v OS.Arg.exec |> parent)
+(** Directory containing dkml-install-setup.exe or whatever executable
+   (perhaps a renamed setup.exe in a non-bin folder) is currently running. *)
+let exec_dir = Fpath.(parent (v OS.Arg.exec))
+
+(** The root directory that was uncompressed at end-user install time *)
+let enduser_archive_dir () =
+  let installer_archive_dir () =
+    Diskuvbox.find_up ~from_dir:exec_dir ~basenames:[ Fpath.v ".archivetree" ]
+      ~max_ascent:3 ()
+  in
+  let archive_dir_opt =
+    Error_handling.get_ok_or_raise_string (installer_archive_dir ())
+  in
+  match archive_dir_opt with
+  | Some archive_dir -> archive_dir
+  | None ->
+      raise
+        (Dkml_install_api.Installation_error
+           (Fmt.str
+              "The archive directory containing .archivetree could not be \
+               located in %a or an ancestor"
+              Fpath.pp exec_dir))
 
 (** [staging_default_dir_for_package ~archive_dir].
     For the benefit of Windows and macOS we keep the directory name ("sg") small. *)
@@ -155,11 +175,13 @@ let opam_context_opt_t =
     defaults to the sibling directory "staging". *)
 let staging_files_source_for_package_t =
   let staging_files_source' opam_context_opt staging_files_opt =
-    Path_location.staging_files_source
-      ~staging_default:
-        (Staging_default_dir
-           (staging_default_dir_for_package ~archive_dir:installer_archive_dir))
-      ~opam_context_opt ~staging_files_opt
+    let staging_default =
+      Path_location.Staging_default_dir
+        (fun () ->
+          staging_default_dir_for_package ~archive_dir:(enduser_archive_dir ()))
+    in
+    Path_location.staging_files_source ~staging_default ~opam_context_opt
+      ~staging_files_opt
   in
   Term.(const staging_files_source' $ opam_context_opt_t $ staging_files_opt_t)
 
@@ -168,11 +190,13 @@ let staging_files_source_for_package_t =
     defaults to the sibling directory "static". *)
 let static_files_source_for_package_t =
   let static_files_source' opam_context_opt static_files_opt =
-    Path_location.static_files_source
-      ~static_default:
-        (Static_default_dir
-           (static_default_dir_for_package ~archive_dir:installer_archive_dir))
-      ~opam_context_opt ~static_files_opt
+    let static_default =
+      Path_location.Static_default_dir
+        (fun () ->
+          static_default_dir_for_package ~archive_dir:(enduser_archive_dir ()))
+    in
+    Path_location.static_files_source ~static_default ~opam_context_opt
+      ~static_files_opt
   in
   Term.(const static_files_source' $ opam_context_opt_t $ static_files_opt_t)
 
@@ -210,13 +234,13 @@ let ctx_for_runner_t component_name reg =
     Unlike {!ctx_for_runner_t} the staging directory has a default
     (`Staging_default_dir`) based on relative paths from setup.exe. *)
 let ctx_for_package_t component_name reg =
+  let staging_default =
+    Path_location.Staging_default_dir
+      (fun () ->
+        staging_default_dir_for_package ~archive_dir:(enduser_archive_dir ()))
+  in
   Term.(
-    const
-      (create_context
-         ~staging_default:
-           (Staging_default_dir
-              (staging_default_dir_for_package
-                 ~archive_dir:installer_archive_dir)))
+    const (create_context ~staging_default)
     $ const component_name $ const reg $ setup_log_t $ prefix_t
     $ staging_files_opt_t $ opam_context_opt_t)
 

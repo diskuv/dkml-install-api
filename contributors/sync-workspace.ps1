@@ -25,6 +25,7 @@ Write-Output "not in 2.9.3 - with-dkml opam pin -k version dune-rpc             
 with-dkml opam pin -k version dune-site             2.9.3 --no-action --yes
 
 with-dkml opam pin -k version uuidm                 0.9.7 --no-action --yes
+with-dkml opam pin -k version mdx                   2.0.0 --no-action --yes
 
 with-dkml opam upgrade `
     dkml-base-compiler ocaml ocaml-config `

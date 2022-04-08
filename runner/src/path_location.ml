@@ -14,9 +14,13 @@ let show_abi_selector = function
 
 let pp_abi_selector fmter a = Format.pp_print_string fmter (show_abi_selector a)
 
-type staging_default = No_staging_default | Staging_default_dir of Fpath.t
+type staging_default =
+  | No_staging_default
+  | Staging_default_dir of (unit -> Fpath.t)
 
-type static_default = No_static_default | Static_default_dir of Fpath.t
+type static_default =
+  | No_static_default
+  | Static_default_dir of (unit -> Fpath.t)
 
 let static_files_source ~static_default ~opam_context_opt ~static_files_opt =
   match (opam_context_opt, static_files_opt, static_default) with
@@ -25,7 +29,7 @@ let static_files_source ~static_default ~opam_context_opt ~static_files_opt =
         (Dkml_install_api.Installation_error
            "Either `--opam-context [SWITCH_PREFIX]` or `--static-files DIR` \
             must be specified")
-  | None, None, Static_default_dir fp -> Static_files_dir fp
+  | None, None, Static_default_dir f_fp -> Static_files_dir (f_fp ())
   | Some switch_prefix, None, _ ->
       Opam_static_switch_prefix (Fpath.v switch_prefix)
   | None, Some static_files, _ -> Static_files_dir (Fpath.v static_files)
@@ -42,7 +46,7 @@ let staging_files_source ~staging_default ~opam_context_opt ~staging_files_opt =
         (Dkml_install_api.Installation_error
            "Either `--opam-context [SWITCH_PREFIX]` or `--staging-files DIR` \
             must be specified")
-  | None, None, Staging_default_dir fp -> Staging_files_dir fp
+  | None, None, Staging_default_dir f_fp -> Staging_files_dir (f_fp ())
   | Some switch_prefix, None, _ ->
       Opam_staging_switch_prefix (Fpath.v switch_prefix)
   | None, Some staging_files, _ -> Staging_files_dir (Fpath.v staging_files)
