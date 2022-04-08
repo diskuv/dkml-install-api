@@ -84,49 +84,43 @@ Sidenote:
   $ touch _opam/share/dkml-component-offline-test1/static-files/icon.png
   $ touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin/ocamlrun.exe
   $ touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs/dllthreads.dll
-  $ tree _opam
+  $ diskuvbox tree --encoding UTF-8 -d 5 _opam
   _opam
-  |-- bin
-  |   |-- dkml-install-admin-runner.exe
-  |   |-- dkml-install-setup.exe
-  |   |-- dkml-install-uninstaller.exe
-  |   `-- dkml-install-user-runner.exe
-  |-- lib
-  |   |-- dkml-component-offline-test1
-  |   |   |-- META
-  |   |   `-- test1.cma
-  |   |-- dkml-component-staging-ocamlrun
-  |   |   |-- META
-  |   |   `-- test2.cma
-  |   `-- dkml-install-runner
-  |       `-- plugins
-  |           |-- dkml-plugin-offline-test1
-  |           |   `-- META
-  |           `-- dkml-plugin-staging-ocamlrun
-  |               `-- META
-  `-- share
-      |-- dkml-component-offline-test1
-      |   |-- staging-files
-      |   |   |-- darwin_arm64
-      |   |   |   `-- libpng.dylib
-      |   |   |-- darwin_x86_64
-      |   |   |   `-- libpng.dylib
-      |   |   `-- generic
-      |   |       `-- install-offline-test1.bc
-      |   `-- static-files
-      |       |-- README.txt
-      |       `-- icon.png
-      `-- dkml-component-staging-ocamlrun
-          `-- staging-files
-              `-- windows_x86_64
-                  |-- bin
-                  |   `-- ocamlrun.exe
-                  `-- lib
-                      `-- ocaml
-                          `-- stublibs
-                              `-- dllthreads.dll
-  
-  22 directories, 17 files
+  ├── bin/
+  │   ├── dkml-install-admin-runner.exe
+  │   ├── dkml-install-setup.exe
+  │   ├── dkml-install-uninstaller.exe
+  │   └── dkml-install-user-runner.exe
+  ├── lib/
+  │   ├── dkml-component-offline-test1/
+  │   │   ├── META
+  │   │   └── test1.cma
+  │   ├── dkml-component-staging-ocamlrun/
+  │   │   ├── META
+  │   │   └── test2.cma
+  │   └── dkml-install-runner/
+  │       └── plugins/
+  │           ├── dkml-plugin-offline-test1/
+  │           │   └── META
+  │           └── dkml-plugin-staging-ocamlrun/
+  │               └── META
+  └── share/
+      ├── dkml-component-offline-test1/
+      │   ├── staging-files/
+      │   │   ├── darwin_arm64/
+      │   │   │   └── libpng.dylib
+      │   │   ├── darwin_x86_64/
+      │   │   │   └── libpng.dylib
+      │   │   └── generic/
+      │   │       └── install-offline-test1.bc
+      │   └── static-files/
+      │       ├── README.txt
+      │       └── icon.png
+      └── dkml-component-staging-ocamlrun/
+          └── staging-files/
+              └── windows_x86_64/
+                  ├── bin/
+                  └── lib/
 [opam_switch_mimic]
 
 --------------------------------------------------------------------------------
@@ -246,102 +240,79 @@ Each archive tree also contains a "st" folder for the static files ... these
 are files that are directly copied to the end-user's installation directory.
 
 [create_installers_work]
-  $ tree work
+  $ diskuvbox tree --encoding UTF-8 -d 5 work
   work
-  |-- a
-  |   |-- generic
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- linux_x86_64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   `-- windows_x86_64
-  |       |-- bin
-  |       |   |-- dkml-install-admin-runner.exe
-  |       |   |-- dkml-install-setup.exe
-  |       |   |-- dkml-install-uninstaller.exe
-  |       |   `-- dkml-install-user-runner.exe
-  |       |-- lib
-  |       |   |-- dkml-component-offline-test1
-  |       |   |   |-- META
-  |       |   |   `-- test1.cma
-  |       |   |-- dkml-component-staging-ocamlrun
-  |       |   |   |-- META
-  |       |   |   `-- test2.cma
-  |       |   `-- dkml-install-runner
-  |       |       `-- plugins
-  |       |           |-- dkml-plugin-offline-test1
-  |       |           |   `-- META
-  |       |           `-- dkml-plugin-staging-ocamlrun
-  |       |               `-- META
-  |       |-- sg
-  |       |   |-- offline-test1
-  |       |   |   `-- generic
-  |       |   |       `-- install-offline-test1.bc
-  |       |   `-- staging-ocamlrun
-  |       |       `-- windows_x86_64
-  |       |           |-- bin
-  |       |           |   `-- ocamlrun.exe
-  |       |           `-- lib
-  |       |               `-- ocaml
-  |       |                   `-- stublibs
-  |       |                       `-- dllthreads.dll
-  |       `-- st
-  |           `-- offline-test1
-  |               |-- README.txt
-  |               `-- icon.png
-  `-- sfx
-      `-- 7zr.exe
-  
-  50 directories, 42 files
+  ├── a/
+  │   ├── generic/
+  │   │   ├── bin/
+  │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   ├── dkml-install-setup.exe
+  │   │   │   ├── dkml-install-uninstaller.exe
+  │   │   │   └── dkml-install-user-runner.exe
+  │   │   ├── lib/
+  │   │   │   ├── dkml-component-offline-test1/
+  │   │   │   │   ├── META
+  │   │   │   │   └── test1.cma
+  │   │   │   ├── dkml-component-staging-ocamlrun/
+  │   │   │   │   ├── META
+  │   │   │   │   └── test2.cma
+  │   │   │   └── dkml-install-runner/
+  │   │   │       └── plugins/
+  │   │   ├── sg/
+  │   │   │   └── offline-test1/
+  │   │   │       └── generic/
+  │   │   └── st/
+  │   │       └── offline-test1/
+  │   │           ├── README.txt
+  │   │           └── icon.png
+  │   ├── linux_x86_64/
+  │   │   ├── bin/
+  │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   ├── dkml-install-setup.exe
+  │   │   │   ├── dkml-install-uninstaller.exe
+  │   │   │   └── dkml-install-user-runner.exe
+  │   │   ├── lib/
+  │   │   │   ├── dkml-component-offline-test1/
+  │   │   │   │   ├── META
+  │   │   │   │   └── test1.cma
+  │   │   │   ├── dkml-component-staging-ocamlrun/
+  │   │   │   │   ├── META
+  │   │   │   │   └── test2.cma
+  │   │   │   └── dkml-install-runner/
+  │   │   │       └── plugins/
+  │   │   ├── sg/
+  │   │   │   └── offline-test1/
+  │   │   │       └── generic/
+  │   │   └── st/
+  │   │       └── offline-test1/
+  │   │           ├── README.txt
+  │   │           └── icon.png
+  │   └── windows_x86_64/
+  │       ├── bin/
+  │       │   ├── dkml-install-admin-runner.exe
+  │       │   ├── dkml-install-setup.exe
+  │       │   ├── dkml-install-uninstaller.exe
+  │       │   └── dkml-install-user-runner.exe
+  │       ├── lib/
+  │       │   ├── dkml-component-offline-test1/
+  │       │   │   ├── META
+  │       │   │   └── test1.cma
+  │       │   ├── dkml-component-staging-ocamlrun/
+  │       │   │   ├── META
+  │       │   │   └── test2.cma
+  │       │   └── dkml-install-runner/
+  │       │       └── plugins/
+  │       ├── sg/
+  │       │   ├── offline-test1/
+  │       │   │   └── generic/
+  │       │   └── staging-ocamlrun/
+  │       │       └── windows_x86_64/
+  │       └── st/
+  │           └── offline-test1/
+  │               ├── README.txt
+  │               └── icon.png
+  └── sfx/
+      └── 7zr.exe
 [create_installers_work]
 
 --------------------------------------------------------------------------------
@@ -371,112 +342,87 @@ Sidenote:
 | tar (or RPM, etc.) inside of OCaml.
 
 [archiver_session]
-  $ tree work
+  $ diskuvbox tree --encoding UTF-8 -d 5 work
   work
-  |-- a
-  |   |-- generic
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   |-- linux_x86_64
-  |   |   |-- bin
-  |   |   |   |-- dkml-install-admin-runner.exe
-  |   |   |   |-- dkml-install-setup.exe
-  |   |   |   |-- dkml-install-uninstaller.exe
-  |   |   |   `-- dkml-install-user-runner.exe
-  |   |   |-- lib
-  |   |   |   |-- dkml-component-offline-test1
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test1.cma
-  |   |   |   |-- dkml-component-staging-ocamlrun
-  |   |   |   |   |-- META
-  |   |   |   |   `-- test2.cma
-  |   |   |   `-- dkml-install-runner
-  |   |   |       `-- plugins
-  |   |   |           |-- dkml-plugin-offline-test1
-  |   |   |           |   `-- META
-  |   |   |           `-- dkml-plugin-staging-ocamlrun
-  |   |   |               `-- META
-  |   |   |-- sg
-  |   |   |   `-- offline-test1
-  |   |   |       `-- generic
-  |   |   |           `-- install-offline-test1.bc
-  |   |   `-- st
-  |   |       `-- offline-test1
-  |   |           |-- README.txt
-  |   |           `-- icon.png
-  |   `-- windows_x86_64
-  |       |-- bin
-  |       |   |-- dkml-install-admin-runner.exe
-  |       |   |-- dkml-install-setup.exe
-  |       |   |-- dkml-install-uninstaller.exe
-  |       |   `-- dkml-install-user-runner.exe
-  |       |-- lib
-  |       |   |-- dkml-component-offline-test1
-  |       |   |   |-- META
-  |       |   |   `-- test1.cma
-  |       |   |-- dkml-component-staging-ocamlrun
-  |       |   |   |-- META
-  |       |   |   `-- test2.cma
-  |       |   `-- dkml-install-runner
-  |       |       `-- plugins
-  |       |           |-- dkml-plugin-offline-test1
-  |       |           |   `-- META
-  |       |           `-- dkml-plugin-staging-ocamlrun
-  |       |               `-- META
-  |       |-- sg
-  |       |   |-- offline-test1
-  |       |   |   `-- generic
-  |       |   |       `-- install-offline-test1.bc
-  |       |   `-- staging-ocamlrun
-  |       |       `-- windows_x86_64
-  |       |           |-- bin
-  |       |           |   `-- ocamlrun.exe
-  |       |           `-- lib
-  |       |               `-- ocaml
-  |       |                   `-- stublibs
-  |       |                       `-- dllthreads.dll
-  |       `-- st
-  |           `-- offline-test1
-  |               |-- README.txt
-  |               `-- icon.png
-  `-- sfx
-      `-- 7zr.exe
-  
-  50 directories, 42 files
+  ├── a/
+  │   ├── generic/
+  │   │   ├── bin/
+  │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   ├── dkml-install-setup.exe
+  │   │   │   ├── dkml-install-uninstaller.exe
+  │   │   │   └── dkml-install-user-runner.exe
+  │   │   ├── lib/
+  │   │   │   ├── dkml-component-offline-test1/
+  │   │   │   │   ├── META
+  │   │   │   │   └── test1.cma
+  │   │   │   ├── dkml-component-staging-ocamlrun/
+  │   │   │   │   ├── META
+  │   │   │   │   └── test2.cma
+  │   │   │   └── dkml-install-runner/
+  │   │   │       └── plugins/
+  │   │   ├── sg/
+  │   │   │   └── offline-test1/
+  │   │   │       └── generic/
+  │   │   └── st/
+  │   │       └── offline-test1/
+  │   │           ├── README.txt
+  │   │           └── icon.png
+  │   ├── linux_x86_64/
+  │   │   ├── bin/
+  │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   ├── dkml-install-setup.exe
+  │   │   │   ├── dkml-install-uninstaller.exe
+  │   │   │   └── dkml-install-user-runner.exe
+  │   │   ├── lib/
+  │   │   │   ├── dkml-component-offline-test1/
+  │   │   │   │   ├── META
+  │   │   │   │   └── test1.cma
+  │   │   │   ├── dkml-component-staging-ocamlrun/
+  │   │   │   │   ├── META
+  │   │   │   │   └── test2.cma
+  │   │   │   └── dkml-install-runner/
+  │   │   │       └── plugins/
+  │   │   ├── sg/
+  │   │   │   └── offline-test1/
+  │   │   │       └── generic/
+  │   │   └── st/
+  │   │       └── offline-test1/
+  │   │           ├── README.txt
+  │   │           └── icon.png
+  │   └── windows_x86_64/
+  │       ├── bin/
+  │       │   ├── dkml-install-admin-runner.exe
+  │       │   ├── dkml-install-setup.exe
+  │       │   ├── dkml-install-uninstaller.exe
+  │       │   └── dkml-install-user-runner.exe
+  │       ├── lib/
+  │       │   ├── dkml-component-offline-test1/
+  │       │   │   ├── META
+  │       │   │   └── test1.cma
+  │       │   ├── dkml-component-staging-ocamlrun/
+  │       │   │   ├── META
+  │       │   │   └── test2.cma
+  │       │   └── dkml-install-runner/
+  │       │       └── plugins/
+  │       ├── sg/
+  │       │   ├── offline-test1/
+  │       │   │   └── generic/
+  │       │   └── staging-ocamlrun/
+  │       │       └── windows_x86_64/
+  │       └── st/
+  │           └── offline-test1/
+  │               ├── README.txt
+  │               └── icon.png
+  └── sfx/
+      └── 7zr.exe
 
-  $ tree target
+  $ diskuvbox tree --encoding UTF-8 -d 5 target
   target
-  |-- bundle-testme-generic.sh
-  |-- bundle-testme-linux_x86_64.sh
-  |-- bundle-testme-windows_x86_64.sh
-  |-- setup-testme-windows_x86_64-0.1.0.exe
-  `-- testme-windows_x86_64-0.1.0.7z
-  
-  0 directories, 5 files
+  ├── bundle-testme-generic.sh
+  ├── bundle-testme-linux_x86_64.sh
+  ├── bundle-testme-windows_x86_64.sh
+  ├── setup-testme-windows_x86_64-0.1.0.exe
+  └── testme-windows_x86_64-0.1.0.7z
 
   $ target/bundle-testme-linux_x86_64.sh -o target tar
   $ tar tvf target/testme-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $1, $NF}'
