@@ -26,5 +26,5 @@
  (target seven_z.ml)
  (action
   (progn
-   (run diskuvbox copy-file-into %{assets} assets-to-crunch)
+   (run diskuvbox copy-file-into %{assets} assets-to-crunch -vv)
    (run ocaml-crunch -m plain -o %{target} assets-to-crunch))))
