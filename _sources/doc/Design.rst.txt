@@ -133,7 +133,7 @@ Here is what the ``opam install ...`` step does in detail:
 
 3. Create
    `dune_site plugin loader <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_-based executables
-   named ``dkml-install-setup.exe``, ``dkml-install-uninstaller.exe``,
+   named ``dkml-package-setup.exe``, ``dkml-package-uninstaller.exe``,
    ``dkml-install-user-runner.exe`` and
    ``dkml-install-admin-runner.exe`` that will perform the steps in
    :ref:`UserPhases`
@@ -154,7 +154,7 @@ Here is what the ``opam install ...`` step does in detail:
         All of the ``$OPAM_SWITCH_PREFIX/share/$I/staging-files/`` will go
         into the ``staging`` top-level folder of the ``$I.zip`` archive.
 
-        The ``dkml-install-setup.exe``, ``dkml-install-uninstaller.exe``,
+        The ``dkml-package-setup.exe``, ``dkml-package-uninstaller.exe``,
         ``dkml-install-user-runner.exe`` and ``dkml-install-admin-runner.exe``
         executables will be placed in the root of the
         ``$I.zip`` archive.
@@ -175,23 +175,23 @@ Here is what the ``opam install ...`` step does in detail:
 User runs the installer
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-1. [``dkml-install-setup.exe``] Load all the components with
+1. [``dkml-package-setup.exe``] Load all the components with
    `dune_site's <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_
    ``Sites.Plugins.Plugins.load_all ()``:
 
    * When a component (plugin) ``C`` is loaded, it will register itself
      with the ``dkml-install-api`` registry.
-2. [``dkml-install-setup.exe``] After all the components are registered, the
+2. [``dkml-package-setup.exe``] After all the components are registered, the
    components are topologically sorted based on their dependencies.
-3. [``dkml-install-setup.exe``] Ask end-user which components to install.
+3. [``dkml-package-setup.exe``] Ask end-user which components to install.
    Some components may have
    configuration that lets them display text (ex. license) or ask more
    questions.
-4. [``dkml-install-setup.exe``] Formulate command line options for
+4. [``dkml-package-setup.exe``] Formulate command line options for
    ``dkml-install-user-runner.exe`` and  ``dkml-install-admin-runner.exe``
    that correspond to the end-user selections. By default the staging directory
    will be the ``staging`` directory that is in the same directory as
-   ``dkml-install-setup.exe``. The same command line options
+   ``dkml-package-setup.exe``. The same command line options
    will be used in both executables.
 
    .. note::
@@ -216,17 +216,17 @@ User runs the installer
 
      Early versions of the installer will simply have no choices.
 
-5. [``dkml-install-setup.exe``] Check if there are any components that
+5. [``dkml-package-setup.exe``] Check if there are any components that
    needs administrative/root privileges. The check will be like:
 
    .. code:: ocaml
 
          Component.needs_admin "<end_user_installation_prefix>"
 
-6. [``dkml-install-setup.exe``] **ADMIN_INSTALL phase** If there are any
+6. [``dkml-package-setup.exe``] **ADMIN_INSTALL phase** If there are any
    components that needs administrative/root privileges, then:
 
-   1. [``dkml-install-setup.exe``] Spawn the ``dkml-install-admin-runner.exe``
+   1. [``dkml-package-setup.exe``] Spawn the ``dkml-install-admin-runner.exe``
       executable as an elevated Unix process:
 
       .. code:: bash
@@ -257,12 +257,12 @@ User runs the installer
 
          Component.run_as_admin "<end_user_installation_prefix>"
 
-7. [``dkml-install-setup.exe``] **USER_DEPLOY_INITIAL phase**: Copy
+7. [``dkml-package-setup.exe``] **USER_DEPLOY_INITIAL phase**: Copy
    the ``static/$C`` folder of each component ``C`` from the archive to the
    <end_user_installation_prefix>.
-8. [``dkml-install-setup.exe``] **USER_INSTALL phase**:
+8. [``dkml-package-setup.exe``] **USER_INSTALL phase**:
 
-   1. [``dkml-install-setup.exe``] Spawn ``dkml-install-user-runner.exe``
+   1. [``dkml-package-setup.exe``] Spawn ``dkml-install-user-runner.exe``
       with the options formulated
       in an earlier step, plus an option for the location of the ``staging``
       folder.
