@@ -10,17 +10,6 @@ specifically how self-extracting archives work on Windows.
     CRAM test script is the source of code examples in this chapter.
 
 --------------------------------------------------------------------------------
-Initial Conditions
---------------------------------------------------------------------------------
-
-Check what is present in the directory:
-
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
-    :language: shell-session
-    :start-after: [initial_conditions_checkdir]
-    :end-before:  [initial_conditions_checkdir]
-
---------------------------------------------------------------------------------
 Generating the installer starts with an Opam switch
 --------------------------------------------------------------------------------
 
@@ -97,9 +86,23 @@ Create the temporary work directory and the target installer directory:
     :start-after: [create_installers_dirs]
     :end-before:  [create_installers_dirs]
 
+We will need to supply two important files generated with a "packager". Today
+the only packager is the Console packager, which runs
+installation/uninstallation on the end-user's machine as a Console program (as
+opposed to a GUI program traditional on Windows machines).
+
+If this were not a demonstration focused only on how the installer is made, we
+would let the dkml-install-api framework generate those two files for us.
+Instead we use two test executables:
+
+.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+    :language: shell-session
+    :start-after: [create_installers_packagerinput]
+    :end-before:  [create_installers_packagerinput]
+
 We'll directly run the create_installers.exe executable. But if this were not a
-demonstration, you would be doing this in your installer .opam file with
-something like:
+demonstration, you would be doing the same steps in your installer .opam file
+with something like:
 
 .. code-block:: javascript
 
@@ -113,6 +116,10 @@ something like:
         "_build/iw"
         "--target-dir"
         "%{_:share}%"
+        "--packager-setup-exe"
+        "%{bin}%/setup.exe"
+        "--packager-uninstaller-exe"
+        "%{bin}%/uninstaller.exe"
     ]
 
 Running the ``create_installers.exe`` gives:
@@ -121,7 +128,6 @@ Running the ``create_installers.exe`` gives:
     :language: shell-session
     :start-after: [create_installers_run]
     :end-before:  [create_installers_run]
-
 
 The ``--work-dir`` will have ABI-specific archive trees in its "a" folder.
 
@@ -135,6 +141,9 @@ installation is finished.
 
 Each archive tree also contains a "st" folder for the static files ... these
 are files that are directly copied to the end-user's installation directory.
+
+Each archive tree also contains the packager executables named as
+``bin/dkml-install-setup.exe`` and ``bin/dkml-install-uninstaller.exe``.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
     :language: shell-session
@@ -184,14 +193,15 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 
 Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-``bin\dkml-install-setup.exe`` has been renamed to ``setup.exe``.
+``bin\dkml-install-setup.exe`` (the *packager* setup.exe) has been renamed to
+``setup.exe``.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [setup_exe_list_7z]
     :end-before:  [setup_exe_list_7z]
 
-We would see the same thing if we looked inside the generated
+We would see the same thing if we looked inside the *installer*
 ``setup-NAME-VER.exe`` (which is just the SFX module and the .7z archive above):
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
@@ -199,26 +209,18 @@ We would see the same thing if we looked inside the generated
     :start-after: [setup_exe_list_exe]
     :end-before:  [setup_exe_list_exe]
 
-When setup.exe is run, the SFX module knows how to find the 7zip archive stored
-at the end of setup.exe (which you see above), decompress it to a temporary
-directory, and then run an executable inside the temporary directory.
+When the *installer* setup.exe is run, the SFX module knows how to find the 7zip
+archive stored at the end of the *installer* setup.exe (which you see above),
+decompress it to a temporary directory, and then run an executable inside the
+temporary directory.
 
 To make keep things confusing, the temporary executable that 7zip runs is
-the member "setup.exe" found in the .7z root directory.
+the member "setup.exe" (the *packager* setup.exe) found in the .7z root
+directory.
 
-If we were to run the ``bin\dkml-install-setup.exe`` from the original archive
-tree we would just get a "Hello" printed.
-
-Here is the code for that:
-
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
-    :language: ocaml
-    :start-after: [setup_exe_setup_ml]
-    :end-before:  [setup_exe_setup_ml]
-
-Since the generated ``setup-NAME-VER.exe`` will decompress the .7z archive and run
-the ``setup.exe`` it found in the .7z root directory, we expect to see "Hello"
-printed. Which is what we see:
+Since the *installer* ``setup-NAME-VER.exe`` will decompress the .7z archive and
+run the *packager* ``setup.exe`` it found in the .7z root directory, we expect to
+see "Hello" printed. Which is what we see:
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
     :language: shell-session
@@ -231,14 +233,15 @@ To recap:
    archive tree.
 2. You can create .tar.gz or .tar.bz2 binary distributions from the archive
    tree.
-3. You can also use the setup-NAME-VER.exe which has been designed to
-   automatically run ``bin\dkml-install-setup.exe``.
+3. You can also use the *installer* setup-NAME-VER.exe which has been designed
+   to automatically run the *packager* setup.exe.
 
 Whether manually uncompressing a .tar.gz binary distribution, or letting
-setup-NAME-VER.exe do it automatically, the original
-``bin\dkml-install-setup.exe`` will have full access to the archive tree.
+*installer* ``setup-NAME-VER.exe`` do it automatically, the
+*packager* ``setup.exe`` will have full access to the archive
+tree.
 
 That's it for how archives and setup.exe work!
 
-Go through the remaining documentation to see what the real
-``bin\dkml-install-setup.exe`` does, and what goes into a real component.
+Go through the remaining documentation to see what a real
+*packager* ``setup.exe`` does, and what goes into a real component.
