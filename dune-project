@@ -49,7 +49,8 @@
   (bos (>= 0.2.0))
   (cmdliner (= 1.0.4))
   (fmt (>= 0.8.9))
-  (logs (>= 0.7.0))))
+  (logs (>= 0.7.0))
+  (diskuvbox (>= 0.1.0))))
 
 (package
  (name dkml-package-console)
