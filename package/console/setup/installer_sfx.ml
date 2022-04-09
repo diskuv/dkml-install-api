@@ -69,7 +69,7 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
   run_7z cmd_create "create a self-extracting archive";
 
   (* 7xS2con.sfx and 7xS2.sfx will autolaunch "setup.exe" (or the first .exe,
-     which is ambiguous). We'll rename bin/dkml-install-setup.exe so that it
+     which is ambiguous). We'll rename bin/dkml-package-setup.exe so that it
      is setup.exe.
 
      Syntax:
@@ -82,7 +82,7 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
       v (Fpath.to_string sevenz_exe)
       % "rn" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
       % Fpath.to_string archive_path
-      % "bin/dkml-install-setup.exe" % "setup.exe")
+      % "bin/dkml-package-setup.exe" % "setup.exe")
   in
   Logs.info (fun l ->
       l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
@@ -92,7 +92,7 @@ let get_config_text ~program_title ~program_version =
   let text =
     {|;!@Install@!UTF-8!
 Title="__TITLE__"
-ExecuteFile="bin\dkml-install-setup.exe"
+ExecuteFile="bin\dkml-package-setup.exe"
 ExecuteParameters="-vv"
 ;!@InstallEnd@!|}
   in

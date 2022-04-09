@@ -1,5 +1,7 @@
 (& opam env --switch Z:\source\dkml-install-api --set-switch) -split '\r?\n' | ForEach-Object { Invoke-Expression $_ }
 
+with-dkml date
+
 with-dkml opam pin dkml-base-compiler                   https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
 with-dkml opam pin ocaml                                https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
 with-dkml opam pin ocaml-config                         https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
@@ -27,7 +29,9 @@ with-dkml opam pin -k version dune-site             2.9.3 --no-action --yes
 with-dkml opam pin -k version uuidm                 0.9.7 --no-action --yes
 with-dkml opam pin -k version mdx                   2.0.0 --no-action --yes
 
-with-dkml opam upgrade `
+with-dkml date
+
+with-dkml time opam upgrade `
     dkml-base-compiler ocaml ocaml-config `
     dkml-install dkml-install-runner dkml-package-console `
     dkml-component-network-ocamlcompiler dkml-component-staging-ocamlrun `

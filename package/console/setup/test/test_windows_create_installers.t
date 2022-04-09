@@ -180,12 +180,12 @@ would let the dkml-install-api framework generate those two files for us.
 Instead we use two test executables:
 
 Side note:
-| dkml-install-setup.exe is implicitly native code produced by Dune.
+| dkml-package-setup.exe is implicitly native code produced by Dune.
 | That means the build machine (the machine generating the Opam directory tree)
 | must be the same ABI as the end-user machine (the machine where the installer
 | runs). That is a sucky sucky limitation!
-| So ... we could either download prebuilt ABI-specific dkml-install-setup.exe
-| and dkml-install-uninstaller.exe, or we could distribute those two files
+| So ... we could either download prebuilt ABI-specific dkml-package-setup.exe
+| and dkml-package-uninstaller.exe, or we could distribute those two files
 | as OCaml bytecode.
 
 [create_installers_packagerinput]
@@ -237,7 +237,7 @@ Side note:
   test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: 
                                              work\sfx\7zr.exe rn -bso0 -mx9 -y
                                                target\testme-windows_x86_64-0.1.0.7z
-                                               bin/dkml-install-setup.exe
+                                               bin/dkml-package-setup.exe
                                                setup.exe
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86_64.sh that can produce testme-windows_x86_64-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
@@ -256,7 +256,7 @@ Each archive tree also contains a "st" folder for the static files ... these
 are files that are directly copied to the end-user's installation directory.
 
 Each archive tree also contains the packager executables named as
-bin/dkml-install-setup.exe and bin/dkml-install-uninstaller.exe
+bin/dkml-package-setup.exe and bin/dkml-package-uninstaller.exe
 
 [create_installers_work]
   $ diskuvbox tree --encoding UTF-8 -d 5 work
@@ -265,8 +265,8 @@ bin/dkml-install-setup.exe and bin/dkml-install-uninstaller.exe
   │   ├── generic/
   │   │   ├── bin/
   │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   ├── dkml-install-setup.exe
-  │   │   │   ├── dkml-install-uninstaller.exe
+  │   │   │   ├── dkml-package-setup.exe
+  │   │   │   ├── dkml-package-uninstaller.exe
   │   │   │   └── dkml-install-user-runner.exe
   │   │   ├── lib/
   │   │   │   ├── dkml-component-offline-test1/
@@ -287,8 +287,8 @@ bin/dkml-install-setup.exe and bin/dkml-install-uninstaller.exe
   │   ├── linux_x86_64/
   │   │   ├── bin/
   │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   ├── dkml-install-setup.exe
-  │   │   │   ├── dkml-install-uninstaller.exe
+  │   │   │   ├── dkml-package-setup.exe
+  │   │   │   ├── dkml-package-uninstaller.exe
   │   │   │   └── dkml-install-user-runner.exe
   │   │   ├── lib/
   │   │   │   ├── dkml-component-offline-test1/
@@ -309,8 +309,8 @@ bin/dkml-install-setup.exe and bin/dkml-install-uninstaller.exe
   │   └── windows_x86_64/
   │       ├── bin/
   │       │   ├── dkml-install-admin-runner.exe
-  │       │   ├── dkml-install-setup.exe
-  │       │   ├── dkml-install-uninstaller.exe
+  │       │   ├── dkml-package-setup.exe
+  │       │   ├── dkml-package-uninstaller.exe
   │       │   └── dkml-install-user-runner.exe
   │       ├── lib/
   │       │   ├── dkml-component-offline-test1/
@@ -367,8 +367,8 @@ Sidenote:
   │   ├── generic/
   │   │   ├── bin/
   │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   ├── dkml-install-setup.exe
-  │   │   │   ├── dkml-install-uninstaller.exe
+  │   │   │   ├── dkml-package-setup.exe
+  │   │   │   ├── dkml-package-uninstaller.exe
   │   │   │   └── dkml-install-user-runner.exe
   │   │   ├── lib/
   │   │   │   ├── dkml-component-offline-test1/
@@ -389,8 +389,8 @@ Sidenote:
   │   ├── linux_x86_64/
   │   │   ├── bin/
   │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   ├── dkml-install-setup.exe
-  │   │   │   ├── dkml-install-uninstaller.exe
+  │   │   │   ├── dkml-package-setup.exe
+  │   │   │   ├── dkml-package-uninstaller.exe
   │   │   │   └── dkml-install-user-runner.exe
   │   │   ├── lib/
   │   │   │   ├── dkml-component-offline-test1/
@@ -411,8 +411,8 @@ Sidenote:
   │   └── windows_x86_64/
   │       ├── bin/
   │       │   ├── dkml-install-admin-runner.exe
-  │       │   ├── dkml-install-setup.exe
-  │       │   ├── dkml-install-uninstaller.exe
+  │       │   ├── dkml-package-setup.exe
+  │       │   ├── dkml-package-uninstaller.exe
   │       │   └── dkml-install-user-runner.exe
   │       ├── lib/
   │       │   ├── dkml-component-offline-test1/
@@ -449,7 +449,7 @@ Sidenote:
   testme-linux_x86_64-0.1.0/.archivetree
   testme-linux_x86_64-0.1.0/bin/
   testme-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
-  testme-linux_x86_64-0.1.0/bin/dkml-install-setup.exe
+  testme-linux_x86_64-0.1.0/bin/dkml-package-setup.exe
 
   $ target/bundle-testme-linux_x86_64.sh -o target -e .tar.gz tar --gzip
   $ tar tvfz target/testme-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
@@ -470,7 +470,7 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 
 Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-`bin\dkml-install-setup.exe` (the *packager* setup.exe) has been renamed to
+`bin\dkml-package-setup.exe` (the *packager* setup.exe) has been renamed to
 `setup.exe`.
 
 [setup_exe_list_7z]
@@ -511,7 +511,7 @@ contents is exactly the same as the archive tree, except that
   st\offline-test1\icon.png
   st\offline-test1\README.txt
   setup.exe
-  bin\dkml-install-uninstaller.exe
+  bin\dkml-package-uninstaller.exe
   ------------------------
   folders
 [setup_exe_list_7z]
@@ -565,7 +565,7 @@ That's it for how archives and setup.exe work!
 
 --------------------------------------------------------------------------------
 
-TODO: Use another cram test to show what a the real `bin\dkml-install-setup.exe`
+TODO: Use another cram test to show what a the real `bin\dkml-package-setup.exe`
 does, using one or more real component. Perhaps place the cram test in
 dkml-installer-network-ocaml (or a demonstration Opam package that depends on
 dkml-installer-network-ocaml).

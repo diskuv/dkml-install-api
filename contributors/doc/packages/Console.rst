@@ -21,21 +21,21 @@ We want to model an Opam "installer" package that has two components:
 * dkml-component-offline-test1
 
 The files will just be empty files, except for two important files:
-* dkml-install-setup.exe will print "Hello"
-* dkml-install-uninstaller.exe will print "Bye"
+* dkml-package-setup.exe will print "Hello"
+* dkml-package-uninstaller.exe will print "Bye"
 
 If this were not a demonstration, we would let the dkml-install-api framework
 generate those two files for us.
 
 .. warning::
 
-    dkml-install-setup.exe is implicitly native code produced by Dune.
+    dkml-package-setup.exe is implicitly native code produced by Dune.
     That means the build machine (the machine generating the Opam directory tree)
     must be the same ABI as the end-user machine (the machine where the installer
     runs). That is a sucky limitation!
 
-    So ... we could either download prebuilt ABI-specific dkml-install-setup.exe
-    and dkml-install-uninstaller.exe, or we could distribute those two files
+    So ... we could either download prebuilt ABI-specific dkml-package-setup.exe
+    and dkml-package-uninstaller.exe, or we could distribute those two files
     as OCaml bytecode.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
@@ -143,7 +143,7 @@ Each archive tree also contains a "st" folder for the static files ... these
 are files that are directly copied to the end-user's installation directory.
 
 Each archive tree also contains the packager executables named as
-``bin/dkml-install-setup.exe`` and ``bin/dkml-install-uninstaller.exe``.
+``bin/dkml-package-setup.exe`` and ``bin/dkml-package-uninstaller.exe``.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
     :language: shell-session
@@ -193,7 +193,7 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 
 Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-``bin\dkml-install-setup.exe`` (the *packager* setup.exe) has been renamed to
+``bin\dkml-package-setup.exe`` (the *packager* setup.exe) has been renamed to
 ``setup.exe``.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t

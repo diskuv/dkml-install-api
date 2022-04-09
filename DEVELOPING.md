@@ -18,11 +18,11 @@ Z:\source\...kernel> with-dkml time opam install  ./vendor\diskuv-ocaml\vendor\d
 
 Z:\source\dkml-install-api\_opam\bin\dkml-install-admin-runner.exe
 Z:\source\dkml-install-api\_opam\bin\dkml-install-user-runner.exe
-Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe
-Z:\source\dkml-install-api\_opam\bin\dkml-install-uninstaller.exe
+Z:\source\dkml-install-api\_opam\bin\dkml-package-setup.exe
+Z:\source\dkml-install-api\_opam\bin\dkml-package-uninstaller.exe
 
-with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-install-setup.exe --name test123 --prefix Z:\temp\prefix --opam-context --component network-ocamlcompiler -v
-with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-install-uninstall.exe --name test123 --prefix Z:\temp\prefix --opam-context --component network-ocamlcompiler -v
+with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-package-setup.exe --name test123 --prefix Z:\temp\prefix --opam-context --component network-ocamlcompiler -v
+with-dkml env OCAMLRUNPARAM=b Z:\source\dkml-install-api\_opam\bin\dkml-package-uninstaller.exe --name test123 --prefix Z:\temp\prefix --opam-context --component network-ocamlcompiler -v
 
 Z:\source\...kernel> with-dkml dune build vendor/diskuv-ocaml/vendor/dkml-component-ocamlcompiler/install/ocamlcompiler/dkml_component_ocamlcompiler.cmxa
 
@@ -80,7 +80,7 @@ Sometimes you have to start from scratch when Opam and Dune can't figure out
 that a dependency needs to be updated. You may get stuck with odd errors like:
 
 ```
-dkml-install-setup.exe: [ERROR] Dynlink.Error (Dynlink.Cannot_open_dll "Dynlink.Error (Dynlink.Cannot_open_dll \"(Failure \\\"Cannot reso        olve camlDkml_install_api__log_spawn_and_raise_417\\\")\")")
+dkml-package-setup.exe: [ERROR] Dynlink.Error (Dynlink.Cannot_open_dll "Dynlink.Error (Dynlink.Cannot_open_dll \"(Failure \\\"Cannot reso        olve camlDkml_install_api__log_spawn_and_raise_417\\\")\")")
                                 Raised at Stdlib__string.index_rec in file "string.ml", line 115, characters 19-34
                                 Called from Sexplib0__Sexp.Printing.index_of_newline in file "src/sexp.ml", line 113, characters 13-47
 ```
