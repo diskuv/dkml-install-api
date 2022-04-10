@@ -211,9 +211,9 @@ Side note:
 |     "--program-version"
 |     version
 |     "--work-dir"
-|     "_build/iw"
+|     "%{_:share}%/w"
 |     "--target-dir"
-|     "%{_:share}%"
+|     "%{_:share}%/t"
 |     "--packager-setup-exe"
 |     "%{bin}%/setup.exe"
 |     "--packager-uninstaller-exe"
