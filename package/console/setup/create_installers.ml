@@ -29,13 +29,19 @@ let set_dune_site_env ~opam_context =
 
 let generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
     ~program_name ~program_version ~target_dir =
-  (* For Windows create a self-extracting executable *)
-  (match abi_selector with
-  | Dkml_install_runner.Path_location.Abi abi
-    when Dkml_install_api.Context.Abi_v2.is_windows abi ->
-      Installer_sfx.generate ~archive_dir ~target_dir ~abi_selector
-        ~program_name ~program_version ~work_dir
-  | _ -> ());
+  (* For Windows create a self-extracting executable.
+
+     Since 7zr.exe is used to create a .7z archive, we can only run this on
+     Windows today.
+
+     See CROSSPLATFORM-TODO.md *)
+  (if Sys.win32 then
+   match abi_selector with
+   | Dkml_install_runner.Path_location.Abi abi
+     when Dkml_install_api.Context.Abi_v2.is_windows abi ->
+       Installer_sfx.generate ~archive_dir ~target_dir ~abi_selector
+         ~program_name ~program_version ~work_dir
+   | _ -> ());
   (* All operating systems can have an archive *)
   Installer_archive.generate ~archive_dir ~target_dir ~abi_selector
     ~program_name ~program_version
