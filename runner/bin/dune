@@ -1,5 +1,5 @@
 (executable
- (public_name dkml-install-user-runner)
+ (public_name dkml-install-user-runner.exe)
  (name user_main)
  (package dkml-install-runner)
  (modules user_main)
@@ -19,7 +19,7 @@
   (run %{discover})))
 
 (executable
- (public_name dkml-install-admin-runner)
+ (public_name dkml-install-admin-runner.exe)
  (name admin_main)
  (package dkml-install-runner)
  (modules admin_main)
