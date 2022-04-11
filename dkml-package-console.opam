@@ -37,7 +37,7 @@ build: [
   ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/diskuv/dkml-install-api.git"
-name: "dkml-install-runner-console"
+name: "dkml-package-console"
 install: [
   ["install" "-d"
     "%{_:share}%/staging-files/windows_x86/bin"
