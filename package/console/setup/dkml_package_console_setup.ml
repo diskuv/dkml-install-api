@@ -36,6 +36,8 @@ let setup program_name package_args =
       package_args.log_config )
   in
 
+  Logs.debug (fun l -> l "Starting setup");
+
   (* Load all the available components. Logging has already been setup. *)
   Dkml_install_runner_sites.load_all ();
   let reg = Component_registry.get () in
@@ -118,7 +120,7 @@ let setup program_name package_args =
     ()
   in
   match install_sequence with
-  | Ok _ -> ()
+  | Ok _ -> Logs.debug (fun l -> l "Finished setup"); ()
   | Error e ->
       raise
         (Installation_error
