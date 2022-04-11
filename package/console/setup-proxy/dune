@@ -1,0 +1,5 @@
+(executable
+ (name main)
+ (package dkml-package-console)
+ (public_name dkml-console-setup-proxy.exe)
+ (libraries astring bos diskuvbox dkml-install-runner))

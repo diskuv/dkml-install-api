@@ -98,21 +98,24 @@ let prefix_t =
     & opt (some string) None
     & info [ Cmdliner_common.prefix_arg ] ~docv:"PREFIX" ~doc)
 
-(** Directory containing dkml-package-setup.exe or whatever executable
+(** Directory containing dkml-package-setup.bc or whatever executable
    (perhaps a renamed setup.exe in a non-bin folder) is currently running. *)
 let exec_dir = Fpath.(parent (v OS.Arg.exec))
 
 (** The root directory that was uncompressed at end-user install time *)
 let enduser_archive_dir () =
-  let installer_archive_dir () =
+  (* get path to .archivetree *)
+  let archivetree () =
     Diskuvbox.find_up ~from_dir:exec_dir ~basenames:[ Fpath.v ".archivetree" ]
       ~max_ascent:3 ()
   in
-  let archive_dir_opt =
-    Error_handling.get_ok_or_raise_string (installer_archive_dir ())
+  let archivetree_opt =
+    Error_handling.get_ok_or_raise_string (archivetree ())
   in
-  match archive_dir_opt with
-  | Some archive_dir -> archive_dir
+  match archivetree_opt with
+  | Some archivetree ->
+      (* the archive directory is the directory containing .archivetree *)
+      fst (Fpath.split_base archivetree)
   | None ->
       raise
         (Dkml_install_api.Installation_error

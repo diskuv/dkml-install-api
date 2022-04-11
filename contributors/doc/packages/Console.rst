@@ -20,23 +20,12 @@ We want to model an Opam "installer" package that has two components:
 * dkml-component-staging-ocamlrun
 * dkml-component-offline-test1
 
-The files will just be empty files, except for two important files:
-* dkml-package-setup.exe will print "Hello"
-* dkml-package-uninstaller.exe will print "Bye"
+The files will just be empty files, except for two important bytecode files:
+* dkml-package-setup.bc will print "Hello"
+* dkml-package-uninstaller.bc will print "Bye"
 
 If this were not a demonstration, we would let the dkml-install-api framework
 generate those two files for us.
-
-.. warning::
-
-    dkml-package-setup.exe is implicitly native code produced by Dune.
-    That means the build machine (the machine generating the Opam directory tree)
-    must be the same ABI as the end-user machine (the machine where the installer
-    runs). That is a sucky limitation!
-
-    So ... we could either download prebuilt ABI-specific dkml-package-setup.exe
-    and dkml-package-uninstaller.exe, or we could distribute those two files
-    as OCaml bytecode.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
     :language: shell-session
@@ -116,9 +105,9 @@ with something like:
         "%{_:share}%/w"
         "--target-dir"
         "%{_:share}%/t"
-        "--packager-setup-exe"
+        "--packager-setup-bytecode"
         "%{bin}%/setup.exe"
-        "--packager-uninstaller-exe"
+        "--packager-uninstaller-bytecode"
         "%{bin}%/uninstaller.exe"
     ]
 
@@ -143,7 +132,7 @@ Each archive tree also contains a "st" folder for the static files ... these
 are files that are directly copied to the end-user's installation directory.
 
 Each archive tree also contains the packager executables named as
-``bin/dkml-package-setup.exe`` and ``bin/dkml-package-uninstaller.exe``.
+``bin/dkml-package-setup.bc`` and ``bin/dkml-package-uninstaller.bc``.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
     :language: shell-session
@@ -193,8 +182,8 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 
 Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-``bin\dkml-package-setup.exe`` (the *packager* setup.exe) has been renamed to
-``setup.exe``.
+``bin\dkml-package-setup.bc`` (the *packager* setup) has been renamed to
+``setup.bc``.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
     :language: shell-session
@@ -219,7 +208,7 @@ the member "setup.exe" (the *packager* setup.exe) found in the .7z root
 directory.
 
 Since the *installer* ``setup-NAME-VER.exe`` will decompress the .7z archive and
-run the *packager* ``setup.exe`` it found in the .7z root directory, we expect to
+run the *packager* ``setup.bc`` it found in the .7z root directory, we expect to
 see "Hello" printed. Which is what we see:
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
@@ -238,10 +227,10 @@ To recap:
 
 Whether manually uncompressing a .tar.gz binary distribution, or letting
 *installer* ``setup-NAME-VER.exe`` do it automatically, the
-*packager* ``setup.exe`` will have full access to the archive
+*packager* ``setup.bc`` will have full access to the archive
 tree.
 
 That's it for how archives and setup.exe work!
 
 Go through the remaining documentation to see what a real
-*packager* ``setup.exe`` does, and what goes into a real component.
+*packager* ``setup.bc`` does, and what goes into a real component.
