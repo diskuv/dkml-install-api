@@ -12,6 +12,7 @@
   logs.cli
   fmt.cli
   fmt.tty)
- (inline_tests)
  (preprocess
-  (pps ppx_expect ppx_deriving.show)))
+  (pps
+   ; Do not use `ppx_expect` since it drags in unnecessary stublibs DLLs
+   ppx_deriving.show)))

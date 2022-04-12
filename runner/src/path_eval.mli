@@ -43,3 +43,8 @@ module Interpreter : sig
       into a path. On Windows the path will be a conventional Windows path with
       backslashes instead of forward slashes. *)
 end
+
+module Private : sig
+  val mock_default_tmp_dir : Fpath.t
+  val mock_interpreter : unit -> Interpreter.t
+end

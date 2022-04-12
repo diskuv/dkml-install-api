@@ -56,6 +56,7 @@ The files will just be empty files.
   $ install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64
   $ touch _opam/bin/dkml-install-admin-runner.exe
   $ touch _opam/bin/dkml-install-user-runner.exe
+  $ touch _opam/bin/dkml-console-setup-proxy.exe
   $ touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1/META
   $ touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun/META
   $ touch _opam/lib/dkml-component-offline-test1/META

@@ -161,86 +161,41 @@ module Interpreter = struct
     string_to_norm_fpath @@ eval_helper expression all_pathonly_vars
 end
 
-(** {1 Tests} *)
+module Private = struct
+  let mock_default_tmp_dir = OS.Dir.default_tmp ()
 
-let mock_default_tmp_dir = OS.Dir.default_tmp ()
+  let mock_staging_files_sources =
+    Path_location.Staging_files_dir (Fpath.v "/test/staging-files")
 
-let mock_staging_files_sources =
-  Path_location.Staging_files_dir (Fpath.v "/test/staging-files")
+  let mock_global_ctx =
+    {
+      Global_context.global_pathonly_vars = [];
+      global_vars = [ ("components:all", "ocamlrun component_under_test") ];
+      default_tmp_dir = mock_default_tmp_dir;
+      reg = Component_registry.get ();
+    }
 
-let mock_global_ctx =
-  {
-    Global_context.global_pathonly_vars = [];
-    global_vars = [ ("components:all", "ocamlrun component_under_test") ];
-    default_tmp_dir = mock_default_tmp_dir;
-    reg = Component_registry.get ();
-  }
-
-let interpreter () =
-  let orig =
-    Interpreter.create mock_global_ctx
-      ~self_component_name:"component_under_test" ~abi:Windows_x86
-      ~staging_files_source:mock_staging_files_sources
-      ~prefix:(Fpath.v "/test/prefix")
-  in
-  let extra_pathonly_vars =
-    [
-      ( "ocamlrun:share-generic",
-        Fpath.to_string
-          (Path_location.absdir_staging_files ~component_name:"ocamlrun"
-             ~abi_selector:Generic mock_staging_files_sources) );
-      ( "ocamlrun:share-abi",
-        Fpath.to_string
-          (Path_location.absdir_staging_files ~component_name:"ocamlrun"
-             ~abi_selector:(Abi Windows_x86) mock_staging_files_sources) );
-    ]
-  in
-  {
-    Interpreter.all_vars = orig.all_vars @ extra_pathonly_vars;
-    all_pathonly_vars = orig.all_pathonly_vars @ extra_pathonly_vars;
-  }
-
-let%test "%{components:all}% are all the available components" =
-  let r = Interpreter.eval (interpreter ()) "%{components:all}%" in
-  Fmt.pr "[inline test debug] %s = %s@\n" "%{components:all}%" r;
-  r = "ocamlrun component_under_test"
-
-let%test "%{components:all}% is not available with path_eval" =
-  let r = Interpreter.path_eval (interpreter ()) "%{components:all}%" in
-  r = Fpath.v "%{components:all}%"
-
-let%test "%{tmp}% is a prefix of the temp directory" =
-  let r = Interpreter.path_eval (interpreter ()) "%{tmp}%" in
-  Fpath.(is_prefix mock_default_tmp_dir r)
-
-let%test "%{name}% is the component under test" =
-  let r = Interpreter.eval (interpreter ()) "%{name}%" in
-  r = "component_under_test"
-
-let%test "%{prefix}% is the installation prefix" =
-  let r = Interpreter.path_eval (interpreter ()) "%{prefix}%" in
-  Fpath.(compare (v "/test/prefix") r) = 0
-
-let%test "%{prefix}%/bin is the bin/ folder under the installation prefix" =
-  let r = Interpreter.path_eval (interpreter ()) "%{prefix}%/bin" in
-  Fpath.(compare (v "/test/prefix/bin") r) = 0
-
-let%test "%{ocamlrun:share-generic}% is the staging-files/generic of the \
-          ocamlrun component" =
-  let r = Interpreter.path_eval (interpreter ()) "%{ocamlrun:share-generic}%" in
-  Fmt.pr "[inline test debug] %s = %a@\n" "%{ocamlrun:share-generic}%" Fpath.pp
-    r;
-  Fpath.(compare (v "/test/staging-files/ocamlrun/generic") r) = 0
-
-let%test "%{ocamlrun:share-abi}% is the staging-files/<abi> of the ocamlrun \
-          component" =
-  let r = Interpreter.path_eval (interpreter ()) "%{ocamlrun:share-abi}%" in
-  Fmt.pr "[inline test debug] %s = %a@\n" "%{ocamlrun:share-abi}%" Fpath.pp r;
-  Fpath.(compare (v "/test/staging-files/ocamlrun/windows_x86") r) = 0
-
-let%test "%{_:share-abi}% is the staging-files/<abi> of the component under \
-          test" =
-  let r = Interpreter.path_eval (interpreter ()) "%{_:share-abi}%" in
-  Fmt.pr "[inline test debug] %s = %a@\n" "%{_:share-abi}%" Fpath.pp r;
-  Fpath.(compare (v "/test/staging-files/component_under_test/windows_x86") r)
-  = 0
+  let mock_interpreter () =
+    let orig =
+      Interpreter.create mock_global_ctx
+        ~self_component_name:"component_under_test" ~abi:Windows_x86
+        ~staging_files_source:mock_staging_files_sources
+        ~prefix:(Fpath.v "/test/prefix")
+    in
+    let extra_pathonly_vars =
+      [
+        ( "ocamlrun:share-generic",
+          Fpath.to_string
+            (Path_location.absdir_staging_files ~component_name:"ocamlrun"
+              ~abi_selector:Generic mock_staging_files_sources) );
+        ( "ocamlrun:share-abi",
+          Fpath.to_string
+            (Path_location.absdir_staging_files ~component_name:"ocamlrun"
+              ~abi_selector:(Abi Windows_x86) mock_staging_files_sources) );
+      ]
+    in
+    {
+      Interpreter.all_vars = orig.all_vars @ extra_pathonly_vars;
+      all_pathonly_vars = orig.all_pathonly_vars @ extra_pathonly_vars;
+    }
+end

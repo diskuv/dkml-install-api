@@ -3,6 +3,7 @@
  (name user_main)
  (package dkml-install-runner)
  (modules user_main)
+ (modes (byte exe))
  (libraries
   dkml-install.register
   dkml-install-runner.sites
@@ -23,6 +24,7 @@
  (name admin_main)
  (package dkml-install-runner)
  (modules admin_main)
+ (modes (byte exe))
  ; To view Application Manifest on Windows, or to sign it, make sure
  ; any ".NET Framework <VERSION> SDK" component is installed with the
  ; Visual Studio Installer. That will give you Mage.exe and MageUI.exe.
@@ -42,3 +44,31 @@
   dune-site
   dune-site.plugins
   cmdliner))
+
+; ------------------------------------------------------
+
+; Validate on a machine that has awk that the executables do not have any
+; stub libraries except the ones built for ocamlrun.exe.
+; (We do not have a mechanism to distribute stublib DLLs!)
+
+(rule
+  (alias runtest)
+  (target user_main.dlls.txt.corrected)
+  (deps (:bc user_main.bc))
+  ; (enabled_if (<> %{os_type} Win32))
+  (action
+    (progn
+      (with-stdout-to %{target}.info (run ocamlobjinfo %{bc}))
+      (with-stdout-to %{target} (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
+      (diff user_main.dlls.txt user_main.dlls.txt.corrected))))
+
+(rule
+  (alias runtest)
+  (target admin_main.dlls.txt.corrected)
+  (deps (:bc admin_main.bc))
+  ; (enabled_if (<> %{os_type} Win32))
+  (action
+    (progn
+      (with-stdout-to %{target}.info (run ocamlobjinfo %{bc}))
+      (with-stdout-to %{target} (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
+      (diff admin_main.dlls.txt admin_main.dlls.txt.corrected))))
