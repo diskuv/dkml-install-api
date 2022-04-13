@@ -92,21 +92,11 @@ files.</p>
 <p>We want to model an Opam “installer” package that has two components:
 * dkml-component-staging-ocamlrun
 * dkml-component-offline-test1</p>
-<p>The files will just be empty files, except for two important files:
-* dkml-package-setup.exe will print “Hello”
-* dkml-package-uninstaller.exe will print “Bye”</p>
+<p>The files will just be empty files, except for two important bytecode files:
+* dkml-package-setup.bc will print “Hello”
+* dkml-package-uninstaller.bc will print “Bye”</p>
 <p>If this were not a demonstration, we would let the dkml-install-api framework
 generate those two files for us.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>dkml-package-setup.exe is implicitly native code produced by Dune.
-That means the build machine (the machine generating the Opam directory tree)
-must be the same ABI as the end-user machine (the machine where the installer
-runs). That is a sucky limitation!</p>
-<p>So … we could either download prebuilt ABI-specific dkml-package-setup.exe
-and dkml-package-uninstaller.exe, or we could distribute those two files
-as OCaml bytecode.</p>
-</div>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>install -d _opam/bin
 <span class="gp">  $ </span>install -d _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1
 <span class="gp">  $ </span>install -d _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun
@@ -120,6 +110,7 @@ as OCaml bytecode.</p>
 <span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64
 <span class="gp">  $ </span>touch _opam/bin/dkml-install-admin-runner.exe
 <span class="gp">  $ </span>touch _opam/bin/dkml-install-user-runner.exe
+<span class="gp">  $ </span>touch _opam/bin/dkml-console-setup-proxy.exe
 <span class="gp">  $ </span>touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1/META
 <span class="gp">  $ </span>touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun/META
 <span class="gp">  $ </span>touch _opam/lib/dkml-component-offline-test1/META
@@ -253,15 +244,15 @@ with something like:</p>
     <span class="s2">&quot;%{_:share}%/w&quot;</span>
     <span class="s2">&quot;--target-dir&quot;</span>
     <span class="s2">&quot;%{_:share}%/t&quot;</span>
-    <span class="s2">&quot;--packager-setup-exe&quot;</span>
+    <span class="s2">&quot;--packager-setup-bytecode&quot;</span>
     <span class="s2">&quot;%{bin}%/setup.exe&quot;</span>
-    <span class="s2">&quot;--packager-uninstaller-exe&quot;</span>
+    <span class="s2">&quot;--packager-uninstaller-bytecode&quot;</span>
     <span class="s2">&quot;%{bin}%/uninstaller.exe&quot;</span>
 <span class="p">]</span>
 </pre></div>
 </div>
 <p>Running the <code class="docutils literal notranslate"><span class="pre">create_installers.exe</span></code> gives:</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>./test_windows_create_installers.exe --program-name testme --program-version <span class="m">0</span>.1.0 --opam-context<span class="o">=</span>_opam/ --target-dir<span class="o">=</span>target/ --work-dir<span class="o">=</span>work/ --abi<span class="o">=</span>linux_x86_64 --abi<span class="o">=</span>windows_x86_64 --packager-setup-exe ./setup_print_hello.exe --packager-uninstaller-exe ./uninstaller_print_bye.exe --verbose
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>./test_windows_create_installers.exe --program-name testme --program-version <span class="m">0</span>.1.0 --opam-context<span class="o">=</span>_opam/ --target-dir<span class="o">=</span>target/ --work-dir<span class="o">=</span>work/ --abi<span class="o">=</span>linux_x86_64 --abi<span class="o">=</span>windows_x86_64 --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --verbose
 <span class="go">  test_windows_create_installers.exe: [INFO] Installers will be created that include the components: </span>
 <span class="go">                                             [staging-ocamlrun; offline-test1]</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: </span>
@@ -277,7 +268,7 @@ with something like:</p>
 <span class="go">  test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: </span>
 <span class="go">                                             work\sfx\7zr.exe rn -bso0 -mx9 -y</span>
 <span class="go">                                               target\testme-windows_x86_64-0.1.0.7z</span>
-<span class="go">                                               bin/dkml-package-setup.exe</span>
+<span class="go">                                               bin/dkml-package-setup.bc</span>
 <span class="go">                                               setup.exe</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86_64.sh that can produce testme-windows_x86_64-0.1.0.tar.gz (etc.) archives</span>
 </pre></div>
@@ -292,15 +283,15 @@ installation is finished.</p>
 <p>Each archive tree also contains a “st” folder for the static files … these
 are files that are directly copied to the end-user’s installation directory.</p>
 <p>Each archive tree also contains the packager executables named as
-<code class="docutils literal notranslate"><span class="pre">bin/dkml-package-setup.exe</span></code> and <code class="docutils literal notranslate"><span class="pre">bin/dkml-package-uninstaller.exe</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">bin/dkml-package-setup.bc</span></code> and <code class="docutils literal notranslate"><span class="pre">bin/dkml-package-uninstaller.bc</span></code>.</p>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">5</span> work
 <span class="go">  work</span>
 <span class="go">  ├── a/</span>
 <span class="go">  │   ├── generic/</span>
 <span class="go">  │   │   ├── bin/</span>
 <span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-setup.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-uninstaller.exe</span>
+<span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
+<span class="go">  │   │   │   ├── dkml-package-uninstaller.bc</span>
 <span class="go">  │   │   │   └── dkml-install-user-runner.exe</span>
 <span class="go">  │   │   ├── lib/</span>
 <span class="go">  │   │   │   ├── dkml-component-offline-test1/</span>
@@ -321,8 +312,8 @@ are files that are directly copied to the end-user’s installation directory.</
 <span class="go">  │   ├── linux_x86_64/</span>
 <span class="go">  │   │   ├── bin/</span>
 <span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-setup.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-uninstaller.exe</span>
+<span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
+<span class="go">  │   │   │   ├── dkml-package-uninstaller.bc</span>
 <span class="go">  │   │   │   └── dkml-install-user-runner.exe</span>
 <span class="go">  │   │   ├── lib/</span>
 <span class="go">  │   │   │   ├── dkml-component-offline-test1/</span>
@@ -343,8 +334,8 @@ are files that are directly copied to the end-user’s installation directory.</
 <span class="go">  │   └── windows_x86_64/</span>
 <span class="go">  │       ├── bin/</span>
 <span class="go">  │       │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │       │   ├── dkml-package-setup.exe</span>
-<span class="go">  │       │   ├── dkml-package-uninstaller.exe</span>
+<span class="go">  │       │   ├── dkml-package-setup.bc</span>
+<span class="go">  │       │   ├── dkml-package-uninstaller.bc</span>
 <span class="go">  │       │   └── dkml-install-user-runner.exe</span>
 <span class="go">  │       ├── lib/</span>
 <span class="go">  │       │   ├── dkml-component-offline-test1/</span>
@@ -398,8 +389,8 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  │   ├── generic/</span>
 <span class="go">  │   │   ├── bin/</span>
 <span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-setup.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-uninstaller.exe</span>
+<span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
+<span class="go">  │   │   │   ├── dkml-package-uninstaller.bc</span>
 <span class="go">  │   │   │   └── dkml-install-user-runner.exe</span>
 <span class="go">  │   │   ├── lib/</span>
 <span class="go">  │   │   │   ├── dkml-component-offline-test1/</span>
@@ -420,8 +411,8 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  │   ├── linux_x86_64/</span>
 <span class="go">  │   │   ├── bin/</span>
 <span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-setup.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-uninstaller.exe</span>
+<span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
+<span class="go">  │   │   │   ├── dkml-package-uninstaller.bc</span>
 <span class="go">  │   │   │   └── dkml-install-user-runner.exe</span>
 <span class="go">  │   │   ├── lib/</span>
 <span class="go">  │   │   │   ├── dkml-component-offline-test1/</span>
@@ -442,8 +433,8 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  │   └── windows_x86_64/</span>
 <span class="go">  │       ├── bin/</span>
 <span class="go">  │       │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │       │   ├── dkml-package-setup.exe</span>
-<span class="go">  │       │   ├── dkml-package-uninstaller.exe</span>
+<span class="go">  │       │   ├── dkml-package-setup.bc</span>
+<span class="go">  │       │   ├── dkml-package-uninstaller.bc</span>
 <span class="go">  │       │   └── dkml-install-user-runner.exe</span>
 <span class="go">  │       ├── lib/</span>
 <span class="go">  │       │   ├── dkml-component-offline-test1/</span>
@@ -480,7 +471,7 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  testme-linux_x86_64-0.1.0/.archivetree</span>
 <span class="go">  testme-linux_x86_64-0.1.0/bin/</span>
 <span class="go">  testme-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe</span>
-<span class="go">  testme-linux_x86_64-0.1.0/bin/dkml-package-setup.exe</span>
+<span class="go">  testme-linux_x86_64-0.1.0/bin/dkml-package-setup.bc</span>
 
 <span class="gp">  $ </span>target/bundle-testme-linux_x86_64.sh -o target -e .tar.gz tar --gzip
 <span class="gp">  $ </span>tar tvfz target/testme-linux_x86_64-0.1.0.tar.gz <span class="p">|</span> tail -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
@@ -499,8 +490,8 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 “SFX” module, with a 7zip archive appended.</p>
 <p>Let’s start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-<code class="docutils literal notranslate"><span class="pre">bin\dkml-package-setup.exe</span></code> (the <em>packager</em> setup.exe) has been renamed to
-<code class="docutils literal notranslate"><span class="pre">setup.exe</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">bin\dkml-package-setup.bc</span></code> (the <em>packager</em> setup) has been renamed to
+<code class="docutils literal notranslate"><span class="pre">setup.bc</span></code>.</p>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/testme-windows_x86_64-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
 <span class="go">  Name</span>
 <span class="go">  ------------------------</span>
@@ -538,7 +529,7 @@ contents is exactly the same as the archive tree, except that
 <span class="go">  st\offline-test1\icon.png</span>
 <span class="go">  st\offline-test1\README.txt</span>
 <span class="go">  setup.exe</span>
-<span class="go">  bin\dkml-package-uninstaller.exe</span>
+<span class="go">  bin\dkml-package-uninstaller.bc</span>
 <span class="go">  ------------------------</span>
 <span class="go">  folders</span>
 </pre></div>
@@ -566,7 +557,7 @@ temporary directory.</p>
 the member “setup.exe” (the <em>packager</em> setup.exe) found in the .7z root
 directory.</p>
 <p>Since the <em>installer</em> <code class="docutils literal notranslate"><span class="pre">setup-NAME-VER.exe</span></code> will decompress the .7z archive and
-run the <em>packager</em> <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code> it found in the .7z root directory, we expect to
+run the <em>packager</em> <code class="docutils literal notranslate"><span class="pre">setup.bc</span></code> it found in the .7z root directory, we expect to
 see “Hello” printed. Which is what we see:</p>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>target/setup-testme-windows_x86_64-0.1.0.exe
 <span class="go">  Hello</span>
@@ -583,11 +574,11 @@ to automatically run the <em>packager</em> setup.exe.</p></li>
 </ol>
 <p>Whether manually uncompressing a .tar.gz binary distribution, or letting
 <em>installer</em> <code class="docutils literal notranslate"><span class="pre">setup-NAME-VER.exe</span></code> do it automatically, the
-<em>packager</em> <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code> will have full access to the archive
+<em>packager</em> <code class="docutils literal notranslate"><span class="pre">setup.bc</span></code> will have full access to the archive
 tree.</p>
 <p>That’s it for how archives and setup.exe work!</p>
 <p>Go through the remaining documentation to see what a real
-<em>packager</em> <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code> does, and what goes into a real component.</p>
+<em>packager</em> <code class="docutils literal notranslate"><span class="pre">setup.bc</span></code> does, and what goes into a real component.</p>
 </div>
 </div>
 
