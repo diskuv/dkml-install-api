@@ -60,7 +60,8 @@ let setup program_name package_args =
     Cmd.v
       Fpath.(
         to_string
-        @@ (Dkml_install_runner.Cmdliner_runner.enduser_archive_dir () / s))
+        @@ Dkml_install_runner.Cmdliner_runner.enduser_archive_dir ()
+           / "bin" / s)
   in
 
   let spawn_admin_if_needed () =
@@ -120,7 +121,9 @@ let setup program_name package_args =
     ()
   in
   match install_sequence with
-  | Ok _ -> Logs.debug (fun l -> l "Finished setup"); ()
+  | Ok _ ->
+      Logs.debug (fun l -> l "Finished setup");
+      ()
   | Error e ->
       raise
         (Installation_error

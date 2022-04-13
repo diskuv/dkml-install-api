@@ -70,6 +70,9 @@ with-dkml opam pin git+file://Z:/source/ #main --no-action --yes
 
 # As admin
 Z:\source\dkml-install-api\_opam\bin\dkml-install-admin-runner.exe install-admin-network-ocamlcompiler --opam-context --prefix Z:\temp\prefix -v
+
+
+with-dkml env LOCALAPPDATA=$env:LOCALAPPDATA PROCESSOR_ARCHITECTURE=$env:PROCESSOR_ARCHITECTURE TMP=$env:TMP OCAMLRUNPARAM=b  Z:\source\dkml-install-api\_opam\share\dkml-installer-network-ocaml\t\setup-dkml-installer-network-ocaml-windows_x86_64-0.4.0.exe -vv
 ```
 
 ---
