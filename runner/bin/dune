@@ -1,7 +1,7 @@
 (library
  (public_name dkml-install-runner.user)
- (name user_main)
- (modules user_main)
+ (name dkml_install_runner_user)
+ (modules dkml_install_runner_user)
  (libraries
   dkml-install.register
   dkml-install-runner.sites
@@ -10,17 +10,10 @@
   dune-site.plugins
   cmdliner))
 
-(rule
- (targets admin-link-flags.sexp)
- (deps
-  (:discover config/discover.exe))
- (action
-  (run %{discover})))
-
 (library
  (public_name dkml-install-runner.admin)
- (name admin_main)
- (modules admin_main)
+ (name dkml_install_runner_admin)
+ (modules dkml_install_runner_admin)
  ; To view Application Manifest on Windows, or to sign it, make sure
  ; any ".NET Framework <VERSION> SDK" component is installed with the
  ; Visual Studio Installer. That will give you Mage.exe and MageUI.exe.
@@ -61,22 +54,22 @@
 
 (rule
   (alias runtest)
-  (target user_main.dlls.txt.corrected)
+  (target validate_user.dlls.txt.corrected)
   (deps (:bc validate_user.bc))
   ; (enabled_if (<> %{os_type} Win32))
   (action
     (progn
       (with-stdout-to %{target}.info (run ocamlobjinfo %{bc}))
       (with-stdout-to %{target} (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
-      (diff user_main.dlls.txt user_main.dlls.txt.corrected))))
+      (diff validate_user.dlls.txt %{target}))))
 
 (rule
   (alias runtest)
-  (target admin_main.dlls.txt.corrected)
+  (target validate_admin.dlls.txt.corrected)
   (deps (:bc validate_admin.bc))
   ; (enabled_if (<> %{os_type} Win32))
   (action
     (progn
       (with-stdout-to %{target}.info (run ocamlobjinfo %{bc}))
       (with-stdout-to %{target} (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
-      (diff admin_main.dlls.txt admin_main.dlls.txt.corrected))))
+      (diff validate_admin.dlls.txt %{target}))))
