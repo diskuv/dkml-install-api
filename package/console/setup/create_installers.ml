@@ -1,32 +1,6 @@
 open Cmdliner
 open Bos
 
-(** [set_dune_site_env ~opam_context] sets the environment variables needed for
-    the Dune site plugin.
-
-    We set ["DUNE_OCAML_HARDCODED"] to avoid the Dune 2.9.3 problem at
-    https://github.com/ocaml/dune/blob/dea03875affccc0620e902d28fed8d6b4351e112/otherlibs/site/src/helpers.ml#L119:
-    {["""
-    Not_found
-    Raised at Stdlib__string.index_rec in file "string.ml", line 115, characters 19-34
-    Called from Stdlib__string.index in file "string.ml" (inlined), line 119, characters 16-42
-    Called from Cmdliner_cline.parse_opt_arg in file "cmdliner_cline.ml", line 69, characters 12-30
-    Called from Stdlib__sys.getenv_opt in file "stdlib/sys.mlp", line 62, characters 11-21
-    Called from Dune_site__Helpers.ocamlpath in file "otherlibs/site/src/helpers.ml", line 119, characters 39-74
-    Called from CamlinternalLazy.force_lazy_block in file "camlinternalLazy.ml", line 31, characters 17-27
-    Re-raised at CamlinternalLazy.force_lazy_block in file "camlinternalLazy.ml", line 36, characters 4-11
-    Called from Dune_site_plugins__Plugins.load_requires in file "otherlibs/site/src/plugins/plugins.ml", line 213, characters 26-56
-    Called from Stdlib__list.iter in file "list.ml", line 110, characters 12-15
-    Called from Dune_site_plugins__Plugins.load_gen in file "otherlibs/site/src/plugins/plugins.ml", line 204, characters 4-36
-    Called from Stdlib__list.iter in file "list.ml", line 110, characters 12-15
-    Called from Dkml_install_runner_sites.load_all in file "runner/sites/dkml_install_runner_sites.ml" (inlined), line 20, characters 18-51
-    """]}
-*)
-let set_dune_site_env ~opam_context =
-  Error_utils.get_ok_or_failwith_rresult
-    (OS.Env.set_var "DUNE_OCAML_HARDCODED"
-       (Some Fpath.(v opam_context / "lib" |> to_string)))
-
 let generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
     ~program_name ~program_version ~target_dir =
   (* For Windows create a self-extracting executable.
@@ -106,8 +80,6 @@ let create_forone_abi ~abi_selector ~all_component_names ~program_name
 let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) program_name
     program_version work_dir target_dir opam_context abis runner_admin_exe
     runner_user_exe packager_setup_bytecode packager_uninstaller_bytecode =
-  (* Setup dune site *)
-  set_dune_site_env ~opam_context;
   (* Get component plugins; logging already setup *)
   let reg = Dkml_install_register.Component_registry.get () in
   (* Get component names *)

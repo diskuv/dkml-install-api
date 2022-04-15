@@ -42,23 +42,7 @@ let populate_archive ~archive_dir ~runner_admin_exe ~runner_user_exe
   get_ok_or_failwith_string
     (Diskuvbox.copy_file ~err:box_err ~src:packager_uninstaller_bytecode
        ~dst:Fpath.(archive_dir / "bin" / "dkml-package-uninstaller.bc")
-       ());
-  (* Copy lib/dkml-install-runner/plugins *)
-  get_ok_or_failwith_string
-    (Diskuvbox.copy_dir ~err:box_err
-       ~src:Fpath.(opam_context / "lib" / "dkml-install-runner" / "plugins")
-       ~dst:Fpath.(archive_dir / "lib" / "dkml-install-runner" / "plugins")
-       ());
-  (* Copy lib/dkml-component-<component>/ *)
-  List.iter
-    (fun component_name ->
-      let pkg = "dkml-component-" ^ component_name in
-      get_ok_or_failwith_string
-        (Diskuvbox.copy_dir ~err:box_err
-           ~src:Fpath.(opam_context / "lib" / pkg)
-           ~dst:Fpath.(archive_dir / "lib" / pkg)
-           ()))
-    all_component_names
+       ())
 
 let populate_archive_component ~component_name ~abi_selector
     ~opam_staging_files_source ~opam_static_files_source
