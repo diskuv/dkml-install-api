@@ -27,8 +27,7 @@ let uninstall program_name package_args =
       package_args.log_config )
   in
 
-  (* Load all the available components *)
-  Dkml_install_runner_sites.load_all ();
+  (* Get all the available components *)
   let reg = Component_registry.get () in
 
   (* Only uninstall what was specified, if specified *)

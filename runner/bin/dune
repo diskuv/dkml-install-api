@@ -4,34 +4,16 @@
  (modules dkml_install_runner_user)
  (libraries
   dkml-install.register
-  dkml-install-runner.sites
   dkml-install-runner
-  dune-site
-  dune-site.plugins
   cmdliner))
 
 (library
  (public_name dkml-install-runner.admin)
  (name dkml_install_runner_admin)
  (modules dkml_install_runner_admin)
- ; To view Application Manifest on Windows, or to sign it, make sure
- ; any ".NET Framework <VERSION> SDK" component is installed with the
- ; Visual Studio Installer. That will give you Mage.exe and MageUI.exe.
- ; Confer: https://docs.microsoft.com/en-us/dotnet/framework/tools/mageui-exe-manifest-generation-and-editing-tool-graphical-client
- ; 
- ; To extract the manifest file:
- ;  & "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\mt.exe" '-inputresource:Z:\source\dkml-install-api\_build\install\default\bin\dkml-install-admin-runner.exe;#1' -out:admin2.manifest
- (ocamlopt_flags
-  ; Uncomment the following to see how link.exe is invoked through flexlink.exe:
-  ; -cclib
-  ; -v
-  (:include admin-link-flags.sexp))
  (libraries
   dkml-install.register
-  dkml-install-runner.sites
   dkml-install-runner
-  dune-site
-  dune-site.plugins
   cmdliner))
 
 ; ------------------------------------------------------

@@ -13,7 +13,6 @@ depends: [
   "alcotest" {>= "1.4.0" & with-test}
   "odoc" {>= "1.5.3" & with-doc}
   "dune" {>= "2.9" & >= "2.9"}
-  "dune-site" {>= "2.9"}
   "ppx_deriving" {>= "5.2.1"}
   "astring" {>= "0.8.5"}
   "bos" {>= "0.2.0"}

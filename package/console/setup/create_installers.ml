@@ -108,8 +108,7 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) program_name
     packager_uninstaller_bytecode =
   (* Setup dune site *)
   set_dune_site_env ~opam_context;
-  (* Load component plugins; logging already setup *)
-  Dkml_install_runner_sites.load_all ();
+  (* Get component plugins; logging already setup *)
   let reg = Dkml_install_register.Component_registry.get () in
   (* Get component names *)
   let all_component_names_res =
@@ -244,4 +243,4 @@ let create_installers () =
       $ program_name_t $ program_version_t $ work_dir_t $ target_dir_t
       $ opam_context_t $ abis_t $ setup_bytecode_t $ uninstaller_bytecode_t)
   in
-  Term.(eval (t, info ~version:"%%VERSION%%" "dkml-create-console-installers"))
+  Term.(eval (t, info ~version:"%%VERSION%%" "dkml-install-create-installers"))

@@ -26,7 +26,7 @@ with-dkml opam pin -k version dune-glob             2.9.3 --no-action --yes
 with-dkml opam pin -k version dune-private-libs     2.9.3 --no-action --yes
 Write-Output "not in 2.9.3 - with-dkml opam pin -k version dune-rpc-lwt          2.9.3 --no-action --yes"
 Write-Output "not in 2.9.3 - with-dkml opam pin -k version dune-rpc              2.9.3 --no-action --yes"
-with-dkml opam pin -k version dune-site             2.9.3 --no-action --yes
+Write-Output "dune-site is being removed - with-dkml opam pin -k version dune-site             2.9.3 --no-action --yes"
 
 with-dkml opam pin -k version uuidm                 0.9.7 --no-action --yes
 with-dkml opam pin -k version mdx                   2.0.0 --no-action --yes

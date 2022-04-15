@@ -4,7 +4,4 @@
  (libraries
   dkml-install.register
   dkml-install-runner
-  dkml-package-console.common
-  dkml-install-runner.sites
-  dune-site
-  dune-site.plugins))
+  dkml-package-console.common))

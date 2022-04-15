@@ -14,31 +14,10 @@ let default_cmd =
     Term.info "dkml-install-user-runner" ~version:"%%VERSION%%" ~doc ~sdocs
       ~exits ~man )
 
-(* Load dkml-install-api module so that Dynlink access control
-   does not prohibit plugins (components) from loading it by
-   raising a Dynlink.Unavailable_unit error.
-
-   Confer:
-   https://ocaml.org/api/Dynlink.html#1_Accesscontrol "set_allowed_units" *)
-let (_ : string list) = Default_component_config.depends_on
-
-(* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
-   reset the logger to what was given on the command line. *)
-let (_ : Log_config.t) = Dkml_install_runner.Cmdliner_runner.setup_log None None
-
-(* Load all the available components *)
-let () = Dkml_install_runner_sites.load_all ()
-
-let reg = Component_registry.get ()
-
-let () =
-  Dkml_install_runner.Error_handling.get_ok_or_raise_string
-    (Component_registry.validate reg)
-
 (** Install all non-administrative CLI subcommands for all the components.
   Even though all CLI subcommands are registered, setup.exe (setup_main) will
   only ask for some of the components if the --component option is used. *)
-let component_cmds =
+let component_cmds ~reg =
   let selector = Component_registry.All_components in
   let cmd_results =
     let* install_user_cmds =
@@ -62,9 +41,18 @@ let component_cmds =
   | Error msg -> raise (Installation_error msg)
 
 let main () =
+  (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
+     reset the logger to what was given on the command line. *)
+  let (_ : Log_config.t) =
+    Dkml_install_runner.Cmdliner_runner.setup_log None None
+  in
+  (* Get all the available components *)
+  let reg = Component_registry.get () in
+  Dkml_install_runner.Error_handling.get_ok_or_raise_string
+    (Component_registry.validate reg);
   Term.(
     exit
     @@ catch_cmdliner_eval
          (fun () ->
-           eval_choice ~catch:false default_cmd (help_cmd :: component_cmds))
+           eval_choice ~catch:false default_cmd (help_cmd :: component_cmds ~reg))
          (`Error `Exn))

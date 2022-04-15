@@ -13,34 +13,13 @@ let default_cmd =
     Term.info "dkml-install-admin-runner" ~version:"%%VERSION%%" ~doc ~sdocs
       ~exits ~man )
 
-(* Load dkml-install-api module so that Dynlink access control
-   does not prohibit plugins (components) from loading it by
-   raising a Dynlink.Unavailable_unit error.
-
-   Confer:
-   https://ocaml.org/api/Dynlink.html#1_Accesscontrol "set_allowed_units" *)
-let (_ : string list) = Default_component_config.depends_on
-
-(* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
-   reset the logger to what was given on the command line. *)
-let (_ : Log_config.t) = Dkml_install_runner.Cmdliner_runner.setup_log None None
-
-(* Load all the available components *)
-let () = Dkml_install_runner_sites.load_all ()
-
-let reg = Component_registry.get ()
-
-let () =
-  Dkml_install_runner.Error_handling.get_ok_or_raise_string
-    (Component_registry.validate reg)
-
 (** {1 Setup}
 
   Install all non-administrative CLI subcommands for all the components.
   Even though all CLI subcommands are registered, setup.exe (setup_main) will
   only ask for some of the components if the --component option is used. *)
 
-let install_admin_cmds ~selector =
+let install_admin_cmds ~reg ~selector =
   let cmd_results =
     Component_registry.eval reg ~selector ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
@@ -52,7 +31,7 @@ let install_admin_cmds ~selector =
   | Ok cmds -> cmds
   | Error msg -> raise (Installation_error msg)
 
-let uninstall_admin_cmds ~selector =
+let uninstall_admin_cmds ~reg ~selector =
   let cmd_results =
     Component_registry.reverse_eval reg ~selector ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
@@ -115,16 +94,26 @@ let helper_all_cmd ~doc ~name ~install f =
         $ prefix_t $ staging_files_opt_t $ opam_context_opt_t)),
     Term.info name ~version:"%%VERSION%%" ~doc )
 
-let install_all_cmd =
+let install_all_cmd ~reg =
   let doc = "install all components" in
-  helper_all_cmd ~name:"install-adminall" ~doc ~install:true install_admin_cmds
+  helper_all_cmd ~name:"install-adminall" ~doc ~install:true
+    (install_admin_cmds ~reg)
 
-let uninstall_all_cmd =
+let uninstall_all_cmd ~reg =
   let doc = "uninstall all components" in
   helper_all_cmd ~name:"uninstall-adminall" ~doc ~install:false
-    uninstall_admin_cmds
+    (uninstall_admin_cmds ~reg)
 
 let main () =
+  (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
+     reset the logger to what was given on the command line. *)
+  let (_ : Log_config.t) =
+    Dkml_install_runner.Cmdliner_runner.setup_log None None
+  in
+  (* Get all the available components *)
+  let reg = Component_registry.get () in
+  Dkml_install_runner.Error_handling.get_ok_or_raise_string
+    (Component_registry.validate reg);
   Term.(
     exit
     @@ catch_cmdliner_eval
@@ -135,7 +124,7 @@ let main () =
               any individual component can be installed and uninstalled
               by invoking the individual subcommand. *)
            eval_choice ~catch:false default_cmd
-             (help_cmd :: install_all_cmd :: uninstall_all_cmd
-              :: install_admin_cmds ~selector:All_components
-             @ uninstall_admin_cmds ~selector:All_components))
+             (help_cmd :: install_all_cmd ~reg :: uninstall_all_cmd ~reg
+              :: install_admin_cmds ~reg ~selector:All_components
+             @ uninstall_admin_cmds ~reg ~selector:All_components))
          (`Error `Exn))

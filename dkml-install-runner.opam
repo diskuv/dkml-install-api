@@ -14,7 +14,6 @@ depends: [
   "odoc" {>= "1.5.3" & with-doc}
   "dkml-install" {= version}
   "dune" {>= "2.9" & >= "2.9"}
-  "dune-site" {>= "2.9"}
   "ppx_expect" {>= "v0.14.1"}
   "astring" {>= "0.8.5"}
   "bos" {>= "0.2.0"}

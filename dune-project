@@ -14,10 +14,7 @@
  (name dkml-install))
  
 (package
- (name dkml-install-runner)
- (sites
-  ; <section> <name>
-  (lib plugins)))
+ (name dkml-install-runner))
 
 (package
  (name dkml-package-console))
@@ -37,7 +34,6 @@
 ;   (alcotest (and (>= 1.4.0) :with-test))
 ;   (odoc (and (>= 1.5.3) :with-doc))
 ;   (dune (>= 2.9))
-;   (dune-site (>= 2.9))
 ;   (ppx_deriving (>= 5.2.1))
 ;   (astring (>= 0.8.5))
 ;   (bos (>= 0.2.0))
@@ -58,7 +54,6 @@
 ;   (odoc (and (>= 1.5.3) :with-doc))
 ;   (dkml-install (= :version))
 ;   (dune (>= 2.9))
-;   (dune-site (>= 2.9))
 ;   (ppx_expect (>= v0.14.1))
 ;   (astring (>= 0.8.5))
 ;   (bos (>= 0.2.0))
@@ -79,6 +74,5 @@
 ;   ; runner/console/bin/dune site requires dkml-install-runner package
 ;   (dkml-install-runner (= :version))
 ;   (dune (>= 2.9))
-;   (dune-site (>= 2.9))
 ;   (diskuvbox (>= 0.1.0))
 ;   (crunch (>= 3.2.0))))
