@@ -10,7 +10,8 @@ let copy_dir_if_exists ~src ~dst =
       Logs.err (fun l -> l "FATAL: %a" Rresult.R.pp_msg msg);
       failwith (Fmt.str "%a" Rresult.R.pp_msg msg)
 
-let populate_archive ~archive_dir ~packager_setup_bytecode ~packager_uninstaller_bytecode ~opam_context
+let populate_archive ~archive_dir ~runner_admin_exe ~runner_user_exe
+    ~packager_setup_bytecode ~packager_uninstaller_bytecode ~opam_context
     ~all_component_names =
   (* Make a `.archivetree` empty file so executables like
      bin/dkml-package-setup.bc can be renamed setup.exe, but still
@@ -21,13 +22,11 @@ let populate_archive ~archive_dir ~packager_setup_bytecode ~packager_uninstaller
        ());
   (* Copy runner binaries. TODO: Should these be bytecode, not .exe? *)
   get_ok_or_failwith_string
-    (Diskuvbox.copy_file ~err:box_err
-       ~src:Fpath.(opam_context / "bin" / "dkml-install-admin-runner.exe")
+    (Diskuvbox.copy_file ~err:box_err ~src:runner_admin_exe
        ~dst:Fpath.(archive_dir / "bin" / "dkml-install-admin-runner.exe")
        ());
   get_ok_or_failwith_string
-    (Diskuvbox.copy_file ~err:box_err
-       ~src:Fpath.(opam_context / "bin" / "dkml-install-user-runner.exe")
+    (Diskuvbox.copy_file ~err:box_err ~src:runner_user_exe
        ~dst:Fpath.(archive_dir / "bin" / "dkml-install-user-runner.exe")
        ());
   (* Copy dkml-package-setup/uninstaller binaries. *)
