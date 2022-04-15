@@ -18,9 +18,10 @@ with-dkml opam pin dkml-component-staging-unixutils     git+file://Z:/source/dkm
 with-dkml opam pin dkml-component-network-unixutils     git+file://Z:/source/dkml-component-unixutils#main --no-action --yes
 with-dkml opam pin diskuvbox                            git+file://Z:/source/diskuvbox#main --no-action --yes
 
+with-dkml opam pin curly                                https://github.com/jonahbeckford/curly.git#windows-env --no-action --yes
 with-dkml opam pin crunch                               https://github.com/jonahbeckford/ocaml-crunch.git#feature-windowsopen --no-action --yes
 
-with-dkml opam pin -k version curly 0.2.1-windows-env --no-action --yes
+with-dkml opam pin -k version curly 0.2.1-windows-env_r2 --no-action --yes
 with-dkml opam pin -k version dune-action-plugin    2.9.3 --no-action --yes
 with-dkml opam pin -k version dune-glob             2.9.3 --no-action --yes
 with-dkml opam pin -k version dune-private-libs     2.9.3 --no-action --yes

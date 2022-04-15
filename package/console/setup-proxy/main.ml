@@ -50,6 +50,8 @@ let () =
   let (_ : Dkml_install_api.Log_config.t) =
     Dkml_install_runner.Cmdliner_runner.setup_log None None
   in
+  (* Get args, if any *)
+  let args = Cmd.of_list (List.tl (Array.to_list Sys.argv)) in
   (* Find ocamlrun and ocaml lib *)
   let archive_dir =
     Dkml_install_runner.Cmdliner_runner.enduser_archive_dir ()
@@ -65,6 +67,7 @@ let () =
   in
   let ocamlrun_exe = Fpath.(ocamlrun_dir / "bin" / "ocamlrun.exe") in
   let lib_ocaml = Fpath.(ocamlrun_dir / "lib" / "ocaml") in
-  (* Run the packager setup.bc *)
+  (* Run the packager setup.bc with any arguments it needs *)
   let setup_bc = Fpath.(archive_dir / "bin" / "dkml-package-setup.bc") in
-  spawn_ocamlrun ~ocamlrun_exe ~lib_ocaml Cmd.(v (Fpath.to_string setup_bc))
+  spawn_ocamlrun ~ocamlrun_exe ~lib_ocaml
+    Cmd.(v (Fpath.to_string setup_bc) %% args)
