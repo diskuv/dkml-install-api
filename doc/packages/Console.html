@@ -92,9 +92,8 @@ files.</p>
 <p>We want to model an Opam “installer” package that has two components:
 * dkml-component-staging-ocamlrun
 * dkml-component-offline-test1</p>
-<p>The files will just be empty files, except for two important bytecode files:
-* dkml-package-setup.bc will print “Hello”
-* dkml-package-uninstaller.bc will print “Bye”</p>
+<p>The files will just be empty files except <code class="docutils literal notranslate"><span class="pre">dkml-console-setup-proxy.exe</span></code> is
+a real executable that prints “Yoda”.</p>
 <p>If this were not a demonstration, we would let the dkml-install-api framework
 generate those two files for us.</p>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>install -d _opam/bin
@@ -108,25 +107,26 @@ generate those two files for us.</p>
 <span class="gp">  $ </span>install -d _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs
 <span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64
 <span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64
-<span class="gp">  $ </span>touch _opam/bin/dkml-install-admin-runner.exe
-<span class="gp">  $ </span>touch _opam/bin/dkml-install-user-runner.exe
-<span class="gp">  $ </span>touch _opam/bin/dkml-console-setup-proxy.exe
-<span class="gp">  $ </span>touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1/META
-<span class="gp">  $ </span>touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun/META
-<span class="gp">  $ </span>touch _opam/lib/dkml-component-offline-test1/META
-<span class="gp">  $ </span>touch _opam/lib/dkml-component-offline-test1/test1.cma
-<span class="gp">  $ </span>touch _opam/lib/dkml-component-staging-ocamlrun/META
-<span class="gp">  $ </span>touch _opam/lib/dkml-component-staging-ocamlrun/test2.cma
-<span class="gp">  $ </span>touch _opam/share/dkml-component-offline-test1/staging-files/generic/install-offline-test1.bc
-<span class="gp">  $ </span>touch _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64/libpng.dylib
-<span class="gp">  $ </span>touch _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64/libpng.dylib
-<span class="gp">  $ </span>touch _opam/share/dkml-component-offline-test1/static-files/README.txt
-<span class="gp">  $ </span>touch _opam/share/dkml-component-offline-test1/static-files/icon.png
-<span class="gp">  $ </span>touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin/ocamlrun.exe
-<span class="gp">  $ </span>touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs/dllthreads.dll
+<span class="gp">  $ </span>diskuvbox touch _opam/bin/dkml-install-admin-runner.exe
+<span class="gp">  $ </span>diskuvbox touch _opam/bin/dkml-install-user-runner.exe
+<span class="gp">  $ </span>install ./setup_proxy_yoda.exe _opam/bin/dkml-console-setup-proxy.exe
+<span class="gp">  $ </span>diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1/META
+<span class="gp">  $ </span>diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun/META
+<span class="gp">  $ </span>diskuvbox touch _opam/lib/dkml-component-offline-test1/META
+<span class="gp">  $ </span>diskuvbox touch _opam/lib/dkml-component-offline-test1/test1.cma
+<span class="gp">  $ </span>diskuvbox touch _opam/lib/dkml-component-staging-ocamlrun/META
+<span class="gp">  $ </span>diskuvbox touch _opam/lib/dkml-component-staging-ocamlrun/test2.cma
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/generic/install-offline-test1.bc
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64/libpng.dylib
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64/libpng.dylib
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/static-files/README.txt
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/static-files/icon.png
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin/ocamlrun.exe
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs/dllthreads.dll
 <span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">5</span> _opam
 <span class="go">  _opam</span>
 <span class="go">  ├── bin/</span>
+<span class="go">  │   ├── dkml-console-setup-proxy.exe</span>
 <span class="go">  │   ├── dkml-install-admin-runner.exe</span>
 <span class="go">  │   └── dkml-install-user-runner.exe</span>
 <span class="go">  ├── lib/</span>
@@ -235,7 +235,7 @@ Instead we use two test executables:</p>
 demonstration, you would be doing the same steps in your installer .opam file
 with something like:</p>
 <div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-    <span class="s2">&quot;%{bin}%/dkml-install-generate.exe&quot;</span>
+    <span class="s2">&quot;%{bin}%/dkml-install-create-installers.exe&quot;</span>
     <span class="s2">&quot;--program-name&quot;</span>
     <span class="nx">name</span>
     <span class="s2">&quot;--program-version&quot;</span>
@@ -268,7 +268,7 @@ with something like:</p>
 <span class="go">  test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: </span>
 <span class="go">                                             work\sfx\7zr.exe rn -bso0 -mx9 -y</span>
 <span class="go">                                               target\testme-windows_x86_64-0.1.0.7z</span>
-<span class="go">                                               bin/dkml-package-setup.bc</span>
+<span class="go">                                               bin/dkml-console-setup-proxy.exe</span>
 <span class="go">                                               setup.exe</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86_64.sh that can produce testme-windows_x86_64-0.1.0.tar.gz (etc.) archives</span>
 </pre></div>
@@ -289,10 +289,11 @@ are files that are directly copied to the end-user’s installation directory.</
 <span class="go">  ├── a/</span>
 <span class="go">  │   ├── generic/</span>
 <span class="go">  │   │   ├── bin/</span>
+<span class="go">  │   │   │   ├── dkml-console-setup-proxy.exe</span>
 <span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │   │   │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
-<span class="go">  │   │   │   ├── dkml-package-uninstaller.bc</span>
-<span class="go">  │   │   │   └── dkml-install-user-runner.exe</span>
+<span class="go">  │   │   │   └── dkml-package-uninstaller.bc</span>
 <span class="go">  │   │   ├── lib/</span>
 <span class="go">  │   │   │   ├── dkml-component-offline-test1/</span>
 <span class="go">  │   │   │   │   ├── META</span>
@@ -311,10 +312,11 @@ are files that are directly copied to the end-user’s installation directory.</
 <span class="go">  │   │           └── icon.png</span>
 <span class="go">  │   ├── linux_x86_64/</span>
 <span class="go">  │   │   ├── bin/</span>
+<span class="go">  │   │   │   ├── dkml-console-setup-proxy.exe</span>
 <span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │   │   │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
-<span class="go">  │   │   │   ├── dkml-package-uninstaller.bc</span>
-<span class="go">  │   │   │   └── dkml-install-user-runner.exe</span>
+<span class="go">  │   │   │   └── dkml-package-uninstaller.bc</span>
 <span class="go">  │   │   ├── lib/</span>
 <span class="go">  │   │   │   ├── dkml-component-offline-test1/</span>
 <span class="go">  │   │   │   │   ├── META</span>
@@ -333,10 +335,11 @@ are files that are directly copied to the end-user’s installation directory.</
 <span class="go">  │   │           └── icon.png</span>
 <span class="go">  │   └── windows_x86_64/</span>
 <span class="go">  │       ├── bin/</span>
+<span class="go">  │       │   ├── dkml-console-setup-proxy.exe</span>
 <span class="go">  │       │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │       │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │       │   ├── dkml-package-setup.bc</span>
-<span class="go">  │       │   ├── dkml-package-uninstaller.bc</span>
-<span class="go">  │       │   └── dkml-install-user-runner.exe</span>
+<span class="go">  │       │   └── dkml-package-uninstaller.bc</span>
 <span class="go">  │       ├── lib/</span>
 <span class="go">  │       │   ├── dkml-component-offline-test1/</span>
 <span class="go">  │       │   │   ├── META</span>
@@ -388,10 +391,11 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  ├── a/</span>
 <span class="go">  │   ├── generic/</span>
 <span class="go">  │   │   ├── bin/</span>
+<span class="go">  │   │   │   ├── dkml-console-setup-proxy.exe</span>
 <span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │   │   │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
-<span class="go">  │   │   │   ├── dkml-package-uninstaller.bc</span>
-<span class="go">  │   │   │   └── dkml-install-user-runner.exe</span>
+<span class="go">  │   │   │   └── dkml-package-uninstaller.bc</span>
 <span class="go">  │   │   ├── lib/</span>
 <span class="go">  │   │   │   ├── dkml-component-offline-test1/</span>
 <span class="go">  │   │   │   │   ├── META</span>
@@ -410,10 +414,11 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  │   │           └── icon.png</span>
 <span class="go">  │   ├── linux_x86_64/</span>
 <span class="go">  │   │   ├── bin/</span>
+<span class="go">  │   │   │   ├── dkml-console-setup-proxy.exe</span>
 <span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │   │   │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
-<span class="go">  │   │   │   ├── dkml-package-uninstaller.bc</span>
-<span class="go">  │   │   │   └── dkml-install-user-runner.exe</span>
+<span class="go">  │   │   │   └── dkml-package-uninstaller.bc</span>
 <span class="go">  │   │   ├── lib/</span>
 <span class="go">  │   │   │   ├── dkml-component-offline-test1/</span>
 <span class="go">  │   │   │   │   ├── META</span>
@@ -432,10 +437,11 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  │   │           └── icon.png</span>
 <span class="go">  │   └── windows_x86_64/</span>
 <span class="go">  │       ├── bin/</span>
+<span class="go">  │       │   ├── dkml-console-setup-proxy.exe</span>
 <span class="go">  │       │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │       │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │       │   ├── dkml-package-setup.bc</span>
-<span class="go">  │       │   ├── dkml-package-uninstaller.bc</span>
-<span class="go">  │       │   └── dkml-install-user-runner.exe</span>
+<span class="go">  │       │   └── dkml-package-uninstaller.bc</span>
 <span class="go">  │       ├── lib/</span>
 <span class="go">  │       │   ├── dkml-component-offline-test1/</span>
 <span class="go">  │       │   │   ├── META</span>
@@ -470,8 +476,8 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  ./</span>
 <span class="go">  testme-linux_x86_64-0.1.0/.archivetree</span>
 <span class="go">  testme-linux_x86_64-0.1.0/bin/</span>
+<span class="go">  testme-linux_x86_64-0.1.0/bin/dkml-console-setup-proxy.exe</span>
 <span class="go">  testme-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe</span>
-<span class="go">  testme-linux_x86_64-0.1.0/bin/dkml-package-setup.bc</span>
 
 <span class="gp">  $ </span>target/bundle-testme-linux_x86_64.sh -o target -e .tar.gz tar --gzip
 <span class="gp">  $ </span>tar tvfz target/testme-linux_x86_64-0.1.0.tar.gz <span class="p">|</span> tail -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
@@ -490,8 +496,8 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 “SFX” module, with a 7zip archive appended.</p>
 <p>Let’s start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-<code class="docutils literal notranslate"><span class="pre">bin\dkml-package-setup.bc</span></code> (the <em>packager</em> setup) has been renamed to
-<code class="docutils literal notranslate"><span class="pre">setup.bc</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">bin/dkml-console-setup-proxy.exe</span></code> (the <em>packager proxy</em> setup) has been renamed to
+<code class="docutils literal notranslate"><span class="pre">setup.exe</span></code>.</p>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/testme-windows_x86_64-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
 <span class="go">  Name</span>
 <span class="go">  ------------------------</span>
@@ -528,8 +534,9 @@ contents is exactly the same as the archive tree, except that
 <span class="go">  sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll</span>
 <span class="go">  st\offline-test1\icon.png</span>
 <span class="go">  st\offline-test1\README.txt</span>
-<span class="go">  setup.exe</span>
+<span class="go">  bin\dkml-package-setup.bc</span>
 <span class="go">  bin\dkml-package-uninstaller.bc</span>
+<span class="go">  setup.exe</span>
 <span class="go">  ------------------------</span>
 <span class="go">  folders</span>
 </pre></div>
@@ -557,10 +564,10 @@ temporary directory.</p>
 the member “setup.exe” (the <em>packager</em> setup.exe) found in the .7z root
 directory.</p>
 <p>Since the <em>installer</em> <code class="docutils literal notranslate"><span class="pre">setup-NAME-VER.exe</span></code> will decompress the .7z archive and
-run the <em>packager</em> <code class="docutils literal notranslate"><span class="pre">setup.bc</span></code> it found in the .7z root directory, we expect to
+run the <em>packager proxy</em> <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code> it found in the .7z root directory, we expect to
 see “Hello” printed. Which is what we see:</p>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>target/setup-testme-windows_x86_64-0.1.0.exe
-<span class="go">  Hello</span>
+<span class="go">  Yoda</span>
 </pre></div>
 </div>
 <p>To recap:</p>
@@ -570,11 +577,11 @@ archive tree.</p></li>
 <li><p>You can create .tar.gz or .tar.bz2 binary distributions from the archive
 tree.</p></li>
 <li><p>You can also use the <em>installer</em> setup-NAME-VER.exe which has been designed
-to automatically run the <em>packager</em> setup.exe.</p></li>
+to automatically run the <em>packager proxy</em> setup.exe.</p></li>
 </ol>
 <p>Whether manually uncompressing a .tar.gz binary distribution, or letting
 <em>installer</em> <code class="docutils literal notranslate"><span class="pre">setup-NAME-VER.exe</span></code> do it automatically, the
-<em>packager</em> <code class="docutils literal notranslate"><span class="pre">setup.bc</span></code> will have full access to the archive
+<em>packager proxy</em> <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code> will have full access to the archive
 tree.</p>
 <p>That’s it for how archives and setup.exe work!</p>
 <p>Go through the remaining documentation to see what a real
