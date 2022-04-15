@@ -50,8 +50,22 @@ let () =
   let (_ : Dkml_install_api.Log_config.t) =
     Dkml_install_runner.Cmdliner_runner.setup_log None None
   in
-  (* Get args, if any *)
-  let args = Cmd.of_list (List.tl (Array.to_list Sys.argv)) in
+  (* Get args, if any.
+     If there are no arguments, supply defaults so that there is console
+     logging. *)
+  let argl = List.tl (Array.to_list Sys.argv) in
+  Fmt.epr "Arg1 (before): %a@\n" Fmt.(Dump.list string) argl;
+  let argl =
+    match (Sys.win32, argl) with
+    | true, [] ->
+      (* Windows does not have a TERM environment variable for auto-detection,
+         but color always works in Command Prompt or PowerShell *)
+      [ "-v"; "--color=always" ]
+    | false, [] -> [ "-v" ]
+    | _ -> argl
+  in
+  Fmt.epr "Arg1 (after): %a@\n" Fmt.(Dump.list string) argl;
+  let args = Cmd.of_list argl in
   (* Find ocamlrun and ocaml lib *)
   let archive_dir =
     Dkml_install_runner.Cmdliner_runner.enduser_archive_dir ()

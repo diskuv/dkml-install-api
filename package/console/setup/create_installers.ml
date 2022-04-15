@@ -38,7 +38,7 @@ let create_forone_abi ~abi_selector ~all_component_names ~program_name
   (* Copy non-component files into archive *)
   Populate_archive.populate_archive ~archive_dir ~runner_admin_exe
     ~runner_user_exe ~packager_setup_bytecode ~packager_uninstaller_bytecode
-    ~opam_context:(Fpath.v opam_context) ~all_component_names;
+    ~opam_context:(Fpath.v opam_context);
   (* Get Opam sources *)
   let opam_staging_files_source =
     Dkml_install_runner.Path_location.staging_files_source

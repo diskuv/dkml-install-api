@@ -11,8 +11,7 @@ let copy_dir_if_exists ~src ~dst =
       failwith (Fmt.str "%a" Rresult.R.pp_msg msg)
 
 let populate_archive ~archive_dir ~runner_admin_exe ~runner_user_exe
-    ~packager_setup_bytecode ~packager_uninstaller_bytecode ~opam_context
-    ~all_component_names =
+    ~packager_setup_bytecode ~packager_uninstaller_bytecode ~opam_context =
   (* Make a `.archivetree` empty file so executables like
      bin/dkml-package-setup.bc can be renamed setup.exe, but still
      setup.exe will be able to locate all the other archive files. *)
