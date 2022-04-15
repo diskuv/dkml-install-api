@@ -61,7 +61,7 @@ let component_cmds =
   | Ok cmds -> cmds
   | Error msg -> raise (Installation_error msg)
 
-let () =
+let main () =
   Term.(
     exit
     @@ catch_cmdliner_eval

@@ -1,6 +1,7 @@
 (executables
  (names
   test_windows_create_installers
+  setup_proxy_yoda
   setup_print_hello
   uninstaller_print_bye)
  (libraries dkml-package-console.setup))
@@ -11,6 +12,8 @@
  (deps
   ./test_windows_create_installers.ml
   ./test_windows_create_installers.exe
+  ./setup_proxy_yoda.exe
+  ./setup_proxy_yoda.ml
   ./setup_print_hello.exe
   ./setup_print_hello.ml
   ./uninstaller_print_bye.exe

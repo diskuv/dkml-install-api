@@ -1,9 +1,7 @@
-(executable
- (public_name dkml-install-user-runner.exe)
+(library
+ (public_name dkml-install-runner.user)
  (name user_main)
- (package dkml-install-runner)
  (modules user_main)
- (modes (byte exe))
  (libraries
   dkml-install.register
   dkml-install-runner.sites
@@ -19,12 +17,10 @@
  (action
   (run %{discover})))
 
-(executable
- (public_name dkml-install-admin-runner.exe)
+(library
+ (public_name dkml-install-runner.admin)
  (name admin_main)
- (package dkml-install-runner)
  (modules admin_main)
- (modes (byte exe))
  ; To view Application Manifest on Windows, or to sign it, make sure
  ; any ".NET Framework <VERSION> SDK" component is installed with the
  ; Visual Studio Installer. That will give you Mage.exe and MageUI.exe.
@@ -51,10 +47,22 @@
 ; stub libraries except the ones built for ocamlrun.exe.
 ; (We do not have a mechanism to distribute stublib DLLs!)
 
+(executable
+ (name validate_user)
+ (modules validate_user)
+ (modes (byte exe))
+ (libraries dkml-install-runner.user))
+
+(executable
+ (name validate_admin)
+ (modules validate_admin)
+ (modes (byte exe))
+ (libraries dkml-install-runner.admin))
+
 (rule
   (alias runtest)
   (target user_main.dlls.txt.corrected)
-  (deps (:bc user_main.bc))
+  (deps (:bc validate_user.bc))
   ; (enabled_if (<> %{os_type} Win32))
   (action
     (progn
@@ -65,7 +73,7 @@
 (rule
   (alias runtest)
   (target admin_main.dlls.txt.corrected)
-  (deps (:bc admin_main.bc))
+  (deps (:bc validate_admin.bc))
   ; (enabled_if (<> %{os_type} Win32))
   (action
     (progn

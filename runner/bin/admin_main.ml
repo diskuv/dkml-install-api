@@ -124,7 +124,7 @@ let uninstall_all_cmd =
   helper_all_cmd ~name:"uninstall-adminall" ~doc ~install:false
     uninstall_admin_cmds
 
-let () =
+let main () =
   Term.(
     exit
     @@ catch_cmdliner_eval

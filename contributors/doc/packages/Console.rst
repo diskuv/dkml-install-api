@@ -20,9 +20,8 @@ We want to model an Opam "installer" package that has two components:
 * dkml-component-staging-ocamlrun
 * dkml-component-offline-test1
 
-The files will just be empty files, except for two important bytecode files:
-* dkml-package-setup.bc will print "Hello"
-* dkml-package-uninstaller.bc will print "Bye"
+The files will just be empty files except ``dkml-console-setup-proxy.exe`` is
+a real executable that prints "Yoda".
 
 If this were not a demonstration, we would let the dkml-install-api framework
 generate those two files for us.
@@ -96,7 +95,7 @@ with something like:
 .. code-block:: javascript
 
     [
-        "%{bin}%/dkml-install-generate.exe"
+        "%{bin}%/dkml-install-create-installers.exe"
         "--program-name"
         name
         "--program-version"
@@ -182,8 +181,8 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 
 Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-``bin\dkml-package-setup.bc`` (the *packager* setup) has been renamed to
-``setup.bc``.
+``bin/dkml-console-setup-proxy.exe`` (the *packager proxy* setup) has been renamed to
+``setup.exe``.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
     :language: shell-session
@@ -208,7 +207,7 @@ the member "setup.exe" (the *packager* setup.exe) found in the .7z root
 directory.
 
 Since the *installer* ``setup-NAME-VER.exe`` will decompress the .7z archive and
-run the *packager* ``setup.bc`` it found in the .7z root directory, we expect to
+run the *packager proxy* ``setup.exe`` it found in the .7z root directory, we expect to
 see "Hello" printed. Which is what we see:
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
@@ -223,11 +222,11 @@ To recap:
 2. You can create .tar.gz or .tar.bz2 binary distributions from the archive
    tree.
 3. You can also use the *installer* setup-NAME-VER.exe which has been designed
-   to automatically run the *packager* setup.exe.
+   to automatically run the *packager proxy* setup.exe.
 
 Whether manually uncompressing a .tar.gz binary distribution, or letting
 *installer* ``setup-NAME-VER.exe`` do it automatically, the
-*packager* ``setup.bc`` will have full access to the archive
+*packager proxy* ``setup.exe`` will have full access to the archive
 tree.
 
 That's it for how archives and setup.exe work!

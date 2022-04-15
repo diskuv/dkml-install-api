@@ -22,6 +22,8 @@ Check what is present in this directory
   $ ls
   setup_print_hello.exe
   setup_print_hello.ml
+  setup_proxy_yoda.exe
+  setup_proxy_yoda.ml
   test_windows_create_installers.exe
   test_windows_create_installers.ml
   test_windows_create_installers.t
@@ -40,7 +42,8 @@ We want to model an Opam "installer" package that has two components:
 * dkml-component-staging-ocamlrun
 * dkml-component-offline-test1
 
-The files will just be empty files.
+The files will just be empty files except `dkml-console-setup-proxy.exe` is
+a real executable that prints "Yoda".
 
 [opam_switch_mimic]
   $ install -d _opam/bin
@@ -54,25 +57,26 @@ The files will just be empty files.
   $ install -d _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs
   $ install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64
   $ install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64
-  $ touch _opam/bin/dkml-install-admin-runner.exe
-  $ touch _opam/bin/dkml-install-user-runner.exe
-  $ touch _opam/bin/dkml-console-setup-proxy.exe
-  $ touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1/META
-  $ touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun/META
-  $ touch _opam/lib/dkml-component-offline-test1/META
-  $ touch _opam/lib/dkml-component-offline-test1/test1.cma
-  $ touch _opam/lib/dkml-component-staging-ocamlrun/META
-  $ touch _opam/lib/dkml-component-staging-ocamlrun/test2.cma
-  $ touch _opam/share/dkml-component-offline-test1/staging-files/generic/install-offline-test1.bc
-  $ touch _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64/libpng.dylib
-  $ touch _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64/libpng.dylib
-  $ touch _opam/share/dkml-component-offline-test1/static-files/README.txt
-  $ touch _opam/share/dkml-component-offline-test1/static-files/icon.png
-  $ touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin/ocamlrun.exe
-  $ touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs/dllthreads.dll
+  $ diskuvbox touch _opam/bin/dkml-install-admin-runner.exe
+  $ diskuvbox touch _opam/bin/dkml-install-user-runner.exe
+  $ install ./setup_proxy_yoda.exe _opam/bin/dkml-console-setup-proxy.exe
+  $ diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1/META
+  $ diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun/META
+  $ diskuvbox touch _opam/lib/dkml-component-offline-test1/META
+  $ diskuvbox touch _opam/lib/dkml-component-offline-test1/test1.cma
+  $ diskuvbox touch _opam/lib/dkml-component-staging-ocamlrun/META
+  $ diskuvbox touch _opam/lib/dkml-component-staging-ocamlrun/test2.cma
+  $ diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/generic/install-offline-test1.bc
+  $ diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64/libpng.dylib
+  $ diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64/libpng.dylib
+  $ diskuvbox touch _opam/share/dkml-component-offline-test1/static-files/README.txt
+  $ diskuvbox touch _opam/share/dkml-component-offline-test1/static-files/icon.png
+  $ diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin/ocamlrun.exe
+  $ diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs/dllthreads.dll
   $ diskuvbox tree --encoding UTF-8 -d 5 _opam
   _opam
   ├── bin/
+  │   ├── dkml-console-setup-proxy.exe
   │   ├── dkml-install-admin-runner.exe
   │   └── dkml-install-user-runner.exe
   ├── lib/
@@ -206,7 +210,7 @@ Side note:
 | If this were not a demonstration, you would be doing the same steps in your
 | installer .opam file with something like:
 |   [
-|     "%{bin}%/dkml-install-generate.exe"
+|     "%{bin}%/dkml-install-create-installers.exe"
 |     "--program-name"
 |     name
 |     "--program-version"
@@ -238,7 +242,7 @@ Side note:
   test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: 
                                              work\sfx\7zr.exe rn -bso0 -mx9 -y
                                                target\testme-windows_x86_64-0.1.0.7z
-                                               bin/dkml-package-setup.bc
+                                               bin/dkml-console-setup-proxy.exe
                                                setup.exe
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86_64.sh that can produce testme-windows_x86_64-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
@@ -265,10 +269,11 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   ├── a/
   │   ├── generic/
   │   │   ├── bin/
+  │   │   │   ├── dkml-console-setup-proxy.exe
   │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
-  │   │   │   ├── dkml-package-uninstaller.bc
-  │   │   │   └── dkml-install-user-runner.exe
+  │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── lib/
   │   │   │   ├── dkml-component-offline-test1/
   │   │   │   │   ├── META
@@ -287,10 +292,11 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │           └── icon.png
   │   ├── linux_x86_64/
   │   │   ├── bin/
+  │   │   │   ├── dkml-console-setup-proxy.exe
   │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
-  │   │   │   ├── dkml-package-uninstaller.bc
-  │   │   │   └── dkml-install-user-runner.exe
+  │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── lib/
   │   │   │   ├── dkml-component-offline-test1/
   │   │   │   │   ├── META
@@ -309,10 +315,11 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │           └── icon.png
   │   └── windows_x86_64/
   │       ├── bin/
+  │       │   ├── dkml-console-setup-proxy.exe
   │       │   ├── dkml-install-admin-runner.exe
+  │       │   ├── dkml-install-user-runner.exe
   │       │   ├── dkml-package-setup.bc
-  │       │   ├── dkml-package-uninstaller.bc
-  │       │   └── dkml-install-user-runner.exe
+  │       │   └── dkml-package-uninstaller.bc
   │       ├── lib/
   │       │   ├── dkml-component-offline-test1/
   │       │   │   ├── META
@@ -367,10 +374,11 @@ Sidenote:
   ├── a/
   │   ├── generic/
   │   │   ├── bin/
+  │   │   │   ├── dkml-console-setup-proxy.exe
   │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
-  │   │   │   ├── dkml-package-uninstaller.bc
-  │   │   │   └── dkml-install-user-runner.exe
+  │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── lib/
   │   │   │   ├── dkml-component-offline-test1/
   │   │   │   │   ├── META
@@ -389,10 +397,11 @@ Sidenote:
   │   │           └── icon.png
   │   ├── linux_x86_64/
   │   │   ├── bin/
+  │   │   │   ├── dkml-console-setup-proxy.exe
   │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
-  │   │   │   ├── dkml-package-uninstaller.bc
-  │   │   │   └── dkml-install-user-runner.exe
+  │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── lib/
   │   │   │   ├── dkml-component-offline-test1/
   │   │   │   │   ├── META
@@ -411,10 +420,11 @@ Sidenote:
   │   │           └── icon.png
   │   └── windows_x86_64/
   │       ├── bin/
+  │       │   ├── dkml-console-setup-proxy.exe
   │       │   ├── dkml-install-admin-runner.exe
+  │       │   ├── dkml-install-user-runner.exe
   │       │   ├── dkml-package-setup.bc
-  │       │   ├── dkml-package-uninstaller.bc
-  │       │   └── dkml-install-user-runner.exe
+  │       │   └── dkml-package-uninstaller.bc
   │       ├── lib/
   │       │   ├── dkml-component-offline-test1/
   │       │   │   ├── META
@@ -449,8 +459,8 @@ Sidenote:
   ./
   testme-linux_x86_64-0.1.0/.archivetree
   testme-linux_x86_64-0.1.0/bin/
+  testme-linux_x86_64-0.1.0/bin/dkml-console-setup-proxy.exe
   testme-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
-  testme-linux_x86_64-0.1.0/bin/dkml-package-setup.bc
 
   $ target/bundle-testme-linux_x86_64.sh -o target -e .tar.gz tar --gzip
   $ tar tvfz target/testme-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
@@ -471,7 +481,8 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 
 Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-`bin\dkml-package-setup.bc` (the *packager* setup.exe) has been renamed to
+`bin/dkml-console-setup-proxy.exe`
+(the *packager proxy* setup.exe) has been renamed to
 `setup.exe`.
 
 [setup_exe_list_7z]
@@ -511,8 +522,9 @@ contents is exactly the same as the archive tree, except that
   sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll
   st\offline-test1\icon.png
   st\offline-test1\README.txt
-  setup.exe
+  bin\dkml-package-setup.bc
   bin\dkml-package-uninstaller.bc
+  setup.exe
   ------------------------
   folders
 [setup_exe_list_7z]
@@ -543,11 +555,11 @@ To make keep things confusing, the temporary executable that 7zip runs is
 the member "setup.exe" (the *packager* setup.exe) found in the .7z root directory.
 
 Since the *installer* `setup-NAME-VER.exe` will decompress the .7z archive and
-run the *packager* `setup.exe` it found in the .7z root directory, we expect to
+run the *packager proxy* `setup.exe` it found in the .7z root directory, we expect to
 see "Hello" printed. Which is what we see:
 [setup_exe_run]
   $ target/setup-testme-windows_x86_64-0.1.0.exe
-  Hello
+  Yoda
 [setup_exe_run]
 
 To recap:
@@ -556,10 +568,10 @@ archive tree.
 2. You can create .tar.gz or .tar.bz2 binary distributions from the archive
 tree.
 3. You can also use the *installer* setup-NAME-VER.exe which has been designed to
-automatically run the *packager* setup.exe.
+automatically run the *packager proxy* setup.exe.
 
 Whether manually uncompressing a .tar.gz binary distribution, or letting
-the *installer* `setup-NAME-VER.exe` do it automatically, the *packager*
+the *installer* `setup-NAME-VER.exe` do it automatically, the *packager proxy*
 `setup.exe` will have full access to the archive tree.
 
 That's it for how archives and setup.exe work!
