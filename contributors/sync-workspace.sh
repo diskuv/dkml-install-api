@@ -1,6 +1,11 @@
 #!/bin/sh
 set -euf
 
+SKIP_UPGRADE=0
+if [ "$#" -gt 0 ] && [ "$1" = "no-upgrade" ]; then
+    SKIP_UPGRADE=1
+fi
+
 # .../source/dkml-install-api/contributors/sync-workspace.sh
 # .../source/dkml-component-ocamlcompiler/...
 # .../source/dkml-component-unixutils/...
@@ -56,11 +61,13 @@ opam pin -k version mdx                   2.0.0 --no-action --yes
 
 date
 
-time opam upgrade \
-    dkml-base-compiler ocaml ocaml-config \
-    dkml-install dkml-install-runner dkml-package-console \
-    dkml-component-network-ocamlcompiler dkml-component-staging-ocamlrun \
-    dkml-component-staging-curl \
-    dkml-component-staging-unixutils dkml-component-network-unixutils \
-    dkml-installer-network-ocaml \
-    --yes
+if [ "$SKIP_UPGRADE" = 0 ]; then
+    time opam upgrade \
+        dkml-base-compiler ocaml ocaml-config conf-dkml-cross-toolchain \
+        dkml-install dkml-install-runner dkml-package-console \
+        dkml-component-network-ocamlcompiler dkml-component-staging-ocamlrun \
+        dkml-component-staging-curl \
+        dkml-component-staging-unixutils dkml-component-network-unixutils \
+        dkml-installer-network-ocaml \
+        --yes
+fi
