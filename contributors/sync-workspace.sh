@@ -34,15 +34,17 @@ opam pin ocaml                                https://github.com/diskuv/dkml-com
 opam pin ocaml-config                         https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
 opam pin conf-dkml-cross-toolchain            https://github.com/diskuv/conf-dkml-cross-toolchain.git#main --no-action --yes
 
-opam pin dkml-component-network-ocamlcompiler git+file://"$SOURCEMIXED"/dkml-component-ocamlcompiler#main --no-action --yes
-opam pin dkml-component-staging-ocamlrun      git+file://"$SOURCEMIXED"/dkml-component-ocamlcompiler#main --no-action --yes
 opam pin dkml-install                         git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
 opam pin dkml-install-runner                  git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
 opam pin dkml-package-console                 git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
-opam pin dkml-component-staging-curl          git+file://"$SOURCEMIXED"/dkml-component-curl#main --no-action --yes
 opam pin dkml-installer-network-ocaml         git+file://"$SOURCEMIXED"/dkml-installer-ocaml#main --no-action --yes
+opam pin dkml-component-network-ocamlcompiler git+file://"$SOURCEMIXED"/dkml-component-ocamlcompiler#main --no-action --yes
+opam pin dkml-component-staging-ocamlrun      git+file://"$SOURCEMIXED"/dkml-component-ocamlrun#main --no-action --yes
+opam pin dkml-component-staging-curl          git+file://"$SOURCEMIXED"/dkml-component-curl#main --no-action --yes
 opam pin dkml-component-staging-unixutils     git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
 opam pin dkml-component-network-unixutils     git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
+opam pin dkml-component-staging-opam32        git+file://"$SOURCEMIXED"/dkml-component-opam#main --no-action --yes
+opam pin dkml-component-staging-opam64        git+file://"$SOURCEMIXED"/dkml-component-opam#main --no-action --yes
 opam pin diskuvbox                            git+file://"$SOURCEMIXED"/diskuvbox#main --no-action --yes
 
 opam pin curly                                https://github.com/jonahbeckford/curly.git#windows-env --no-action --yes
@@ -58,6 +60,7 @@ echo "dune-site is being removed - opam pin -k version dune-site             2.9
 
 opam pin -k version uuidm                 0.9.7 --no-action --yes
 opam pin -k version mdx                   2.0.0 --no-action --yes
+opam pin -k version ocamlformat           0.19.0 --no-action --yes
 
 date
 
@@ -69,5 +72,6 @@ if [ "$SKIP_UPGRADE" = 0 ]; then
         dkml-component-staging-curl \
         dkml-component-staging-unixutils dkml-component-network-unixutils \
         dkml-installer-network-ocaml \
+        ocaml-lsp-server ocamlformat-rpc \
         --yes
 fi
