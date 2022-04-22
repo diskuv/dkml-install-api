@@ -10,6 +10,8 @@ fi
 # .../source/dkml-component-ocamlcompiler/...
 # .../source/dkml-component-unixutils/...
 # .../source/dkml-component-curl/...
+# .../source/dkml-component-opam/...
+# .../source/dkml-component-ocamlrun/...
 # .../source/diskuvbox/...
 HERE=$(dirname "$0")
 HERE=$(cd "$HERE" && pwd)
@@ -23,11 +25,18 @@ fi
 
 date
 
-eval "$(opam env --switch "$PROJROOT" --set-switch)"
+if [ -x /usr/bin/cygpath ]; then
+    PROJROOT_WIN="$(cygpath -aw "$PROJROOT")"
+    eval "$(opam env --switch "$PROJROOT_WIN" --set-switch)"
+else
+    eval "$(opam env --switch "$PROJROOT" --set-switch)"
+fi
 
 set -x
 
-opam repository add diskuv "git+https://github.com/diskuv/diskuv-opam-repository.git#main" --yes
+if ! opam repository list --short | grep ^diskuv; then
+    opam repository add diskuv "git+https://github.com/diskuv/diskuv-opam-repository.git#main" --yes
+fi
 
 opam pin dkml-base-compiler                   https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
 opam pin ocaml                                https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
@@ -39,12 +48,12 @@ opam pin dkml-install-runner                  git+file://"$SOURCEMIXED"/dkml-ins
 opam pin dkml-package-console                 git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
 opam pin dkml-installer-network-ocaml         git+file://"$SOURCEMIXED"/dkml-installer-ocaml#main --no-action --yes
 opam pin dkml-component-network-ocamlcompiler git+file://"$SOURCEMIXED"/dkml-component-ocamlcompiler#main --no-action --yes
-opam pin dkml-component-staging-ocamlrun      git+file://"$SOURCEMIXED"/dkml-component-ocamlrun#main --no-action --yes
-opam pin dkml-component-staging-curl          git+file://"$SOURCEMIXED"/dkml-component-curl#main --no-action --yes
-opam pin dkml-component-staging-unixutils     git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
 opam pin dkml-component-network-unixutils     git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
+opam pin dkml-component-staging-curl          git+file://"$SOURCEMIXED"/dkml-component-curl#main --no-action --yes
+opam pin dkml-component-staging-ocamlrun      git+file://"$SOURCEMIXED"/dkml-component-ocamlrun#main --no-action --yes
 opam pin dkml-component-staging-opam32        git+file://"$SOURCEMIXED"/dkml-component-opam#main --no-action --yes
 opam pin dkml-component-staging-opam64        git+file://"$SOURCEMIXED"/dkml-component-opam#main --no-action --yes
+opam pin dkml-component-staging-unixutils     git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
 opam pin diskuvbox                            git+file://"$SOURCEMIXED"/diskuvbox#main --no-action --yes
 
 opam pin curly                                https://github.com/jonahbeckford/curly.git#windows-env --no-action --yes
