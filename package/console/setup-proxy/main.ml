@@ -54,7 +54,6 @@ let () =
      If there are no arguments, supply defaults so that there is console
      logging. *)
   let argl = List.tl (Array.to_list Sys.argv) in
-  Fmt.epr "Arg1 (before): %a@\n" Fmt.(Dump.list string) argl;
   let argl =
     match (Sys.win32, argl) with
     | true, [] ->
@@ -64,7 +63,6 @@ let () =
     | false, [] -> [ "-v" ]
     | _ -> argl
   in
-  Fmt.epr "Arg1 (after): %a@\n" Fmt.(Dump.list string) argl;
   let args = Cmd.of_list argl in
   (* Find ocamlrun and ocaml lib *)
   let archive_dir =
