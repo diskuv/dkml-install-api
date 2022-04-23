@@ -22,7 +22,7 @@ with-dkml opam pin dkml-installer-network-ocaml         git+file://Z:/source/dkm
 with-dkml opam pin dkml-component-network-ocamlcompiler git+file://Z:/source/dkml-component-ocamlcompiler#main --no-action --yes
 with-dkml opam pin dkml-component-network-unixutils     git+file://Z:/source/dkml-component-unixutils#main --no-action --yes
 with-dkml opam pin dkml-component-staging-curl          git+file://Z:/source/dkml-component-curl#main --no-action --yes
-with-dkml opam pin dkml-component-staging-ocamlrun      git+file://Z:/source/dkml-component-ocamlcompiler#main --no-action --yes
+with-dkml opam pin dkml-component-staging-ocamlrun      git+file://Z:/source/dkml-component-ocamlrun#main --no-action --yes
 with-dkml opam pin dkml-component-staging-opam32        git+file://Z:/source/dkml-component-opam#main --no-action --yes
 with-dkml opam pin dkml-component-staging-opam64        git+file://Z:/source/dkml-component-opam#main --no-action --yes
 with-dkml opam pin dkml-component-staging-unixutils     git+file://Z:/source/dkml-component-unixutils#main --no-action --yes
@@ -41,6 +41,7 @@ Write-Output "dune-site is being removed - with-dkml opam pin -k version dune-si
 
 with-dkml opam pin -k version uuidm                 0.9.7 --no-action --yes
 with-dkml opam pin -k version mdx                   2.0.0 --no-action --yes
+with-dkml opam pin -k version ocaml-lsp-server      1.9.0 --no-action --yes
 with-dkml opam pin -k version ocamlformat           0.19.0 --no-action --yes
 
 Get-date

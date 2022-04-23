@@ -69,6 +69,7 @@ echo "dune-site is being removed - opam pin -k version dune-site             2.9
 
 opam pin -k version uuidm                 0.9.7 --no-action --yes
 opam pin -k version mdx                   2.0.0 --no-action --yes
+opam pin -k version ocaml-lsp-server      1.9.0 --no-action --yes
 opam pin -k version ocamlformat           0.19.0 --no-action --yes
 
 date
