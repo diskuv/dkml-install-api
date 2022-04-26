@@ -234,21 +234,21 @@ Instead we use two test executables:</p>
 <p>We’ll directly run the create_installers.exe executable. But if this were not a
 demonstration, you would be doing the same steps in your installer .opam file
 with something like:</p>
-<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
-    <span class="s2">&quot;%{bin}%/dkml-install-create-installers.exe&quot;</span>
-    <span class="s2">&quot;--program-name&quot;</span>
-    <span class="nx">name</span>
-    <span class="s2">&quot;--program-version&quot;</span>
-    <span class="nx">version</span>
-    <span class="s2">&quot;--work-dir&quot;</span>
-    <span class="s2">&quot;%{_:share}%/w&quot;</span>
-    <span class="s2">&quot;--target-dir&quot;</span>
-    <span class="s2">&quot;%{_:share}%/t&quot;</span>
-    <span class="s2">&quot;--packager-setup-bytecode&quot;</span>
-    <span class="s2">&quot;%{bin}%/setup.exe&quot;</span>
-    <span class="s2">&quot;--packager-uninstaller-bytecode&quot;</span>
-    <span class="s2">&quot;%{bin}%/uninstaller.exe&quot;</span>
-<span class="p">]</span>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;%{bin}%/dkml-install-create-installers.exe&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;--program-name&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nx">name</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;--program-version&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="nx">version</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;--work-dir&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;%{_:share}%/w&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;--target-dir&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;%{_:share}%/t&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;--packager-setup-bytecode&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;%{bin}%/setup.exe&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;--packager-uninstaller-bytecode&quot;</span><span class="w"></span>
+<span class="w">    </span><span class="s2">&quot;%{bin}%/uninstaller.exe&quot;</span><span class="w"></span>
+<span class="p">]</span><span class="w"></span>
 </pre></div>
 </div>
 <p>Running the <code class="docutils literal notranslate"><span class="pre">create_installers.exe</span></code> gives:</p>
