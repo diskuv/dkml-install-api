@@ -16,7 +16,7 @@ let detect_with_uname () =
       OS.Cmd.(run_out Cmd.(uname % "-s") |> to_string ~trim:true)
   in
   let open Dkml_install_api.Context.Abi_v2 in
-  match (uname_m, uname_s) with
+  match (uname_s, uname_m) with
   | "Linux", s when String.is_prefix ~affix:"armv7" s -> Result.ok Linux_arm32v7
   | "Linux", s when String.is_prefix ~affix:"armv6" s -> Result.ok Linux_arm32v6
   | "Linux", "aarch64" | "Linux", "arm64" -> Result.ok Linux_arm64
@@ -29,7 +29,7 @@ let detect_with_uname () =
         (Fmt.str
            "FATAL: Unsupported build machine type obtained from 'uname -s' and \
             'uname -m': %s and %s"
-           uname_m uname_s)
+            uname_s uname_m)
 
 let detect_on_windows () =
   let open Bos in
