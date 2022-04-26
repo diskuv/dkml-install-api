@@ -66,13 +66,14 @@ let create_forone_abi ~abi_selector ~all_component_names ~program_name
       ~static_default:No_static_default ~opam_context_opt:None
       ~static_files_opt:(Some (Fpath.to_string archive_static_dir))
   in
-  (* Copy all components from Opam into archive *)
+  (* Copy xx-console plus all components from Opam into archive *)
   List.iter
     (fun component_name ->
       Populate_archive.populate_archive_component ~component_name ~abi_selector
         ~opam_staging_files_source ~opam_static_files_source
         ~archive_staging_files_dest ~archive_static_files_dest)
-    all_component_names;
+    ([ Dkml_package_console_common.console_component_name ]
+    @ all_component_names);
   (* Assemble for one ABI *)
   generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
     ~program_name ~program_version ~target_dir

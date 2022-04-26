@@ -1,20 +1,7 @@
-(*
- val host_abi_v2 : unit -> Dkml_install_api.Context.Abi_v2.t
-val create_minimal_context :
-  self_component_name:string ->
-  log_config:Dkml_install_api.Log_config.t ->
-  prefix:Fpath.t ->
-  staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
-  Dkml_install_api.Context.t
-val prefix_opt_t : string option Cmdliner.Term.t
-val home_dir_fp : unit -> (Fpath.t, string) result
-val get_default_user_installation_prefix_windows :
-  name_camel_case_nospaces:string -> (Fpath.t, string) result
-val get_default_user_installation_prefix_darwin :
-  name_camel_case_nospaces:string -> (Fpath.t, string) result
-val get_default_user_installation_prefix_linux :
-  name_kebab_lower_case:string -> (Fpath.t, string) result
-*)
+val console_component_name : string
+(** [console_component_name] is the name of the component that has executables
+    that help run console installers (like gsudo.exe on Windows to elevate
+    privileges). *)
 
 val needs_install_admin :
   reg:Dkml_install_register.Component_registry.t ->

@@ -17,6 +17,7 @@ depends: [
   "dune" {>= "2.9" & >= "2.9"}
   "diskuvbox" {>= "0.1.0"}
   "crunch" {>= "3.2.0"}
+  "dkml-component-xx-console" {>= "0.1.0"}
 ]
 build: [
   ["dune" "subst"] {dev}
@@ -36,26 +37,3 @@ build: [
 ]
 dev-repo: "git+https://github.com/diskuv/dkml-install-api.git"
 name: "dkml-package-console"
-install: [
-  ["install" "-d"
-    "%{_:share}%/staging-files/windows_x86/bin"
-    "%{_:share}%/staging-files/windows_x86_64/bin"]
-
-  # gsudo
-  [
-    "unzip" "-o" "-d" "%{_:share}%/staging-files/windows_x86/bin"
-    "dl/gsudo.v1.2.0.zip"
-    "gsudo.exe"
-  ]
-  [
-    "unzip" "-o" "-d" "%{_:share}%/staging-files/windows_x86_64/bin"
-    "dl/gsudo.v1.2.0.zip"
-    "gsudo.exe"
-  ]
-]
-extra-source "dl/gsudo.v1.2.0.zip" {
-  src: "https://github.com/gerardog/gsudo/releases/download/v1.2.0/gsudo.v1.2.0.zip"
-  checksum: [
-    "sha256=57c90d138200214a4f662925175d451f41c208f7960ed2c1652561eaa9e7c15c"
-  ]
-}

@@ -85,6 +85,8 @@ let spawn cmd =
       | `Signaled v ->
           Rresult.R.error_msgf "Signaled with signal %d: %a" v Cmd.pp cmd)
 
+let console_component_name = "xx-console"
+
 let elevated_cmd ~staging_files_source cmd =
   let host_abi_v2 = host_abi_v2 () in
   if Context.Abi_v2.is_windows host_abi_v2 then
@@ -96,7 +98,7 @@ let elevated_cmd ~staging_files_source cmd =
        So use `gsudo` from dkml-package-console. *)
     let component_dir =
       Dkml_install_runner.Path_location.absdir_staging_files
-        ~package_selector:Package ~component_name:"console"
+        ~package_selector:Package ~component_name:console_component_name
         ~abi_selector:(Abi host_abi_v2) staging_files_source
     in
     let gsudo = Fpath.(component_dir / "bin" / "gsudo.exe") in

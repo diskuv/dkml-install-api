@@ -26,6 +26,7 @@ with-dkml opam pin dkml-component-staging-ocamlrun      git+file://Z:/source/dkm
 with-dkml opam pin dkml-component-staging-opam32        git+file://Z:/source/dkml-component-opam#main --no-action --yes
 with-dkml opam pin dkml-component-staging-opam64        git+file://Z:/source/dkml-component-opam#main --no-action --yes
 with-dkml opam pin dkml-component-staging-unixutils     git+file://Z:/source/dkml-component-unixutils#main --no-action --yes
+with-dkml opam pin dkml-component-xx-console            git+file://Z:/source/dkml-install-api#main --no-action --yes
 with-dkml opam pin diskuvbox                            git+file://Z:/source/diskuvbox#main --no-action --yes
 
 with-dkml opam pin curly                                https://github.com/jonahbeckford/curly.git#windows-env --no-action --yes

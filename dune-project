@@ -19,6 +19,9 @@
 (package
  (name dkml-package-console))
 
+(package
+ (name dkml-component-xx-console))
+
 ; (source
 ;  (github diskuv/dkml-install-api))
 ; (license Apache-2.0)

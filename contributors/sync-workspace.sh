@@ -54,6 +54,7 @@ opam pin dkml-component-staging-ocamlrun      git+file://"$SOURCEMIXED"/dkml-com
 opam pin dkml-component-staging-opam32        git+file://"$SOURCEMIXED"/dkml-component-opam#main --no-action --yes
 opam pin dkml-component-staging-opam64        git+file://"$SOURCEMIXED"/dkml-component-opam#main --no-action --yes
 opam pin dkml-component-staging-unixutils     git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
+opam pin dkml-component-xx-console            git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
 opam pin diskuvbox                            git+file://"$SOURCEMIXED"/diskuvbox#main --no-action --yes
 
 opam pin curly                                https://github.com/jonahbeckford/curly.git#windows-env --no-action --yes
