@@ -7,11 +7,13 @@
   diskuvbox
   bos
   astring
+  fmt
   fpath
   logs.fmt
   logs.cli
   fmt.cli
-  fmt.tty)
+  fmt.tty
+  str)
  (preprocess
   (pps
    ; Do not use `ppx_expect` since it drags in unnecessary stublibs DLLs

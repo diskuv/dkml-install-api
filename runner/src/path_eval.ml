@@ -146,19 +146,36 @@ module Interpreter = struct
     in
     { all_vars; all_pathonly_vars }
 
-  let rec eval_helper text = function
-    | [] -> text
+  let first_expression = Str.regexp {|.*\(%{[^}]*}%\)|}
+
+  let validate_eval text varnames =
+    if Str.string_match first_expression text 0 then
+      failwith
+        (Fmt.str
+           "There was at least one unresolved expression: %s. Only the \
+            following components are visible: %a"
+           (Str.matched_group 1 text)
+           Fmt.(Dump.list string)
+           varnames)
+    else text
+
+  let rec eval_helper ~valid_varnames text = function
+    | [] -> validate_eval text valid_varnames
     | (varname, varvalue) :: tl ->
         let search_for = "%{" ^ varname ^ "}%" in
         let new_text =
           String.(concat ~sep:varvalue (cuts ~empty:true ~sep:search_for text))
         in
-        eval_helper new_text tl
+        eval_helper ~valid_varnames new_text tl
 
-  let eval { all_vars; _ } expression = eval_helper expression all_vars
+  let eval { all_vars; _ } expression =
+    eval_helper ~valid_varnames:(List.map fst all_vars) expression all_vars
 
   let path_eval { all_pathonly_vars; _ } expression =
-    string_to_norm_fpath @@ eval_helper expression all_pathonly_vars
+    string_to_norm_fpath
+    @@ eval_helper
+         ~valid_varnames:(List.map fst all_pathonly_vars)
+         expression all_pathonly_vars
 end
 
 module Private = struct
@@ -187,11 +204,11 @@ module Private = struct
         ( "ocamlrun:share-generic",
           Fpath.to_string
             (Path_location.absdir_staging_files ~component_name:"ocamlrun"
-              ~abi_selector:Generic mock_staging_files_sources) );
+               ~abi_selector:Generic mock_staging_files_sources) );
         ( "ocamlrun:share-abi",
           Fpath.to_string
             (Path_location.absdir_staging_files ~component_name:"ocamlrun"
-              ~abi_selector:(Abi Windows_x86) mock_staging_files_sources) );
+               ~abi_selector:(Abi Windows_x86) mock_staging_files_sources) );
       ]
     in
     {
