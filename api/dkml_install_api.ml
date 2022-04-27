@@ -101,7 +101,8 @@ let log_spawn_and_raise cmd =
   in
   match sequence with
   | Ok (`Exited 0) ->
-      Logs.info (fun m -> m "The command %a ran successfully" Cmd.pp cmd)
+      Logs.info (fun m ->
+          m "%a ran successfully" Fmt.(option string) (Cmd.line_tool cmd))
   | Ok (`Exited c) ->
       raise
         (Installation_error
