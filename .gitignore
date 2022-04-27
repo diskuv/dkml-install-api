@@ -4,6 +4,9 @@ _opam/
 # Visual Studio Code
 .vscode/settings.json
 
+# Visual Studio
+.vs/
+
 # Dune
 _build/
 /*.install

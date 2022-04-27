@@ -2,4 +2,7 @@
  (name main)
  (package dkml-package-console)
  (public_name dkml-console-setup-proxy.exe)
+ (modules main)
+ (ocamlopt_flags
+  (:include cfg/console-link-flags.sexp))
  (libraries astring bos diskuvbox dkml-install-runner))
