@@ -25,6 +25,41 @@ let get_and_remove_path env =
   let new_env = String.Map.remove "Path" new_env in
   (old_path_as_list, new_env)
 
+(** [wait_for_user_confirmation_if_popup_terminal] asks the user to press "y"
+    if and only if all the following are true: the terminal is a tty, the
+    ["CI"] environment variable is not ["true"], and the terminal is on a
+    platform that will pop open a new terminal when running the setup (today
+    only Windows ABIs are popup terminal platforms).
+
+    Typically this should be used before exiting the program so that the user
+    has a chance to see the final messages, especially success or failure.
+  *)
+let wait_for_user_confirmation_if_popup_terminal host_abi =
+  match (OS.Env.opt_var "CI" ~absent:"", Unix.isatty Unix.stdin) with
+  | ci, true
+    when Dkml_install_api.Context.Abi_v2.is_windows host_abi && ci != "true" ->
+      print_newline ();
+      print_endline
+        (Fmt.str
+           "[INFO] Set CI=%a in the environment to skip the confirmation \
+            question in future installations."
+           Fmt.Dump.string "true");
+      (* Sigh. Would just like to wait for a single character "y" rather
+          than "y" + ENTER. However no easy OCaml interface to that, and more
+          importantly we don't have any discard-prior-keyboard-events API
+          on Windows like Unix.tcflush that can ensure the user has had a
+          chance to see the final messages (as opposed to accidentally
+          pressing a key early in the install process, and having that
+          keystroke be interpreted at the end of the installer as confirmation
+          that they have read the final messages). *)
+      let rec helper () =
+        print_newline ();
+        print_endline {|Press "y" and ENTER to exit the installer.|};
+        match read_line () with "y" -> () | _ -> helper ()
+      in
+      helper ()
+  | _ -> ()
+
 (** [spawn_ocamlrun] sets the environment variables needed for
     ocamlrun.exe. *)
 let spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml cmd =
@@ -75,19 +110,23 @@ let spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml cmd =
   in
   match sequence with
   | Ok (`Exited 0) ->
-      Logs.info (fun l -> l "The command %a ran successfully" Cmd.pp cmd)
+      Logs.info (fun l -> l "The command %a ran successfully" Cmd.pp cmd);
+      wait_for_user_confirmation_if_popup_terminal host_abi
   | Ok (`Exited c) ->
       Logs.err (fun l -> l "The command %a exited with status %d" Cmd.pp cmd c);
+      wait_for_user_confirmation_if_popup_terminal host_abi;
       exit 2
   | Ok (`Signaled c) ->
       Logs.err (fun l ->
           l "The command %a terminated from a signal %d" Cmd.pp cmd c);
+      wait_for_user_confirmation_if_popup_terminal host_abi;
       (* https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/1535733#1535733 *)
       exit (128 + c)
   | Error rmsg ->
       Logs.err (fun l ->
           l "The command %a could not be run due to: %a" Cmd.pp cmd
             Rresult.R.pp_msg rmsg);
+      wait_for_user_confirmation_if_popup_terminal host_abi;
       exit 3
 
 let () =
