@@ -19,18 +19,18 @@ install: [
   # gsudo
   [
     "unzip" "-o" "-d" "%{_:share}%/staging-files/windows_x86/bin"
-    "dl/gsudo.v1.2.0.zip"
+    "dl/gsudo.v1.3.0.zip"
     "gsudo.exe"
   ]
   [
     "unzip" "-o" "-d" "%{_:share}%/staging-files/windows_x86_64/bin"
-    "dl/gsudo.v1.2.0.zip"
+    "dl/gsudo.v1.3.0.zip"
     "gsudo.exe"
   ]
 ]
-extra-source "dl/gsudo.v1.2.0.zip" {
-  src: "https://github.com/gerardog/gsudo/releases/download/v1.2.0/gsudo.v1.2.0.zip"
+extra-source "dl/gsudo.v1.3.0.zip" {
+  src: "https://github.com/gerardog/gsudo/releases/download/v1.3.0/gsudo.v1.3.0.zip"
   checksum: [
-    "sha256=57c90d138200214a4f662925175d451f41c208f7960ed2c1652561eaa9e7c15c"
+    "sha256=cfd28467bbedf85bb05dc35f59c2e16ba8f19bd7aa555abb37cb2693a9b97855"
   ]
 }
