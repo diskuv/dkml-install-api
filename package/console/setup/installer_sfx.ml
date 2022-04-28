@@ -4,6 +4,7 @@
    UTF-8. *)
 
 open Bos
+open Error_utils
 
 (** Highest compression. *)
 let sevenz_compression_level_opts = Cmd.v "-mx9"
@@ -18,7 +19,7 @@ let sevenz_log_level_opts =
   | Some Info -> Cmd.(output_log_level_min %% disable_stdout_stream)
   | _ -> disable_stdout_stream
 
-let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
+let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
   let ( let* ) = Rresult.R.bind in
   let pwd = Error_utils.get_ok_or_failwith_rresult (OS.Dir.current ()) in
   let archive_rel_dir =
@@ -55,6 +56,7 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
         failwith msg
   in
 
+  (* Step 1: Bundle up everything in the archive directory *)
   let cmd_create =
     Cmd.(
       v (Fpath.to_string sevenz_exe)
@@ -66,7 +68,9 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
   Logs.info (fun l -> l "Creating 7z archive with: %a" Cmd.pp cmd_create);
   let* () = run_7z cmd_create "create a self-extracting archive" in
 
-  (* 7xS2con.sfx and 7xS2.sfx will autolaunch "setup.exe" (or the first .exe,
+  (* Step 2
+
+     7xS2con.sfx and 7xS2.sfx will autolaunch "setup.exe" (or the first .exe,
      which is ambiguous). We'll rename bin/dkml-console-setup-proxy.exe so that
      it is setup.exe.
 
@@ -84,7 +88,81 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
   in
   Logs.info (fun l ->
       l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
-  run_7z cmd_rename "rename within a self-extracting archive"
+  let* () = run_7z cmd_rename "rename within a self-extracting archive" in
+
+  (* Step 3
+
+     Need vcruntime140.dll (or later) when 7z autolaunches setup.exe since
+     the renamed dkml-console-setup-proxy.exe was compiled with Visual Studio.
+
+     In addition, vc_redist.x64.exe or similar needs to be available if we
+     can't guarantee the "Visual C++ Redistributable Packages" are already
+     installed. For example, the OCaml installer does install Visual Studio,
+     which will install the redistributable packages automatically as part
+     of the Visual Studio Installer ... but that is the exception and not the
+     rule. So we always bundle the redistributable packages.
+
+     For simplicity we name it `vc_redist.dkml-target-abi.exe`.
+
+     https://docs.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files
+  *)
+  let* redist_dir_str = OS.Env.req_var "VCToolsRedistDir" in
+  let* redist_dir = Fpath.of_string redist_dir_str in
+  let* redist_dir = OS.Dir.must_exist redist_dir in
+  let* () =
+    let latest_vcruntime arch =
+      (* ex. x64/Microsoft.VC142.CRT/vcruntime140.dll *)
+      let dll_pat = "vcruntime$(vcruntimever).dll" in
+      let pat =
+        Fpath.(redist_dir / arch / "Microsoft.VC$(vcver).CRT" / dll_pat)
+      in
+      let* candidates = OS.Path.query pat in
+      (* Get lexographically highest path (ex. VC143 > VC142) *)
+      let best_candidate =
+        List.fold_right
+          (fun (fp_a, defs_a) -> function
+            | None -> Some (fp_a, defs_a)
+            | Some (fp_b, defs_b) ->
+                if Fpath.compare fp_a fp_b > 0 then Some (fp_a, defs_a)
+                else Some (fp_b, defs_b))
+          candidates None
+      in
+      match best_candidate with
+      | None ->
+          Rresult.R.error_msgf "No files matched the pattern %a" Fpath.pp pat
+      | Some (src, defs) ->
+          (* vcruntime$(vcruntimever).dll -> vcruntime140.dll *)
+          let dll = Pat.format defs (Pat.v dll_pat) in
+          Ok (src, Fpath.(archive_dir / dll))
+    in
+    let u = Rresult.R.error_to_msg ~pp_error:Fmt.string in
+    let vcredist_exe = Fpath.(archive_dir / "vc_redist.dkml-target-abi.exe") in
+    match abi_selector with
+    | Dkml_install_runner.Path_location.Generic -> Ok ()
+    | Abi Windows_x86_64 ->
+        let* src, dst = latest_vcruntime "x64" in
+        let* () = u (Diskuvbox.copy_file ~err:box_err ~src ~dst ()) in
+        u
+          (Diskuvbox.copy_file ~err:box_err
+             ~src:Fpath.(redist_dir / "vc_redist.x64.exe")
+             ~dst:vcredist_exe ())
+    | Abi Windows_x86 ->
+        let* src, dst = latest_vcruntime "x86" in
+        let* () = u (Diskuvbox.copy_file ~err:box_err ~src ~dst ()) in
+        u
+          (Diskuvbox.copy_file ~err:box_err
+             ~src:Fpath.(redist_dir / "vc_redist.x86.exe")
+             ~dst:vcredist_exe ())
+    | Abi Windows_arm64 ->
+        let* src, dst = latest_vcruntime "arm64" in
+        let* () = u (Diskuvbox.copy_file ~err:box_err ~src ~dst ()) in
+        u
+          (Diskuvbox.copy_file ~err:box_err
+             ~src:Fpath.(redist_dir / "vc_redist.arm64.exe")
+             ~dst:vcredist_exe ())
+    | Abi _ -> Ok ()
+  in
+  Ok ()
 
 let create_sfx_exe ~sfx_path ~archive_path ~installer_path =
   let write_file_contents ~output file =
@@ -219,7 +297,9 @@ let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
          ~program_version
      in
      (* Step 2. Create ARCHIVE *)
-     let* () = create_7z_archive ~sevenz_exe ~archive_path ~archive_dir in
+     let* () =
+       create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir
+     in
      (* Step 3. Create SFX || ARCHIVE *)
      let* () = create_sfx_exe ~sfx_path ~archive_path ~installer_path in
      Ok ())
