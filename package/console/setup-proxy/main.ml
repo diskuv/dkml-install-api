@@ -40,7 +40,13 @@ let wait_for_user_confirmation_if_popup_terminal host_abi =
       let rec helper () =
         print_newline ();
         print_endline {|Press "y" and ENTER to exit the installer.|};
-        match read_line () with "y" -> () | _ -> helper ()
+        match read_line () with
+        | "y" ->
+            (* 7zip sfx needs to delete the possibly large temporary
+               directory it uninstalled, so give user some feedback. *)
+            print_endline "Exiting ...";
+            ()
+        | _ -> helper ()
       in
       helper ()
   | _ -> ()
