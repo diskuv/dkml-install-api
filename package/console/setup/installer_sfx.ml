@@ -86,33 +86,36 @@ let create_7z_archive ~sevenz_exe ~archive_path ~archive_dir =
       l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
   run_7z cmd_rename "rename within a self-extracting archive"
 
-let create_7z_sfx ~sfx ~archive_path ~installer_path =
+let create_sfx_exe ~sfx_path ~archive_path ~installer_path =
+  let write_file_contents ~output file =
+    let rec helper input =
+      match input () with
+      | Some (b, pos, len) ->
+          output (Some (b, pos, len));
+          helper input
+      | None -> ()
+    in
+    Error_utils.get_ok_or_failwith_rresult
+      (OS.File.with_input file (fun input () -> helper input) ())
+  in
   Error_utils.get_ok_or_failwith_rresult
   @@ OS.File.with_output installer_path
        (fun output () ->
          (* Mimic DOS command given in 7z documentation:
              copy /b 7zS.sfx + config.txt + archive.7z archive.exe *)
 
-         (* 7zS.sfx or something similar *)
-         output (Some (sfx, 0, Bytes.length sfx));
+         (* 7zS.sfx or something similar and perhaps its manifest customized *)
+         write_file_contents ~output sfx_path;
 
-         (* archive.7z. just copy it block by block *)
-         let rec helper input =
-           match input () with
-           | Some (b, pos, len) ->
-               output (Some (b, pos, len));
-               helper input
-           | None -> ()
-         in
-         Error_utils.get_ok_or_failwith_rresult
-         @@ OS.File.with_input archive_path (fun input () -> helper input) ();
+         (* archive.7z *)
+         write_file_contents ~output archive_path;
 
          (* EOF *)
          output None;
          Ok ())
        ()
 
-let modify_manifest ~work_dir ~installer_path ~organization ~program_name
+let modify_manifest ~pe_file ~work_dir ~organization ~program_name
     ~program_version =
   let ( let* ) = Rresult.R.bind in
   let translate s =
@@ -140,8 +143,8 @@ let modify_manifest ~work_dir ~installer_path ~organization ~program_name
     Cmd.(
       v (Fpath.to_string mt_exe)
       % "-manifest" % Fpath.to_string manifest % "-verbose"
-      % "-validate_manifest"
-      % Fmt.str "-outputresource:%a;1" Fpath.pp installer_path)
+      % "-validate_manifest" % "-nologo"
+      % Fmt.str "-outputresource:%a;1" Fpath.pp pe_file)
   in
   let* status = OS.Cmd.run_status cmd in
   match status with
@@ -191,11 +194,32 @@ let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
        OS.File.write ~mode:0o750 sevenz_exe
          (Option.get (Seven_z.read "7zr.exe"))
      in
-     let sfx = Bytes.of_string (Option.get (Seven_z.read "7zS2con.sfx")) in
-     let* () = create_7z_archive ~sevenz_exe ~archive_path ~archive_dir in
-     let* () = create_7z_sfx ~sfx ~archive_path ~installer_path in
+     let sfx = Option.get (Seven_z.read "7zS2con.sfx") in
+     (* Step 1. Create custom 7zS2con.sfx.
+
+        If we did MtExeModifiedManifest(SFX || ARCHIVE) then mt.exe would
+        corrupt the 7zip archive (it would insert RT_MANIFEST resources at the
+        end of the SFX executable, overwriting the 7zip 32-byte signature that
+        SFX uses to find the start of the 7zip archive. Results in:
+
+        7-Zip Error: Can't find 7z archive
+
+        But we can do MtExeModifiedManifest(SFX) || ARCHIVE which preserves
+        the 7zip archive. Even signing after with
+        SignToolExe(MtExeModifiedManifest(SFX) || ARCHIVE) should be fine
+        because the Authenticode procedure used in PE (modern .exe) files
+        by signtool.exe will safely update the executable sections and
+        correctly hash the "extra data" (the ARCHIVE) after the executable
+        sections; confer: http://download.microsoft.com/download/9/c/5/9c5b2167-8017-4bae-9fde-d599bac8184a/authenticode_pe.docx
+     *)
+     let sfx_path = Fpath.(sfx_dir / "7zS2custom.sfx") in
+     let* () = OS.File.write sfx_path sfx in
      let* () =
-       modify_manifest ~work_dir ~installer_path ~organization ~program_name
+       modify_manifest ~work_dir ~pe_file:sfx_path ~organization ~program_name
          ~program_version
      in
+     (* Step 2. Create ARCHIVE *)
+     let* () = create_7z_archive ~sevenz_exe ~archive_path ~archive_dir in
+     (* Step 3. Create SFX || ARCHIVE *)
+     let* () = create_sfx_exe ~sfx_path ~archive_path ~installer_path in
      Ok ())
