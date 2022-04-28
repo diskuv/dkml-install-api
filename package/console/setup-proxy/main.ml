@@ -10,21 +10,6 @@ let is_not_defined name env =
   | Some "" -> true
   | Some _ -> false
 
-(** [get_and_remove_path env] finds the first of the ["PATH"] or the ["Path"] environment variable (the latter
-    is present sometimes on Windows), and removes the same two environment variables from [env]. *)
-let get_and_remove_path env =
-  let old_path_as_list =
-    match String.Map.find_opt "PATH" env with
-    | Some v when v != "" -> [ v ]
-    | _ -> (
-        match String.Map.find_opt "Path" env with
-        | Some v when v != "" -> [ v ]
-        | _ -> [])
-  in
-  let new_env = String.Map.remove "PATH" env in
-  let new_env = String.Map.remove "Path" new_env in
-  (old_path_as_list, new_env)
-
 (** [wait_for_user_confirmation_if_popup_terminal] asks the user to press "y"
     if and only if all the following are true: the terminal is a tty, the
     ["CI"] environment variable is not ["true"], and the terminal is on a
@@ -60,9 +45,34 @@ let wait_for_user_confirmation_if_popup_terminal host_abi =
       helper ()
   | _ -> ()
 
+(** [get_and_remove_path env] finds the first of the ["PATH"] or the ["Path"] environment variable (the latter
+    is present sometimes on Windows), and removes the same two environment variables from [env]. *)
+let get_and_remove_path env =
+  (*
+
+       TODO: STOP DUPLICATING THIS CODE! The canonical source is
+       dkml-component-ocamlrun's staging_ocamlrun_api.ml
+  *)
+  let old_path_as_list =
+    match String.Map.find_opt "PATH" env with
+    | Some v when v != "" -> [ v ]
+    | _ -> (
+        match String.Map.find_opt "Path" env with
+        | Some v when v != "" -> [ v ]
+        | _ -> [])
+  in
+  let new_env = String.Map.remove "PATH" env in
+  let new_env = String.Map.remove "Path" new_env in
+  (old_path_as_list, new_env)
+
 (** [spawn_ocamlrun] sets the environment variables needed for
     ocamlrun.exe. *)
 let spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml cmd =
+  (*
+
+       TODO: STOP DUPLICATING THIS CODE! The canonical source is
+       dkml-component-ocamlrun's staging_ocamlrun_api.ml
+  *)
   let new_cmd = Cmd.(v (Fpath.to_string ocamlrun_exe) %% cmd) in
   Logs.info (fun m -> m "Running bytecode with: %a" Cmd.pp new_cmd);
   let ( let* ) = Result.bind in
