@@ -110,56 +110,78 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
   let* redist_dir = Fpath.of_string redist_dir_str in
   let* redist_dir = OS.Dir.must_exist redist_dir in
   let* () =
-    let latest_vcruntime arch =
-      (* ex. x64/Microsoft.VC142.CRT/vcruntime140.dll *)
-      let dll_pat = "vcruntime$(vcruntimever).dll" in
-      let pat =
-        Fpath.(redist_dir / arch / "Microsoft.VC$(vcver).CRT" / dll_pat)
-      in
-      let* candidates = OS.Path.query pat in
-      (* Get lexographically highest path (ex. VC143 > VC142) *)
-      let best_candidate =
+    let latest_vccrt arch =
+      (* Get lexographically highest path
+         ex. x64/Microsoft.VC143.CRT > x64/Microsoft.VC142.CRT *)
+      let basename_pat = "Microsoft.VC$(vcver).CRT" in
+      let crt_pat = Fpath.(redist_dir / arch / basename_pat) in
+      let* crt_candidates = OS.Path.query crt_pat in
+      let best_crt_candidate =
         List.fold_right
           (fun (fp_a, defs_a) -> function
             | None -> Some (fp_a, defs_a)
             | Some (fp_b, defs_b) ->
                 if Fpath.compare fp_a fp_b > 0 then Some (fp_a, defs_a)
                 else Some (fp_b, defs_b))
-          candidates None
+          crt_candidates None
       in
-      match best_candidate with
+      match best_crt_candidate with
       | None ->
-          Rresult.R.error_msgf "No files matched the pattern %a" Fpath.pp pat
-      | Some (src, defs) ->
-          (* vcruntime$(vcruntimever).dll -> vcruntime140.dll *)
-          let dll = Pat.format defs (Pat.v dll_pat) in
-          Ok (src, Fpath.(archive_dir / dll))
+          Rresult.R.error_msgf "No files matched the pattern %a" Fpath.pp
+            crt_pat
+      | Some (src, _defs) -> Ok src
     in
-    let u = Rresult.R.error_to_msg ~pp_error:Fmt.string in
-    let vcredist_exe = Fpath.(archive_dir / "vc_redist.dkml-target-abi.exe") in
+    let update_with_latest_vcruntimes arch =
+      let* z = latest_vccrt arch in
+      (* ex. x64/Microsoft.VC142.CRT/vcruntime140.dll, x64/Microsoft.VC142.CRT/vcruntime140_1.dll *)
+      (* 7z u: https://documentation.help/7-Zip-18.0/update.htm *)
+      let cmd_update =
+        Cmd.(
+          v (Fpath.to_string sevenz_exe)
+          % "u" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
+          % Fpath.to_string archive_path
+          (* DIR/* is 7z's syntax for the contents of DIR *)
+          % Fpath.(to_string (z / "vcruntime*.dll")))
+      in
+      Logs.info (fun l -> l "Updating 7z archive with: %a" Cmd.pp cmd_update);
+      run_7z cmd_update "update a self-extracting archive"
+    in
+    let add_vcredist ~src =
+      (* 7z a: https://documentation.help/7-Zip-18.0/add1.htm *)
+      let cmd_add =
+        Cmd.(
+          v (Fpath.to_string sevenz_exe)
+          % "a" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
+          % Fpath.to_string archive_path
+          (* DIR/* is 7z's syntax for the contents of DIR *)
+          % (Fpath.to_string src ^ "*"))
+      in
+      Logs.info (fun l -> l "Adding to 7z archive with: %a" Cmd.pp cmd_add);
+      let* () = run_7z cmd_add "add to a self-extracting archive" in
+      (* 7z rn: https://documentation.help/7-Zip-18.0/rename.htm *)
+      let cmd_rename =
+        Cmd.(
+          v (Fpath.to_string sevenz_exe)
+          % "rn" %% sevenz_log_level_opts %% sevenz_compression_level_opts
+          % "-y"
+          % Fpath.to_string archive_path
+          % Fpath.basename src % "vc_redist.dkml-target-abi.exe")
+      in
+      Logs.info (fun l ->
+          l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
+      run_7z cmd_rename "rename within a self-extracting archive"
+    in
     match abi_selector with
     | Dkml_install_runner.Path_location.Generic -> Ok ()
     | Abi Windows_x86_64 ->
-        let* src, dst = latest_vcruntime "x64" in
-        let* () = u (Diskuvbox.copy_file ~err:box_err ~src ~dst ()) in
-        u
-          (Diskuvbox.copy_file ~err:box_err
-             ~src:Fpath.(redist_dir / "vc_redist.x64.exe")
-             ~dst:vcredist_exe ())
+        let* () = update_with_latest_vcruntimes "x64" in
+        add_vcredist ~src:Fpath.(redist_dir / "vc_redist.x64.exe")
     | Abi Windows_x86 ->
-        let* src, dst = latest_vcruntime "x86" in
-        let* () = u (Diskuvbox.copy_file ~err:box_err ~src ~dst ()) in
-        u
-          (Diskuvbox.copy_file ~err:box_err
-             ~src:Fpath.(redist_dir / "vc_redist.x86.exe")
-             ~dst:vcredist_exe ())
+        let* () = update_with_latest_vcruntimes "x86" in
+        add_vcredist ~src:Fpath.(redist_dir / "vc_redist.x86.exe")
     | Abi Windows_arm64 ->
-        let* src, dst = latest_vcruntime "arm64" in
-        let* () = u (Diskuvbox.copy_file ~err:box_err ~src ~dst ()) in
-        u
-          (Diskuvbox.copy_file ~err:box_err
-             ~src:Fpath.(redist_dir / "vc_redist.arm64.exe")
-             ~dst:vcredist_exe ())
+        let* () = update_with_latest_vcruntimes "arm64" in
+        add_vcredist ~src:Fpath.(redist_dir / "vc_redist.arm64.exe")
     | Abi _ -> Ok ()
   in
   Ok ()
