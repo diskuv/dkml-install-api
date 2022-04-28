@@ -20,6 +20,8 @@ Initial Conditions
 Check what is present in this directory
 [initial_conditions_checkdir]
   $ ls
+  runner_admin_print_hi.exe
+  runner_user_print_zoo.exe
   setup_print_hello.exe
   setup_print_hello.ml
   setup_proxy_yoda.exe
@@ -148,7 +150,21 @@ called `create_installers.exe`:
       end)
   
   (* Let's also create an entry point for `create_installers.exe` *)
-  let () = Term.(exit @@ Dkml_package_console_setup.create_installers ())
+  let () =
+    Term.(
+      exit
+      @@ Dkml_package_console_setup.create_installers
+           {
+             legal_name = "Legal Name";
+             common_name_full = "Common Name";
+             common_name_camel_case_nospaces = "CommonName";
+             common_name_kebab_lower_case = "common-name";
+           }
+           {
+             name_full = "Full Name";
+             name_camel_case_nospaces = "FullName";
+             name_kebab_lower_case = "full-name";
+           })
 [what_are_components]
 
 If this were not a demonstration, all your components would be dynamically
@@ -230,9 +246,10 @@ Side note:
   test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: 
                                              [generic; linux_x86_64;
                                               windows_x86_64]
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic.sh that can produce testme-generic-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating setup-full-name-windows_x86_64-0.1.0.exe
+  Parsing of manifest successful.
   test_windows_create_installers.exe: [INFO] Creating 7z archive with: 
                                              work\sfx\7zr.exe a -bso0 -mx9 -y
                                                target\full-name-windows_x86_64-0.1.0.7z
@@ -272,15 +289,6 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
-  │   │   ├── lib/
-  │   │   │   ├── dkml-component-offline-test1/
-  │   │   │   │   ├── META
-  │   │   │   │   └── test1.cma
-  │   │   │   ├── dkml-component-staging-ocamlrun/
-  │   │   │   │   ├── META
-  │   │   │   │   └── test2.cma
-  │   │   │   └── dkml-install-runner/
-  │   │   │       └── plugins/
   │   │   ├── sg/
   │   │   │   └── offline-test1/
   │   │   │       └── generic/
@@ -295,15 +303,6 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
-  │   │   ├── lib/
-  │   │   │   ├── dkml-component-offline-test1/
-  │   │   │   │   ├── META
-  │   │   │   │   └── test1.cma
-  │   │   │   ├── dkml-component-staging-ocamlrun/
-  │   │   │   │   ├── META
-  │   │   │   │   └── test2.cma
-  │   │   │   └── dkml-install-runner/
-  │   │   │       └── plugins/
   │   │   ├── sg/
   │   │   │   └── offline-test1/
   │   │   │       └── generic/
@@ -318,15 +317,6 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │       │   ├── dkml-install-user-runner.exe
   │       │   ├── dkml-package-setup.bc
   │       │   └── dkml-package-uninstaller.bc
-  │       ├── lib/
-  │       │   ├── dkml-component-offline-test1/
-  │       │   │   ├── META
-  │       │   │   └── test1.cma
-  │       │   ├── dkml-component-staging-ocamlrun/
-  │       │   │   ├── META
-  │       │   │   └── test2.cma
-  │       │   └── dkml-install-runner/
-  │       │       └── plugins/
   │       ├── sg/
   │       │   ├── offline-test1/
   │       │   │   └── generic/
@@ -336,7 +326,9 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │           └── offline-test1/
   │               ├── README.txt
   │               └── icon.png
+  ├── setup.exe.manifest
   └── sfx/
+      ├── 7zS2custom.sfx
       └── 7zr.exe
 [create_installers_work]
 
@@ -377,15 +369,6 @@ Sidenote:
   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
-  │   │   ├── lib/
-  │   │   │   ├── dkml-component-offline-test1/
-  │   │   │   │   ├── META
-  │   │   │   │   └── test1.cma
-  │   │   │   ├── dkml-component-staging-ocamlrun/
-  │   │   │   │   ├── META
-  │   │   │   │   └── test2.cma
-  │   │   │   └── dkml-install-runner/
-  │   │   │       └── plugins/
   │   │   ├── sg/
   │   │   │   └── offline-test1/
   │   │   │       └── generic/
@@ -400,15 +383,6 @@ Sidenote:
   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
-  │   │   ├── lib/
-  │   │   │   ├── dkml-component-offline-test1/
-  │   │   │   │   ├── META
-  │   │   │   │   └── test1.cma
-  │   │   │   ├── dkml-component-staging-ocamlrun/
-  │   │   │   │   ├── META
-  │   │   │   │   └── test2.cma
-  │   │   │   └── dkml-install-runner/
-  │   │   │       └── plugins/
   │   │   ├── sg/
   │   │   │   └── offline-test1/
   │   │   │       └── generic/
@@ -423,15 +397,6 @@ Sidenote:
   │       │   ├── dkml-install-user-runner.exe
   │       │   ├── dkml-package-setup.bc
   │       │   └── dkml-package-uninstaller.bc
-  │       ├── lib/
-  │       │   ├── dkml-component-offline-test1/
-  │       │   │   ├── META
-  │       │   │   └── test1.cma
-  │       │   ├── dkml-component-staging-ocamlrun/
-  │       │   │   ├── META
-  │       │   │   └── test2.cma
-  │       │   └── dkml-install-runner/
-  │       │       └── plugins/
   │       ├── sg/
   │       │   ├── offline-test1/
   │       │   │   └── generic/
@@ -441,7 +406,9 @@ Sidenote:
   │           └── offline-test1/
   │               ├── README.txt
   │               └── icon.png
+  ├── setup.exe.manifest
   └── sfx/
+      ├── 7zS2custom.sfx
       └── 7zr.exe
 
   $ diskuvbox tree --encoding UTF-8 -d 5 target
@@ -449,8 +416,8 @@ Sidenote:
   ├── bundle-full-name-generic.sh
   ├── bundle-full-name-linux_x86_64.sh
   ├── bundle-full-name-windows_x86_64.sh
-  ├── setup-full-name-windows_x86_64-0.1.0.exe
-  └── full-name-windows_x86_64-0.1.0.7z
+  ├── full-name-windows_x86_64-0.1.0.7z
+  └── setup-full-name-windows_x86_64-0.1.0.exe
 
   $ target/bundle-full-name-linux_x86_64.sh -o target tar
   $ tar tvf target/full-name-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
@@ -488,13 +455,6 @@ contents is exactly the same as the archive tree, except that
   Name
   ------------------------
   bin
-  lib
-  lib\dkml-component-offline-test1
-  lib\dkml-component-staging-ocamlrun
-  lib\dkml-install-runner
-  lib\dkml-install-runner\plugins
-  lib\dkml-install-runner\plugins\dkml-plugin-offline-test1
-  lib\dkml-install-runner\plugins\dkml-plugin-staging-ocamlrun
   sg
   sg\offline-test1
   sg\offline-test1\generic
@@ -507,14 +467,6 @@ contents is exactly the same as the archive tree, except that
   st
   st\offline-test1
   .archivetree
-  bin\dkml-install-admin-runner.exe
-  bin\dkml-install-user-runner.exe
-  lib\dkml-component-offline-test1\META
-  lib\dkml-component-offline-test1\test1.cma
-  lib\dkml-component-staging-ocamlrun\META
-  lib\dkml-component-staging-ocamlrun\test2.cma
-  lib\dkml-install-runner\plugins\dkml-plugin-offline-test1\META
-  lib\dkml-install-runner\plugins\dkml-plugin-staging-ocamlrun\META
   sg\offline-test1\generic\install-offline-test1.bc
   sg\staging-ocamlrun\windows_x86_64\bin\ocamlrun.exe
   sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll
@@ -523,6 +475,8 @@ contents is exactly the same as the archive tree, except that
   bin\dkml-package-setup.bc
   bin\dkml-package-uninstaller.bc
   setup.exe
+  bin\dkml-install-admin-runner.exe
+  bin\dkml-install-user-runner.exe
   ------------------------
   folders
 [setup_exe_list_7z]
@@ -535,13 +489,13 @@ We would see the same thing if we looked inside the *installer*
   Name
   ------------------------
   bin
-  lib
-  lib\dkml-component-offline-test1
-  lib\dkml-component-staging-ocamlrun
-  lib\dkml-install-runner
-  lib\dkml-install-runner\plugins
-  lib\dkml-install-runner\plugins\dkml-plugin-offline-test1
-  lib\dkml-install-runner\plugins\dkml-plugin-staging-ocamlrun
+  sg
+  sg\offline-test1
+  sg\offline-test1\generic
+  sg\staging-ocamlrun
+  sg\staging-ocamlrun\windows_x86_64
+  sg\staging-ocamlrun\windows_x86_64\bin
+  sg\staging-ocamlrun\windows_x86_64\lib
 [setup_exe_list_exe]
 
 When the *installer* setup.exe is run, the SFX module knows how to find the 7zip
