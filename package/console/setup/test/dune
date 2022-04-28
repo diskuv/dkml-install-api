@@ -1,6 +1,8 @@
 (executables
  (names
   test_windows_create_installers
+  runner_admin_print_hi
+  runner_user_print_zoo
   setup_proxy_yoda
   setup_print_hello
   uninstaller_print_bye)
@@ -12,6 +14,8 @@
  (deps
   ./test_windows_create_installers.ml
   ./test_windows_create_installers.exe
+  ./runner_admin_print_hi.exe
+  ./runner_user_print_zoo.exe
   ./setup_proxy_yoda.exe
   ./setup_proxy_yoda.ml
   ./setup_print_hello.exe

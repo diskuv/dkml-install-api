@@ -57,5 +57,6 @@ if ($SkipUpgrade) {
         dkml-component-staging-unixutils dkml-component-network-unixutils `
         dkml-installer-network-ocaml `
         ocaml-lsp-server ocamlformat-rpc `
+        alcotest `
         --yes
 }

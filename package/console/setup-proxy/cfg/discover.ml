@@ -18,13 +18,11 @@ let console_link_flags ~ccomp_type =
       "-cclib";
       Fmt.str "/MANIFESTINPUT:%a" Fpath.pp
         Fpath.(current_dir / "assembly.manifest");
-      (* "/MANIFESTINPUT:assembly.manifest"; *)
       "-cclib";
       "-link";
       "-cclib";
       Fmt.str "/MANIFESTINPUT:%a" Fpath.pp
         Fpath.(current_dir / "application.manifest");
-      (* "/MANIFESTINPUT:Z:\\source\\dkml-install-api\\_build\\default\\package\\console\\setup-proxy\\cfg\\application.manifest"; *)
     ]
   else []
 

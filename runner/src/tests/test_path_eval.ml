@@ -24,13 +24,21 @@ let () =
             ( "",
               `Quick,
               fun () ->
-                let r =
-                  Interpreter.path_eval (mock_interpreter ())
-                    "%{components:all}%"
+                let r () =
+                  ignore
+                    (Interpreter.path_eval (mock_interpreter ())
+                       "%{components:all}%")
                 in
-                check fpath "%{components:all}% is not available with path_eval"
-                  r
-                  (Fpath.v "%{components:all}%") );
+                check_raises
+                  "%{components:all}% is not available with path_eval"
+                  (Failure
+                     "There was at least one unresolved expression: \
+                      %{components:all}%. Only the following components are \
+                      visible: \n\
+                      [tmp; prefix; _:share-generic; _:share-abi; \
+                      ocamlrun:share-generic;\n\
+                     \ ocamlrun:share-abi]")
+                  r );
             ( "",
               `Quick,
               fun () ->

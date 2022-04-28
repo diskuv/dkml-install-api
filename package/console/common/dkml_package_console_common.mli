@@ -19,21 +19,7 @@ val needs_uninstall_admin :
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
   bool
 
-(** {1 Running Programs} *)
-
-val spawn : Bos.Cmd.t -> (unit, string) result
-(** [spawn cmd] launches the command [cmd] and waits for its response. *)
-
-val elevated_cmd :
-  staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
-  Bos.Cmd.t ->
-  Bos.Cmd.t
-(** [elevated_cmd ~staging_files_source cmd] translates the command [cmd]
-    into a command that elevates privileges using ["gsudo.exe"] from the staging
-    files [staging_files_source] on Windows machines, or ["doas"], ["sudo"] or
-    ["su"] on the PATH on Unix machines. *)
-
-(** {1 Installation Paths} *)
+(** {1 Author Supplied Types} *)
 
 type program_name = {
   name_full : string;
@@ -51,6 +37,48 @@ type program_name = {
     [name_kebab_lower_case] - If the program name was "Diskuv OCaml" then
       the [name_kebab_lower_case] would be "diskuv-ocaml".
 *)
+
+type organization = {
+  legal_name : string;
+  common_name_full : string;
+  common_name_camel_case_nospaces : string;
+  common_name_kebab_lower_case : string;
+}
+(** Details about the organization for signing binaries.
+
+    [legal_name] - Examples include "Diskuv, Inc."
+
+    [common_name_full] - Examples include "Dow Jones"
+
+    [common_name_camel_case_nospaces] - If the common name was "Dow Jones" then
+      the [common_name_camel_case_nospaces] would be "DowJones".
+
+    [common_name_kebab_lower_case] - If the program name was "Dow Jones" then
+      the [common_name_kebab_lower_case] would be "dow-jones".
+
+  *)
+
+val version_m_n_o_p : string -> string
+(** [ver_m_n_o_p ver] converts the version [ver] into the
+["mmmmm.nnnnn.ooooo.ppppp"] format required by an Application Manifest.
+
+Confer https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#assemblyidentity *)
+
+(** {1 Running Programs} *)
+
+val spawn : Bos.Cmd.t -> (unit, string) result
+(** [spawn cmd] launches the command [cmd] and waits for its response. *)
+
+val elevated_cmd :
+  staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
+  Bos.Cmd.t ->
+  Bos.Cmd.t
+(** [elevated_cmd ~staging_files_source cmd] translates the command [cmd]
+    into a command that elevates privileges using ["gsudo.exe"] from the staging
+    files [staging_files_source] on Windows machines, or ["doas"], ["sudo"] or
+    ["su"] on the PATH on Unix machines. *)
+
+(** {1 Installation Paths} *)
 
 val get_user_installation_prefix :
   program_name:program_name -> prefix_opt:string option -> Fpath.t

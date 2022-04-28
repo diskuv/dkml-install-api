@@ -15,7 +15,7 @@
 (executable
  (name print_assembly_manifest)
  (modules print_assembly_manifest)
- (libraries fmt semver2))
+ (libraries fmt dkml_package_console_common))
 
 (rule
  (target assembly.manifest)

@@ -211,8 +211,6 @@ Side note:
 | installer .opam file with something like:
 |   [
 |     "%{bin}%/dkml-install-create-installers.exe"
-|     "--program-name"
-|     name
 |     "--program-version"
 |     version
 |     "--work-dir"
@@ -226,25 +224,25 @@ Side note:
 |   ]
 
 [create_installers_run]
-  $ ./test_windows_create_installers.exe --program-name testme --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --verbose
+  $ ./test_windows_create_installers.exe --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
   test_windows_create_installers.exe: [INFO] Installers will be created that include the components: 
                                              [staging-ocamlrun; offline-test1]
   test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: 
                                              [generic; linux_x86_64;
                                               windows_x86_64]
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-generic.sh that can produce testme-generic-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_x86_64.sh that can produce testme-linux_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_x86_64-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic.sh that can produce testme-generic-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating setup-full-name-windows_x86_64-0.1.0.exe
   test_windows_create_installers.exe: [INFO] Creating 7z archive with: 
                                              work\sfx\7zr.exe a -bso0 -mx9 -y
-                                               target\testme-windows_x86_64-0.1.0.7z
+                                               target\full-name-windows_x86_64-0.1.0.7z
                                                .\work\a\windows_x86_64\*
   test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: 
                                              work\sfx\7zr.exe rn -bso0 -mx9 -y
-                                               target\testme-windows_x86_64-0.1.0.7z
+                                               target\full-name-windows_x86_64-0.1.0.7z
                                                bin/dkml-console-setup-proxy.exe
                                                setup.exe
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86_64.sh that can produce testme-windows_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
 
 The --work-dir will have ABI-specific archive trees in its "a" folder.
@@ -448,27 +446,27 @@ Sidenote:
 
   $ diskuvbox tree --encoding UTF-8 -d 5 target
   target
-  ├── bundle-testme-generic.sh
-  ├── bundle-testme-linux_x86_64.sh
-  ├── bundle-testme-windows_x86_64.sh
-  ├── setup-testme-windows_x86_64-0.1.0.exe
-  └── testme-windows_x86_64-0.1.0.7z
+  ├── bundle-full-name-generic.sh
+  ├── bundle-full-name-linux_x86_64.sh
+  ├── bundle-full-name-windows_x86_64.sh
+  ├── setup-full-name-windows_x86_64-0.1.0.exe
+  └── full-name-windows_x86_64-0.1.0.7z
 
-  $ target/bundle-testme-linux_x86_64.sh -o target tar
-  $ tar tvf target/testme-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
+  $ target/bundle-full-name-linux_x86_64.sh -o target tar
+  $ tar tvf target/full-name-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
   ./
-  testme-linux_x86_64-0.1.0/.archivetree
-  testme-linux_x86_64-0.1.0/bin/
-  testme-linux_x86_64-0.1.0/bin/dkml-console-setup-proxy.exe
-  testme-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
+  full-name-linux_x86_64-0.1.0/.archivetree
+  full-name-linux_x86_64-0.1.0/bin/
+  full-name-linux_x86_64-0.1.0/bin/dkml-console-setup-proxy.exe
+  full-name-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
 
-  $ target/bundle-testme-linux_x86_64.sh -o target -e .tar.gz tar --gzip
-  $ tar tvfz target/testme-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
-  testme-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc
-  testme-linux_x86_64-0.1.0/st/
-  testme-linux_x86_64-0.1.0/st/offline-test1/
-  testme-linux_x86_64-0.1.0/st/offline-test1/README.txt
-  testme-linux_x86_64-0.1.0/st/offline-test1/icon.png
+  $ target/bundle-full-name-linux_x86_64.sh -o target -e .tar.gz tar --gzip
+  $ tar tvfz target/full-name-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
+  full-name-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc
+  full-name-linux_x86_64-0.1.0/st/
+  full-name-linux_x86_64-0.1.0/st/offline-test1/
+  full-name-linux_x86_64-0.1.0/st/offline-test1/README.txt
+  full-name-linux_x86_64-0.1.0/st/offline-test1/icon.png
 [archiver_session]
 
 --------------------------------------------------------------------------------
@@ -486,7 +484,7 @@ contents is exactly the same as the archive tree, except that
 `setup.exe`.
 
 [setup_exe_list_7z]
-  $ ../assets/lzma2107/bin/7zr.exe l target/testme-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
+  $ ../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
   bin
@@ -533,7 +531,7 @@ We would see the same thing if we looked inside the *installer*
 `setup-NAME-VER.exe` (which is just the SFX module and the .7z archive above):
 
 [setup_exe_list_exe]
-  $ ../assets/lzma2107/bin/7zr.exe l target/setup-testme-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
+  $ ../assets/lzma2107/bin/7zr.exe l target/setup-full-name-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
   Name
   ------------------------
   bin
@@ -558,7 +556,7 @@ Since the *installer* `setup-NAME-VER.exe` will decompress the .7z archive and
 run the *packager proxy* `setup.exe` it found in the .7z root directory, we expect to
 see "Hello" printed. Which is what we see:
 [setup_exe_run]
-  $ target/setup-testme-windows_x86_64-0.1.0.exe
+  $ target/setup-full-name-windows_x86_64-0.1.0.exe
   Yoda
 [setup_exe_run]
 

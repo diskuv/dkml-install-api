@@ -2,7 +2,7 @@ open Cmdliner
 open Bos
 
 let generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
-    ~program_name ~program_version ~target_dir =
+    ~organization ~program_name ~program_version ~target_dir =
   (* For Windows create a self-extracting executable.
 
      Since 7zr.exe is used to create a .7z archive, we can only run this on
@@ -14,15 +14,16 @@ let generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
    | Dkml_install_runner.Path_location.Abi abi
      when Dkml_install_api.Context.Abi_v2.is_windows abi ->
        Installer_sfx.generate ~archive_dir ~target_dir ~abi_selector
-         ~program_name ~program_version ~work_dir
+         ~organization ~program_name ~program_version ~work_dir
    | _ -> ());
   (* All operating systems can have an archive *)
   Installer_archive.generate ~archive_dir ~target_dir ~abi_selector
     ~program_name ~program_version
 
-let create_forone_abi ~abi_selector ~all_component_names ~program_name
-    ~program_version ~opam_context ~work_dir ~target_dir ~runner_admin_exe
-    ~runner_user_exe ~packager_setup_bytecode ~packager_uninstaller_bytecode =
+let create_forone_abi ~abi_selector ~all_component_names ~organization
+    ~program_name ~program_version ~opam_context ~work_dir ~target_dir
+    ~runner_admin_exe ~runner_user_exe ~packager_setup_bytecode
+    ~packager_uninstaller_bytecode =
   (* Create a temporary archive directory where we'll build the installer.contents
      For the benefit of Windows and macOS we keep the directory name ("a") small. *)
   let abi = Dkml_install_runner.Path_location.show_abi_selector abi_selector in
@@ -76,11 +77,12 @@ let create_forone_abi ~abi_selector ~all_component_names ~program_name
     @ all_component_names);
   (* Assemble for one ABI *)
   generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
-    ~program_name ~program_version ~target_dir
+    ~organization ~program_name ~program_version ~target_dir
 
-let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) program_name
-    program_version work_dir target_dir opam_context abis runner_admin_exe
-    runner_user_exe packager_setup_bytecode packager_uninstaller_bytecode =
+let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
+    program_name program_version work_dir target_dir opam_context abis
+    runner_admin_exe runner_user_exe packager_setup_bytecode
+    packager_uninstaller_bytecode =
   (* Get component plugins; logging already setup *)
   let reg = Dkml_install_register.Component_registry.get () in
   (* Get component names *)
@@ -110,23 +112,14 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) program_name
         abi_selectors);
   List.iter
     (fun abi_selector ->
-      create_forone_abi ~abi_selector ~all_component_names ~program_name
-        ~program_version ~opam_context ~work_dir:(Fpath.v work_dir)
-        ~target_dir:(Fpath.v target_dir)
+      create_forone_abi ~abi_selector ~all_component_names ~organization
+        ~program_name ~program_version ~opam_context
+        ~work_dir:(Fpath.v work_dir) ~target_dir:(Fpath.v target_dir)
         ~runner_admin_exe:(Fpath.v runner_admin_exe)
         ~runner_user_exe:(Fpath.v runner_user_exe)
         ~packager_setup_bytecode:(Fpath.v packager_setup_bytecode)
         ~packager_uninstaller_bytecode:(Fpath.v packager_uninstaller_bytecode))
     abi_selectors
-
-let program_name_t =
-  let doc =
-    "The name of the program that will be installed. Any $(b,dkml-installer-) \
-     prefix will be removed for your convenience if you choose to use the \
-     $(i,name) Opam variable as in [ \"$(mname).exe\" \"--program-name\" name \
-     ] in an .opam file"
-  in
-  Arg.(required & opt (some string) None & info [ "program-name" ] ~doc)
 
 let program_version_t =
   let doc = "The version of the program that will be installed" in
@@ -225,12 +218,12 @@ let opam_context_t =
     The generic .tar.gz "installer" is likely unusable since it will not have
     any ABI specific files.
 *)
-let create_installers () =
+let create_installers organization program_name =
   let t =
     Term.(
       const create_forall_abi $ Dkml_install_runner.Cmdliner_runner.setup_log_t
-      $ program_name_t $ program_version_t $ work_dir_t $ target_dir_t
-      $ opam_context_t $ abis_t $ runner_admin_exe_t $ runner_user_exe_t
-      $ setup_bytecode_t $ uninstaller_bytecode_t)
+      $ const organization $ const program_name $ program_version_t $ work_dir_t
+      $ target_dir_t $ opam_context_t $ abis_t $ runner_admin_exe_t
+      $ runner_user_exe_t $ setup_bytecode_t $ uninstaller_bytecode_t)
   in
   Term.(eval (t, info ~version:"%%VERSION%%" "dkml-install-create-installers"))

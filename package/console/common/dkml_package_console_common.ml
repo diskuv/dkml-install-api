@@ -1,5 +1,68 @@
 open Bos
+open Astring
 open Dkml_install_api
+
+type program_name = {
+  name_full : string;
+  name_camel_case_nospaces : string;
+  name_kebab_lower_case : string;
+}
+
+type organization = {
+  legal_name : string;
+  common_name_full : string;
+  common_name_camel_case_nospaces : string;
+  common_name_kebab_lower_case : string;
+}
+
+(** [parse_version] parses ["[v|V]major.minor[.patch][(+|-)info]"].
+    Verbatim from https://erratique.ch/software/astring/doc/Astring/index.html
+
+    We are not using semver2 Opam package because it has bigstringaf DLL stublibs. *)
+let parse_version : string -> (int * int * int * string option) option =
+ fun s ->
+  try
+    let parse_opt_v s =
+      match String.Sub.head s with
+      | Some ('v' | 'V') -> String.Sub.tail s
+      | Some _ -> s
+      | None -> raise Exit
+    in
+    let parse_dot s =
+      match String.Sub.head s with
+      | Some '.' -> String.Sub.tail s
+      | Some _ | None -> raise Exit
+    in
+    let parse_int s =
+      match String.Sub.span ~min:1 ~sat:Char.Ascii.is_digit s with
+      | i, _ when String.Sub.is_empty i -> raise Exit
+      | i, s -> (
+          match String.Sub.to_int i with None -> raise Exit | Some i -> (i, s))
+    in
+    let maj, s = parse_int (parse_opt_v (String.sub s)) in
+    let min, s = parse_int (parse_dot s) in
+    let patch, s =
+      match String.Sub.head s with
+      | Some '.' -> parse_int (parse_dot s)
+      | _ -> (0, s)
+    in
+    let info =
+      match String.Sub.head s with
+      | Some ('+' | '-') -> Some String.Sub.(to_string (tail s))
+      | Some _ -> raise Exit
+      | None -> None
+    in
+    Some (maj, min, patch, info)
+  with Exit -> None
+
+(** [ver_m_n_o_p ver] converts the version [ver] into the
+    ["mmmmm.nnnnn.ooooo.ppppp"] format required by an Application Manifest.
+
+    Confer https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#assemblyidentity *)
+let version_m_n_o_p version =
+  match parse_version version with
+  | Some (major, minor, patch, _info) -> Fmt.str "%d.%d.%d.0" major minor patch
+  | None -> "0.0.0.0"
 
 let host_abi_v2 () =
   match Dkml_install_runner.Host_abi.create_v2 () with
@@ -166,12 +229,6 @@ let get_default_user_installation_prefix_linux ~name_kebab_lower_case =
   | None ->
       let* home_dir_fp = home_dir_fp () in
       Result.ok Fpath.(home_dir_fp / ".local" / "share" / name_kebab_lower_case)
-
-type program_name = {
-  name_full : string;
-  name_camel_case_nospaces : string;
-  name_kebab_lower_case : string;
-}
 
 let get_user_installation_prefix ~program_name ~prefix_opt =
   match prefix_opt with

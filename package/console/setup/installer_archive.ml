@@ -11,9 +11,14 @@ let generate ~archive_dir ~target_dir ~abi_selector ~program_name
   let abi_name =
     Dkml_install_runner.Path_location.show_abi_selector abi_selector
   in
-  let installer_basename_without_ver = Fmt.str "%s-%s" program_name abi_name in
+  let program_name_kebab_lower_case =
+    program_name.Dkml_package_console_common.name_kebab_lower_case
+  in
+  let installer_basename_without_ver =
+    Fmt.str "%s-%s" program_name_kebab_lower_case abi_name
+  in
   let installer_basename_with_ver =
-    Fmt.str "%s-%s-%s" program_name abi_name program_version
+    Fmt.str "%s-%s-%s" program_name_kebab_lower_case abi_name program_version
   in
   let installer_create_sh =
     Fpath.(target_dir / ("bundle-" ^ installer_basename_without_ver ^ ".sh"))

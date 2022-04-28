@@ -84,6 +84,7 @@ if [ "$SKIP_UPGRADE" = 0 ]; then
         dkml-component-staging-unixutils dkml-component-network-unixutils
         dkml-installer-network-ocaml
         ocaml-lsp-server ocamlformat-rpc
+        alcotest
     )
     if ! opam list --short | grep '^ocaml$'; then
         # If switch is empty, add the DKML base compiler

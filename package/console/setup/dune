@@ -9,10 +9,16 @@
   str))
 
 (rule
- (deps scripts/bundle.sh)
+ (deps assets/scripts/bundle.sh)
  (target shell_scripts.ml)
  (action
-  (run ocaml-crunch -m plain -o %{target} scripts)))
+  (run ocaml-crunch -m plain -o %{target} assets/scripts)))
+
+(rule
+ (deps assets/manifests/setup.exe.manifest)
+ (target manifests.ml)
+ (action
+  (run ocaml-crunch -m plain -o %{target} assets/manifests)))
 
 (rule
  (deps
@@ -24,4 +30,12 @@
  (action
   (progn
    (run diskuvbox copy-file-into %{assets} assets-to-crunch -vv)
-   (run env OCAMLRUNPARAM=b ocaml-crunch -m plain -o %{target} assets-to-crunch))))
+   (run
+    env
+    OCAMLRUNPARAM=b
+    ocaml-crunch
+    -m
+    plain
+    -o
+    %{target}
+    assets-to-crunch))))
