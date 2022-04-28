@@ -96,8 +96,6 @@ with something like:
 
     [
         "%{bin}%/dkml-install-create-installers.exe"
-        "--program-name"
-        name
         "--program-version"
         version
         "--work-dir"

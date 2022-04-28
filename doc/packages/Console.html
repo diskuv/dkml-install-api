@@ -236,8 +236,6 @@ demonstration, you would be doing the same steps in your installer .opam file
 with something like:</p>
 <div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="w"></span>
 <span class="w">    </span><span class="s2">&quot;%{bin}%/dkml-install-create-installers.exe&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="s2">&quot;--program-name&quot;</span><span class="w"></span>
-<span class="w">    </span><span class="nx">name</span><span class="w"></span>
 <span class="w">    </span><span class="s2">&quot;--program-version&quot;</span><span class="w"></span>
 <span class="w">    </span><span class="nx">version</span><span class="w"></span>
 <span class="w">    </span><span class="s2">&quot;--work-dir&quot;</span><span class="w"></span>
@@ -252,25 +250,25 @@ with something like:</p>
 </pre></div>
 </div>
 <p>Running the <code class="docutils literal notranslate"><span class="pre">create_installers.exe</span></code> gives:</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>./test_windows_create_installers.exe --program-name testme --program-version <span class="m">0</span>.1.0 --opam-context<span class="o">=</span>_opam/ --target-dir<span class="o">=</span>target/ --work-dir<span class="o">=</span>work/ --abi<span class="o">=</span>linux_x86_64 --abi<span class="o">=</span>windows_x86_64 --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --verbose
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>./test_windows_create_installers.exe --program-version <span class="m">0</span>.1.0 --opam-context<span class="o">=</span>_opam/ --target-dir<span class="o">=</span>target/ --work-dir<span class="o">=</span>work/ --abi<span class="o">=</span>linux_x86_64 --abi<span class="o">=</span>windows_x86_64 --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
 <span class="go">  test_windows_create_installers.exe: [INFO] Installers will be created that include the components: </span>
 <span class="go">                                             [staging-ocamlrun; offline-test1]</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: </span>
 <span class="go">                                             [generic; linux_x86_64;</span>
 <span class="go">                                              windows_x86_64]</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-generic.sh that can produce testme-generic-0.1.0.tar.gz (etc.) archives</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-linux_x86_64.sh that can produce testme-linux_x86_64-0.1.0.tar.gz (etc.) archives</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating setup-testme-windows_x86_64-0.1.0.exe</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic.sh that can produce testme-generic-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating setup-full-name-windows_x86_64-0.1.0.exe</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Creating 7z archive with: </span>
 <span class="go">                                             work\sfx\7zr.exe a -bso0 -mx9 -y</span>
-<span class="go">                                               target\testme-windows_x86_64-0.1.0.7z</span>
+<span class="go">                                               target\full-name-windows_x86_64-0.1.0.7z</span>
 <span class="go">                                               .\work\a\windows_x86_64\*</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: </span>
 <span class="go">                                             work\sfx\7zr.exe rn -bso0 -mx9 -y</span>
-<span class="go">                                               target\testme-windows_x86_64-0.1.0.7z</span>
+<span class="go">                                               target\full-name-windows_x86_64-0.1.0.7z</span>
 <span class="go">                                               bin/dkml-console-setup-proxy.exe</span>
 <span class="go">                                               setup.exe</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-testme-windows_x86_64.sh that can produce testme-windows_x86_64-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">--work-dir</span></code> will have ABI-specific archive trees in its “a” folder.</p>
@@ -465,27 +463,27 @@ tar (or RPM, etc.) inside of OCaml.</p>
 
 <span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">5</span> target
 <span class="go">  target</span>
-<span class="go">  ├── bundle-testme-generic.sh</span>
-<span class="go">  ├── bundle-testme-linux_x86_64.sh</span>
-<span class="go">  ├── bundle-testme-windows_x86_64.sh</span>
-<span class="go">  ├── setup-testme-windows_x86_64-0.1.0.exe</span>
-<span class="go">  └── testme-windows_x86_64-0.1.0.7z</span>
+<span class="go">  ├── bundle-full-name-generic.sh</span>
+<span class="go">  ├── bundle-full-name-linux_x86_64.sh</span>
+<span class="go">  ├── bundle-full-name-windows_x86_64.sh</span>
+<span class="go">  ├── setup-full-name-windows_x86_64-0.1.0.exe</span>
+<span class="go">  └── full-name-windows_x86_64-0.1.0.7z</span>
 
-<span class="gp">  $ </span>target/bundle-testme-linux_x86_64.sh -o target tar
-<span class="gp">  $ </span>tar tvf target/testme-linux_x86_64-0.1.0.tar <span class="p">|</span> head -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
+<span class="gp">  $ </span>target/bundle-full-name-linux_x86_64.sh -o target tar
+<span class="gp">  $ </span>tar tvf target/full-name-linux_x86_64-0.1.0.tar <span class="p">|</span> head -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
 <span class="go">  ./</span>
-<span class="go">  testme-linux_x86_64-0.1.0/.archivetree</span>
-<span class="go">  testme-linux_x86_64-0.1.0/bin/</span>
-<span class="go">  testme-linux_x86_64-0.1.0/bin/dkml-console-setup-proxy.exe</span>
-<span class="go">  testme-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/.archivetree</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/bin/</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/bin/dkml-console-setup-proxy.exe</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe</span>
 
-<span class="gp">  $ </span>target/bundle-testme-linux_x86_64.sh -o target -e .tar.gz tar --gzip
-<span class="gp">  $ </span>tar tvfz target/testme-linux_x86_64-0.1.0.tar.gz <span class="p">|</span> tail -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
-<span class="go">  testme-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc</span>
-<span class="go">  testme-linux_x86_64-0.1.0/st/</span>
-<span class="go">  testme-linux_x86_64-0.1.0/st/offline-test1/</span>
-<span class="go">  testme-linux_x86_64-0.1.0/st/offline-test1/README.txt</span>
-<span class="go">  testme-linux_x86_64-0.1.0/st/offline-test1/icon.png</span>
+<span class="gp">  $ </span>target/bundle-full-name-linux_x86_64.sh -o target -e .tar.gz tar --gzip
+<span class="gp">  $ </span>tar tvfz target/full-name-linux_x86_64-0.1.0.tar.gz <span class="p">|</span> tail -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
+<span class="go">  full-name-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/st/</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test1/</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test1/README.txt</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test1/icon.png</span>
 </pre></div>
 </div>
 </div>
@@ -498,7 +496,7 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 contents is exactly the same as the archive tree, except that
 <code class="docutils literal notranslate"><span class="pre">bin/dkml-console-setup-proxy.exe</span></code> (the <em>packager proxy</em> setup) has been renamed to
 <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code>.</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/testme-windows_x86_64-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
 <span class="go">  Name</span>
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
@@ -543,7 +541,7 @@ contents is exactly the same as the archive tree, except that
 </div>
 <p>We would see the same thing if we looked inside the <em>installer</em>
 <code class="docutils literal notranslate"><span class="pre">setup-NAME-VER.exe</span></code> (which is just the SFX module and the .7z archive above):</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/setup-testme-windows_x86_64-0.1.0.exe <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span> <span class="p">|</span> head -n10
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/setup-full-name-windows_x86_64-0.1.0.exe <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span> <span class="p">|</span> head -n10
 <span class="go">  Name</span>
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
@@ -566,7 +564,7 @@ directory.</p>
 <p>Since the <em>installer</em> <code class="docutils literal notranslate"><span class="pre">setup-NAME-VER.exe</span></code> will decompress the .7z archive and
 run the <em>packager proxy</em> <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code> it found in the .7z root directory, we expect to
 see “Hello” printed. Which is what we see:</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>target/setup-testme-windows_x86_64-0.1.0.exe
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>target/setup-full-name-windows_x86_64-0.1.0.exe
 <span class="go">  Yoda</span>
 </pre></div>
 </div>
