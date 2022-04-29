@@ -31,7 +31,7 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
             Fmt.str "The archive directory %a cannot be made relative to %a"
               Fpath.pp archive_dir Fpath.pp pwd
           in
-          Logs.info (fun l -> l "FATAL: %s" msg);
+          Logs.err (fun l -> l "FATAL: %s" msg);
           failwith msg
   in
   let run_7z cmd action =
@@ -64,7 +64,7 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
       (* DIR/* is 7z's syntax for the contents of DIR *)
       % Fpath.(to_string (archive_rel_dir / "*")))
   in
-  Logs.info (fun l -> l "Creating 7z archive with: %a" Cmd.pp cmd_create);
+  Logs.debug (fun l -> l "Creating 7z archive with: %a" Cmd.pp cmd_create);
   let* () = run_7z cmd_create "create a self-extracting archive" in
 
   (* Step 2
@@ -85,7 +85,7 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
       % Fpath.to_string archive_path
       % "bin/dkml-package-console-entry.exe" % "setup.exe")
   in
-  Logs.info (fun l ->
+  Logs.debug (fun l ->
       l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
   let* () = run_7z cmd_rename "rename within a self-extracting archive" in
 
@@ -142,7 +142,7 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
           (* DIR/* is 7z's syntax for the contents of DIR *)
           % Fpath.(to_string (z / "vcruntime*.dll")))
       in
-      Logs.info (fun l -> l "Updating 7z archive with: %a" Cmd.pp cmd_update);
+      Logs.debug (fun l -> l "Updating 7z archive with: %a" Cmd.pp cmd_update);
       run_7z cmd_update "update a self-extracting archive"
     in
     let add_vcredist ~src =
@@ -155,7 +155,7 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
           (* DIR/* is 7z's syntax for the contents of DIR *)
           % (Fpath.to_string src ^ "*"))
       in
-      Logs.info (fun l -> l "Adding to 7z archive with: %a" Cmd.pp cmd_add);
+      Logs.debug (fun l -> l "Adding to 7z archive with: %a" Cmd.pp cmd_add);
       let* () = run_7z cmd_add "add to a self-extracting archive" in
       (* 7z rn: https://documentation.help/7-Zip-18.0/rename.htm *)
       let cmd_rename =
@@ -166,7 +166,7 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
           % Fpath.to_string archive_path
           % Fpath.basename src % "vc_redist.dkml-target-abi.exe")
       in
-      Logs.info (fun l ->
+      Logs.debug (fun l ->
           l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
       run_7z cmd_rename "rename within a self-extracting archive"
     in
