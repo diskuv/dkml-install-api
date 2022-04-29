@@ -47,8 +47,6 @@ The files will just be empty files.
 
 [opam_switch_mimic]
   $ install -d _opam/bin
-  $ install -d _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1
-  $ install -d _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun
   $ install -d _opam/lib/dkml-component-offline-test1
   $ install -d _opam/lib/dkml-component-staging-ocamlrun
   $ install -d _opam/share/dkml-component-offline-test1/staging-files/generic
@@ -59,12 +57,6 @@ The files will just be empty files.
   $ install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64
   $ diskuvbox touch _opam/bin/dkml-install-admin-runner.exe
   $ diskuvbox touch _opam/bin/dkml-install-user-runner.exe
-  $ diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1/META
-  $ diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun/META
-  $ diskuvbox touch _opam/lib/dkml-component-offline-test1/META
-  $ diskuvbox touch _opam/lib/dkml-component-offline-test1/test1.cma
-  $ diskuvbox touch _opam/lib/dkml-component-staging-ocamlrun/META
-  $ diskuvbox touch _opam/lib/dkml-component-staging-ocamlrun/test2.cma
   $ diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/generic/install-offline-test1.bc
   $ diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64/libpng.dylib
   $ diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64/libpng.dylib
@@ -79,17 +71,7 @@ The files will just be empty files.
   │   └── dkml-install-user-runner.exe
   ├── lib/
   │   ├── dkml-component-offline-test1/
-  │   │   ├── META
-  │   │   └── test1.cma
-  │   ├── dkml-component-staging-ocamlrun/
-  │   │   ├── META
-  │   │   └── test2.cma
-  │   └── dkml-install-runner/
-  │       └── plugins/
-  │           ├── dkml-plugin-offline-test1/
-  │           │   └── META
-  │           └── dkml-plugin-staging-ocamlrun/
-  │               └── META
+  │   └── dkml-component-staging-ocamlrun/
   └── share/
       ├── dkml-component-offline-test1/
       │   ├── staging-files/
