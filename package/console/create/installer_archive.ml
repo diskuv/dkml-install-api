@@ -44,6 +44,6 @@ let generate ~archive_dir ~target_dir ~abi_selector ~program_name
   Logs.info (fun l ->
       l "Generating script %a that can produce %s.tar.gz (etc.) archives"
         Fpath.pp installer_create_sh installer_basename_with_ver);
-  Error_utils.get_ok_or_failwith_rresult
+  Dkml_package_console_common.get_ok_or_failwith_rresult
     (OS.File.write ~mode:0o750 installer_create_sh
        (translate (Option.get (Shell_scripts.read "bundle.sh"))))

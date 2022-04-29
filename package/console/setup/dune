@@ -2,40 +2,9 @@
  (name dkml_package_console_setup)
  (public_name dkml-package-console.setup)
  (libraries
-  dkml-install.register
-  dkml-install-runner
+  ; dkml-install.register
+  ; dkml-install-runner
   dkml-package-console.common
-  diskuvbox
-  str))
-
-(rule
- (deps assets/scripts/bundle.sh)
- (target shell_scripts.ml)
- (action
-  (run ocaml-crunch -m plain -o %{target} assets/scripts)))
-
-(rule
- (deps assets/manifests/setup.exe.manifest)
- (target manifests.ml)
- (action
-  (run ocaml-crunch -m plain -o %{target} assets/manifests)))
-
-(rule
- (deps
-  (:assets
-   assets/lzma2107/bin/7zr.exe
-   assets/lzma2107/bin/7zSD.sfx
-   assets/lzma2107/bin/7zS2con.sfx))
- (target seven_z.ml)
- (action
-  (progn
-   (run diskuvbox copy-file-into %{assets} assets-to-crunch -vv)
-   (run
-    env
-    OCAMLRUNPARAM=b
-    ocaml-crunch
-    -m
-    plain
-    -o
-    %{target}
-    assets-to-crunch))))
+  ; diskuvbox
+  ; str
+  ))

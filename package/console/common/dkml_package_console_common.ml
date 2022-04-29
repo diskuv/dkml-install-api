@@ -2,6 +2,8 @@ open Bos
 open Astring
 open Dkml_install_api
 
+include Error_utils
+
 type program_name = {
   name_full : string;
   name_camel_case_nospaces : string;

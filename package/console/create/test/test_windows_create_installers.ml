@@ -21,7 +21,7 @@ let () =
 let () =
   Term.(
     exit
-    @@ Dkml_package_console_setup.create_installers
+    @@ Dkml_package_console_create.create_installers
          {
            legal_name = "Legal Name";
            common_name_full = "Common Name";

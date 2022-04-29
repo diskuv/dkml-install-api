@@ -128,5 +128,3 @@ let setup program_name package_args =
         (Installation_error
            (Fmt.str "@[Could not install %s.@]@,@[%a@]" program_name.name_full
               Fmt.lines e))
-
-let create_installers = Create_installers.create_installers

@@ -6,7 +6,7 @@
   setup_proxy_yoda
   setup_print_hello
   uninstaller_print_bye)
- (libraries dkml-package-console.setup))
+ (libraries dkml-package-console.create))
 
 (cram
  (enabled_if

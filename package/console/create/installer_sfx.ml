@@ -4,7 +4,6 @@
    UTF-8. *)
 
 open Bos
-open Error_utils
 
 (** Highest compression. *)
 let sevenz_compression_level_opts = Cmd.v "-mx9"
@@ -21,7 +20,7 @@ let sevenz_log_level_opts =
 
 let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
   let ( let* ) = Rresult.R.bind in
-  let pwd = Error_utils.get_ok_or_failwith_rresult (OS.Dir.current ()) in
+  let pwd = Dkml_package_console_common.get_ok_or_failwith_rresult (OS.Dir.current ()) in
   let archive_rel_dir =
     if Fpath.is_rel archive_dir then Fpath.(v "." // archive_dir)
     else
@@ -195,10 +194,10 @@ let create_sfx_exe ~sfx_path ~archive_path ~installer_path =
           helper input
       | None -> ()
     in
-    Error_utils.get_ok_or_failwith_rresult
+    Dkml_package_console_common.get_ok_or_failwith_rresult
       (OS.File.with_input file (fun input () -> helper input) ())
   in
-  Error_utils.get_ok_or_failwith_rresult
+  Dkml_package_console_common.get_ok_or_failwith_rresult
   @@ OS.File.with_output installer_path
        (fun output () ->
          (* Mimic DOS command given in 7z documentation:
@@ -278,7 +277,7 @@ let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
       program_version
   in
   Logs.info (fun l -> l "Generating %s" installer_basename);
-  Error_utils.get_ok_or_failwith_rresult
+  Dkml_package_console_common.get_ok_or_failwith_rresult
     (let ( let* ) = Rresult.R.bind in
      let sfx_dir = Fpath.(work_dir / "sfx") in
      let archive_path =

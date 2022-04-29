@@ -19,6 +19,14 @@ val needs_uninstall_admin :
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
   bool
 
+(** {1 Error Handling} *)
+
+val get_ok_or_failwith_string : ('a, string) result -> 'a
+
+val get_ok_or_failwith_rresult : ('a, Rresult.R.msg) result -> 'a
+
+val box_err : string -> 'a
+
 (** {1 Author Supplied Types} *)
 
 type program_name = {
