@@ -145,7 +145,7 @@ let spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml cmd =
       wait_for_user_confirmation_if_popup_terminal host_abi;
       exit 3
 
-let () =
+let entry () =
   (* Default logging *)
   let (_ : Dkml_install_api.Log_config.t) =
     Dkml_install_runner.Cmdliner_runner.setup_log None None

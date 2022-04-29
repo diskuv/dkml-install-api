@@ -70,7 +70,7 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
   (* Step 2
 
      7xS2con.sfx and 7xS2.sfx will autolaunch "setup.exe" (or the first .exe,
-     which is ambiguous). We'll rename bin/dkml-package-console-entry.exe so that
+     which is ambiguous). We'll rename bin/dkml-package-entry.exe so that
      it is setup.exe.
 
      Syntax:
@@ -83,7 +83,7 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
       v (Fpath.to_string sevenz_exe)
       % "rn" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
       % Fpath.to_string archive_path
-      % "bin/dkml-package-console-entry.exe" % "setup.exe")
+      % "bin/dkml-package-entry.exe" % "setup.exe")
   in
   Logs.debug (fun l ->
       l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
@@ -92,7 +92,7 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
   (* Step 3
 
      Need vcruntime140.dll (or later) when 7z autolaunches setup.exe since
-     the renamed dkml-package-console-entry.exe was compiled with Visual Studio.
+     the renamed dkml-package-entry.exe was compiled with Visual Studio.
 
      In addition, vc_redist.x64.exe or similar needs to be available if we
      can't guarantee the "Visual C++ Redistributable Packages" are already

@@ -20,7 +20,7 @@ We want to model an Opam "installer" package that has two components:
 * dkml-component-staging-ocamlrun
 * dkml-component-offline-test1
 
-The files will just be empty files except ``dkml-package-console-entry.exe`` is
+The files will just be empty files except ``dkml-package-entry.exe`` is
 a real executable that prints "Yoda".
 
 If this were not a demonstration, we would let the dkml-install-api framework
@@ -179,7 +179,7 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 
 Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-``bin/dkml-package-console-entry.exe`` (the *packager proxy* setup) has been renamed to
+``bin/dkml-package-entry.exe`` (the *packager proxy* setup) has been renamed to
 ``setup.exe``.
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t

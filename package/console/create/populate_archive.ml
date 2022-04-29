@@ -11,7 +11,8 @@ let copy_dir_if_exists ~src ~dst =
       failwith (Fmt.str "%a" Rresult.R.pp_msg msg)
 
 let populate_archive ~archive_dir ~runner_admin_exe ~runner_user_exe
-    ~packager_setup_bytecode ~packager_uninstaller_bytecode ~opam_context =
+    ~packager_entry_exe ~packager_setup_bytecode ~packager_uninstaller_bytecode
+    =
   (* Make a `.archivetree` empty file so executables like
      bin/dkml-package-setup.bc can be renamed setup.exe, but still
      setup.exe will be able to locate all the other archive files. *)
@@ -30,9 +31,8 @@ let populate_archive ~archive_dir ~runner_admin_exe ~runner_user_exe
        ());
   (* Copy dkml-package-setup/uninstaller binaries. *)
   get_ok_or_failwith_string
-    (Diskuvbox.copy_file ~err:box_err
-       ~src:Fpath.(opam_context / "bin" / "dkml-package-console-entry.exe")
-       ~dst:Fpath.(archive_dir / "bin" / "dkml-package-console-entry.exe")
+    (Diskuvbox.copy_file ~err:box_err ~src:packager_entry_exe
+       ~dst:Fpath.(archive_dir / "bin" / "dkml-package-entry.exe")
        ());
   get_ok_or_failwith_string
     (Diskuvbox.copy_file ~err:box_err ~src:packager_setup_bytecode

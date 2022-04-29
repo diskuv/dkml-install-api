@@ -20,12 +20,11 @@ Initial Conditions
 Check what is present in this directory
 [initial_conditions_checkdir]
   $ ls
+  entry_print_salut.exe
   runner_admin_print_hi.exe
   runner_user_print_zoo.exe
   setup_print_hello.exe
   setup_print_hello.ml
-  setup_proxy_yoda.exe
-  setup_proxy_yoda.ml
   test_windows_create_installers.exe
   test_windows_create_installers.ml
   test_windows_create_installers.t
@@ -44,8 +43,7 @@ We want to model an Opam "installer" package that has two components:
 * dkml-component-staging-ocamlrun
 * dkml-component-offline-test1
 
-The files will just be empty files except `dkml-package-console-entry.exe` is
-a real executable that prints "Yoda".
+The files will just be empty files.
 
 [opam_switch_mimic]
   $ install -d _opam/bin
@@ -61,7 +59,6 @@ a real executable that prints "Yoda".
   $ install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64
   $ diskuvbox touch _opam/bin/dkml-install-admin-runner.exe
   $ diskuvbox touch _opam/bin/dkml-install-user-runner.exe
-  $ install ./setup_proxy_yoda.exe _opam/bin/dkml-package-console-entry.exe
   $ diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1/META
   $ diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun/META
   $ diskuvbox touch _opam/lib/dkml-component-offline-test1/META
@@ -79,8 +76,7 @@ a real executable that prints "Yoda".
   _opam
   ├── bin/
   │   ├── dkml-install-admin-runner.exe
-  │   ├── dkml-install-user-runner.exe
-  │   └── dkml-package-console-entry.exe
+  │   └── dkml-install-user-runner.exe
   ├── lib/
   │   ├── dkml-component-offline-test1/
   │   │   ├── META
@@ -240,7 +236,7 @@ Side note:
 |   ]
 
 [create_installers_run]
-  $ ./test_windows_create_installers.exe --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
+  $ ./test_windows_create_installers.exe --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
   test_windows_create_installers.exe: [INFO] Installers will be created that include the components: 
                                              [staging-ocamlrun; offline-test1]
   test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: 
@@ -277,7 +273,7 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │   ├── bin/
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
-  │   │   │   ├── dkml-package-console-entry.exe
+  │   │   │   ├── dkml-package-entry.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
@@ -291,7 +287,7 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │   ├── bin/
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
-  │   │   │   ├── dkml-package-console-entry.exe
+  │   │   │   ├── dkml-package-entry.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
@@ -305,7 +301,7 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │       ├── bin/
   │       │   ├── dkml-install-admin-runner.exe
   │       │   ├── dkml-install-user-runner.exe
-  │       │   ├── dkml-package-console-entry.exe
+  │       │   ├── dkml-package-entry.exe
   │       │   ├── dkml-package-setup.bc
   │       │   └── dkml-package-uninstaller.bc
   │       ├── sg/
@@ -357,7 +353,7 @@ Sidenote:
   │   │   ├── bin/
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
-  │   │   │   ├── dkml-package-console-entry.exe
+  │   │   │   ├── dkml-package-entry.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
@@ -371,7 +367,7 @@ Sidenote:
   │   │   ├── bin/
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
-  │   │   │   ├── dkml-package-console-entry.exe
+  │   │   │   ├── dkml-package-entry.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
@@ -385,7 +381,7 @@ Sidenote:
   │       ├── bin/
   │       │   ├── dkml-install-admin-runner.exe
   │       │   ├── dkml-install-user-runner.exe
-  │       │   ├── dkml-package-console-entry.exe
+  │       │   ├── dkml-package-entry.exe
   │       │   ├── dkml-package-setup.bc
   │       │   └── dkml-package-uninstaller.bc
   │       ├── sg/
@@ -437,8 +433,8 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 
 Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-`bin/dkml-package-console-entry.exe`
-(the *packager proxy* setup.exe) has been renamed to
+`bin/dkml-package-entry.exe`
+(the *packager entry* setup.exe) has been renamed to
 `setup.exe`.
 
 [setup_exe_list_7z]
@@ -501,11 +497,11 @@ To make keep things confusing, the temporary executable that 7zip runs is
 the member "setup.exe" (the *packager* setup.exe) found in the .7z root directory.
 
 Since the *installer* `setup-NAME-VER.exe` will decompress the .7z archive and
-run the *packager proxy* `setup.exe` it found in the .7z root directory, we expect to
-see "Hello" printed. Which is what we see:
+run the *packager entry* `setup.exe` it found in the .7z root directory, we expect to
+see "Salut" printed. Which is what we see:
 [setup_exe_run]
   $ target/setup-full-name-windows_x86_64-0.1.0.exe
-  Yoda
+  Salut
 [setup_exe_run]
 
 To recap:
@@ -514,10 +510,10 @@ archive tree.
 2. You can create .tar.gz or .tar.bz2 binary distributions from the archive
 tree.
 3. You can also use the *installer* setup-NAME-VER.exe which has been designed to
-automatically run the *packager proxy* setup.exe.
+automatically run the *packager entry* setup.exe.
 
 Whether manually uncompressing a .tar.gz binary distribution, or letting
-the *installer* `setup-NAME-VER.exe` do it automatically, the *packager proxy*
+the *installer* `setup-NAME-VER.exe` do it automatically, the *packager entry*
 `setup.exe` will have full access to the archive tree.
 
 That's it for how archives and setup.exe work!

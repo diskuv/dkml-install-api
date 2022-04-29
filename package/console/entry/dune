@@ -1,8 +1,4 @@
-(executable
- (name main)
- (package dkml-package-console)
- (public_name dkml-package-console-entry.exe)
- (modules main)
- (ocamlopt_flags
-  (:include cfg/console-link-flags.sexp))
- (libraries astring bos diskuvbox dkml-install-runner))
+(library
+ (name dkml_package_console_entry)
+ (public_name dkml-package-console.entry)
+ (libraries dkml-package-console.common))
