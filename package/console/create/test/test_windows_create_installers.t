@@ -44,7 +44,7 @@ We want to model an Opam "installer" package that has two components:
 * dkml-component-staging-ocamlrun
 * dkml-component-offline-test1
 
-The files will just be empty files except `dkml-console-setup-proxy.exe` is
+The files will just be empty files except `dkml-package-console-entry.exe` is
 a real executable that prints "Yoda".
 
 [opam_switch_mimic]
@@ -61,7 +61,7 @@ a real executable that prints "Yoda".
   $ install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64
   $ diskuvbox touch _opam/bin/dkml-install-admin-runner.exe
   $ diskuvbox touch _opam/bin/dkml-install-user-runner.exe
-  $ install ./setup_proxy_yoda.exe _opam/bin/dkml-console-setup-proxy.exe
+  $ install ./setup_proxy_yoda.exe _opam/bin/dkml-package-console-entry.exe
   $ diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-offline-test1/META
   $ diskuvbox touch _opam/lib/dkml-install-runner/plugins/dkml-plugin-staging-ocamlrun/META
   $ diskuvbox touch _opam/lib/dkml-component-offline-test1/META
@@ -78,7 +78,7 @@ a real executable that prints "Yoda".
   $ diskuvbox tree --encoding UTF-8 -d 5 _opam
   _opam
   ├── bin/
-  │   ├── dkml-console-setup-proxy.exe
+  │   ├── dkml-package-console-entry.exe
   │   ├── dkml-install-admin-runner.exe
   │   └── dkml-install-user-runner.exe
   ├── lib/
@@ -257,7 +257,7 @@ Side note:
   test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: 
                                              work\sfx\7zr.exe rn -bso0 -mx9 -y
                                                target\full-name-windows_x86_64-0.1.0.7z
-                                               bin/dkml-console-setup-proxy.exe
+                                               bin/dkml-package-console-entry.exe
                                                setup.exe
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
@@ -284,7 +284,7 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   ├── a/
   │   ├── generic/
   │   │   ├── bin/
-  │   │   │   ├── dkml-console-setup-proxy.exe
+  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
@@ -298,7 +298,7 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │           └── icon.png
   │   ├── linux_x86_64/
   │   │   ├── bin/
-  │   │   │   ├── dkml-console-setup-proxy.exe
+  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
@@ -312,7 +312,7 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │           └── icon.png
   │   └── windows_x86_64/
   │       ├── bin/
-  │       │   ├── dkml-console-setup-proxy.exe
+  │       │   ├── dkml-package-console-entry.exe
   │       │   ├── dkml-install-admin-runner.exe
   │       │   ├── dkml-install-user-runner.exe
   │       │   ├── dkml-package-setup.bc
@@ -364,7 +364,7 @@ Sidenote:
   ├── a/
   │   ├── generic/
   │   │   ├── bin/
-  │   │   │   ├── dkml-console-setup-proxy.exe
+  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
@@ -378,7 +378,7 @@ Sidenote:
   │   │           └── icon.png
   │   ├── linux_x86_64/
   │   │   ├── bin/
-  │   │   │   ├── dkml-console-setup-proxy.exe
+  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   ├── dkml-package-setup.bc
@@ -392,7 +392,7 @@ Sidenote:
   │   │           └── icon.png
   │   └── windows_x86_64/
   │       ├── bin/
-  │       │   ├── dkml-console-setup-proxy.exe
+  │       │   ├── dkml-package-console-entry.exe
   │       │   ├── dkml-install-admin-runner.exe
   │       │   ├── dkml-install-user-runner.exe
   │       │   ├── dkml-package-setup.bc
@@ -424,7 +424,7 @@ Sidenote:
   ./
   full-name-linux_x86_64-0.1.0/.archivetree
   full-name-linux_x86_64-0.1.0/bin/
-  full-name-linux_x86_64-0.1.0/bin/dkml-console-setup-proxy.exe
+  full-name-linux_x86_64-0.1.0/bin/dkml-package-console-entry.exe
   full-name-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
 
   $ target/bundle-full-name-linux_x86_64.sh -o target -e .tar.gz tar --gzip
@@ -446,7 +446,7 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 
 Let's start with the 7zip archive that we generate.  You will see that its
 contents is exactly the same as the archive tree, except that
-`bin/dkml-console-setup-proxy.exe`
+`bin/dkml-package-console-entry.exe`
 (the *packager proxy* setup.exe) has been renamed to
 `setup.exe`.
 
