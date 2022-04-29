@@ -39,8 +39,6 @@ if ! opam repository list --short | grep ^diskuv; then
 fi
 
 opam pin dkml-base-compiler                   https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
-opam pin ocaml                                https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
-opam pin ocaml-config                         https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
 opam pin conf-dkml-cross-toolchain            https://github.com/diskuv/conf-dkml-cross-toolchain.git#main --no-action --yes
 
 opam pin dkml-install                         git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
