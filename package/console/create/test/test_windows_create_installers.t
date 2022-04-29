@@ -78,9 +78,9 @@ a real executable that prints "Yoda".
   $ diskuvbox tree --encoding UTF-8 -d 5 _opam
   _opam
   ├── bin/
-  │   ├── dkml-package-console-entry.exe
   │   ├── dkml-install-admin-runner.exe
-  │   └── dkml-install-user-runner.exe
+  │   ├── dkml-install-user-runner.exe
+  │   └── dkml-package-console-entry.exe
   ├── lib/
   │   ├── dkml-component-offline-test1/
   │   │   ├── META
@@ -153,7 +153,7 @@ called `create_installers.exe`:
   let () =
     Term.(
       exit
-      @@ Dkml_package_console_setup.create_installers
+      @@ Dkml_package_console_create.create_installers
            {
              legal_name = "Legal Name";
              common_name_full = "Common Name";
@@ -250,15 +250,6 @@ Side note:
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating setup-full-name-windows_x86_64-0.1.0.exe
   Parsing of manifest successful.
-  test_windows_create_installers.exe: [INFO] Creating 7z archive with: 
-                                             work\sfx\7zr.exe a -bso0 -mx9 -y
-                                               target\full-name-windows_x86_64-0.1.0.7z
-                                               .\work\a\windows_x86_64\*
-  test_windows_create_installers.exe: [INFO] Renaming within a 7z archive with: 
-                                             work\sfx\7zr.exe rn -bso0 -mx9 -y
-                                               target\full-name-windows_x86_64-0.1.0.7z
-                                               bin/dkml-package-console-entry.exe
-                                               setup.exe
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
 
@@ -284,9 +275,9 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   ├── a/
   │   ├── generic/
   │   │   ├── bin/
-  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
+  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
@@ -298,9 +289,9 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │           └── icon.png
   │   ├── linux_x86_64/
   │   │   ├── bin/
-  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
+  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
@@ -312,9 +303,9 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │           └── icon.png
   │   └── windows_x86_64/
   │       ├── bin/
-  │       │   ├── dkml-package-console-entry.exe
   │       │   ├── dkml-install-admin-runner.exe
   │       │   ├── dkml-install-user-runner.exe
+  │       │   ├── dkml-package-console-entry.exe
   │       │   ├── dkml-package-setup.bc
   │       │   └── dkml-package-uninstaller.bc
   │       ├── sg/
@@ -364,9 +355,9 @@ Sidenote:
   ├── a/
   │   ├── generic/
   │   │   ├── bin/
-  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
+  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
@@ -378,9 +369,9 @@ Sidenote:
   │   │           └── icon.png
   │   ├── linux_x86_64/
   │   │   ├── bin/
-  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-install-admin-runner.exe
   │   │   │   ├── dkml-install-user-runner.exe
+  │   │   │   ├── dkml-package-console-entry.exe
   │   │   │   ├── dkml-package-setup.bc
   │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
@@ -392,9 +383,9 @@ Sidenote:
   │   │           └── icon.png
   │   └── windows_x86_64/
   │       ├── bin/
-  │       │   ├── dkml-package-console-entry.exe
   │       │   ├── dkml-install-admin-runner.exe
   │       │   ├── dkml-install-user-runner.exe
+  │       │   ├── dkml-package-console-entry.exe
   │       │   ├── dkml-package-setup.bc
   │       │   └── dkml-package-uninstaller.bc
   │       ├── sg/
@@ -424,8 +415,8 @@ Sidenote:
   ./
   full-name-linux_x86_64-0.1.0/.archivetree
   full-name-linux_x86_64-0.1.0/bin/
-  full-name-linux_x86_64-0.1.0/bin/dkml-package-console-entry.exe
   full-name-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
+  full-name-linux_x86_64-0.1.0/bin/dkml-install-user-runner.exe
 
   $ target/bundle-full-name-linux_x86_64.sh -o target -e .tar.gz tar --gzip
   $ tar tvfz target/full-name-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
@@ -474,9 +465,12 @@ contents is exactly the same as the archive tree, except that
   st\offline-test1\README.txt
   bin\dkml-package-setup.bc
   bin\dkml-package-uninstaller.bc
-  setup.exe
   bin\dkml-install-admin-runner.exe
   bin\dkml-install-user-runner.exe
+  setup.exe
+  vcruntime140.dll
+  vcruntime140_1.dll
+  vc_redist.dkml-target-abi.exe
   ------------------------
   folders
 [setup_exe_list_7z]
