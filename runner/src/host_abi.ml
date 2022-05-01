@@ -22,6 +22,7 @@ let detect_with_uname () =
   | "Linux", "aarch64" | "Linux", "arm64" -> Result.ok Linux_arm64
   | "Linux", s when String.is_prefix ~affix:"armv8" s -> Result.ok Linux_arm64
   | "Linux", "i386" | "Linux", "i686" -> Result.ok Linux_x86
+  | "Linux", "x86_64" -> Result.ok Linux_x86_64
   | "Darwin", "arm64" -> Result.ok Darwin_arm64
   | "Darwin", "x86_64" -> Result.ok Darwin_x86_64
   | _ ->
@@ -29,7 +30,7 @@ let detect_with_uname () =
         (Fmt.str
            "FATAL: Unsupported build machine type obtained from 'uname -s' and \
             'uname -m': %s and %s"
-            uname_s uname_m)
+           uname_s uname_m)
 
 let detect_on_windows () =
   let open Bos in
