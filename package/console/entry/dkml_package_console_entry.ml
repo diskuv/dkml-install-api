@@ -76,7 +76,7 @@ let get_and_remove_path env =
 
 (** [spawn_ocamlrun] sets the environment variables needed for
     ocamlrun.exe. *)
-let spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml ~cli_opts cmd =
+let spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts cmd =
   (*
 
        TODO: STOP DUPLICATING THIS CODE! The canonical source is
@@ -101,8 +101,8 @@ let spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml ~cli_opts cmd =
     (* Handle the early loading of dllunix by ocamlrun *)
     let stublibs = Fpath.(lib_ocaml / "stublibs") in
     let new_env =
-      match host_abi with
-      | _ when Dkml_install_api.Context.Abi_v2.is_windows host_abi ->
+      match target_abi with
+      | _ when Dkml_install_api.Context.Abi_v2.is_windows target_abi ->
           (* Add lib/ocaml/stublibs to PATH for Win32
              to locate the dllunix.dll *)
           let path_sep = if Sys.win32 then ";" else ":" in
@@ -111,15 +111,15 @@ let spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml ~cli_opts cmd =
           in
           let new_path = String.concat ~sep:path_sep new_path_entries in
           String.Map.add "PATH" new_path new_env
-      | _ when Dkml_install_api.Context.Abi_v2.is_darwin host_abi ->
+      | _ when Dkml_install_api.Context.Abi_v2.is_darwin target_abi ->
           (* Add lib/ocaml/stublibs to DYLD_FALLBACK_LIBRARY_PATH for macOS
              to locate the dllunix.so *)
           String.Map.add "DYLD_FALLBACK_LIBRARY_PATH"
             Fpath.(to_string stublibs)
             new_env
       | _
-        when Dkml_install_api.Context.Abi_v2.is_linux host_abi
-             || Dkml_install_api.Context.Abi_v2.is_android host_abi ->
+        when Dkml_install_api.Context.Abi_v2.is_linux target_abi
+             || Dkml_install_api.Context.Abi_v2.is_android target_abi ->
           (* Add lib/ocaml/stublibs to LD_LIBRARY_PATH for Linux and Android
              to locate the dllunix.so *)
           String.Map.add "LD_LIBRARY_PATH" Fpath.(to_string stublibs) new_env
@@ -128,7 +128,7 @@ let spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml ~cli_opts cmd =
     OS.Cmd.run_status ~env:new_env new_cmd
   in
   let wait () =
-    wait_for_user_confirmation_if_popup_terminal cli_opts host_abi
+    wait_for_user_confirmation_if_popup_terminal cli_opts target_abi
   in
   match sequence with
   | Ok (`Exited 0) ->
@@ -151,7 +151,7 @@ let spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml ~cli_opts cmd =
       wait ();
       exit 3
 
-let entry () =
+let entry ~target_abi =
   (* Default logging *)
   let (_ : Dkml_install_api.Log_config.t) =
     Dkml_install_runner.Cmdliner_runner.setup_log None None
@@ -177,18 +177,14 @@ let entry () =
   let archive_dir =
     Dkml_install_runner.Cmdliner_runner.enduser_archive_dir ()
   in
-  let host_abi =
-    Dkml_install_runner.Error_handling.get_ok_or_raise_string
-      (Dkml_install_runner.Host_abi.create_v2 ())
-  in
   let ocamlrun_dir =
     Fpath.(
       archive_dir / "sg" / "staging-ocamlrun"
-      / Dkml_install_api.Context.Abi_v2.to_canonical_string host_abi)
+      / Dkml_install_api.Context.Abi_v2.to_canonical_string target_abi)
   in
   let ocamlrun_exe = Fpath.(ocamlrun_dir / "bin" / "ocamlrun.exe") in
   let lib_ocaml = Fpath.(ocamlrun_dir / "lib" / "ocaml") in
   (* Run the packager setup.bc with any arguments it needs *)
   let setup_bc = Fpath.(archive_dir / "bin" / "dkml-package-setup.bc") in
-  spawn_ocamlrun ~ocamlrun_exe ~host_abi ~lib_ocaml ~cli_opts
+  spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts
     Cmd.(v (Fpath.to_string setup_bc) %% args)

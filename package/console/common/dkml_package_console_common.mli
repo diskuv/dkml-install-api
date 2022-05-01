@@ -7,6 +7,7 @@ val needs_install_admin :
   reg:Dkml_install_register.Component_registry.t ->
   selector:Dkml_install_register.Component_registry.component_selector ->
   log_config:Dkml_install_api.Log_config.t ->
+  target_abi:Dkml_install_api.Context.Abi_v2.t ->
   prefix:Fpath.t ->
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
   bool
@@ -15,6 +16,7 @@ val needs_uninstall_admin :
   reg:Dkml_install_register.Component_registry.t ->
   selector:Dkml_install_register.Component_registry.component_selector ->
   log_config:Dkml_install_api.Log_config.t ->
+  target_abi:Dkml_install_api.Context.Abi_v2.t ->
   prefix:Fpath.t ->
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
   bool
@@ -78,10 +80,11 @@ val spawn : Bos.Cmd.t -> (unit, string) result
 (** [spawn cmd] launches the command [cmd] and waits for its response. *)
 
 val elevated_cmd :
+  target_abi:Dkml_install_api.Context.Abi_v2.t ->
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
   Bos.Cmd.t ->
   Bos.Cmd.t
-(** [elevated_cmd ~staging_files_source cmd] translates the command [cmd]
+(** [elevated_cmd ~target_abi ~staging_files_source cmd] translates the command [cmd]
     into a command that elevates privileges using ["gsudo.exe"] from the staging
     files [staging_files_source] on Windows machines, or ["doas"], ["sudo"] or
     ["su"] on the PATH on Unix machines. *)
@@ -89,8 +92,11 @@ val elevated_cmd :
 (** {1 Installation Paths} *)
 
 val get_user_installation_prefix :
-  program_name:program_name -> prefix_opt:string option -> Fpath.t
-(** [get_user_installation_prefix ~program_name ~prefix_opt ~prefer_spaces]
+  program_name:program_name ->
+  target_abi:Dkml_install_api__Types.Context.Abi_v2.t ->
+  prefix_opt:string option ->
+  Fpath.t
+(** [get_user_installation_prefix ~program_name ~target_abi ~prefix_opt]
     returns where user programs should be installed; either the prefix
     [prefix_opt = Some prefix] or uses the platform convention
     when [prefix_opt = None].
@@ -125,6 +131,9 @@ type package_args = {
 }
 (** Common options between setup.exe and uninstaller.exe *)
 
-val package_args_t : program_name:program_name -> package_args Cmdliner.Term.t
+val package_args_t :
+  program_name:program_name ->
+  target_abi:Dkml_install_api__Types.Context.Abi_v2.t ->
+  package_args Cmdliner.Term.t
 (** {!Cmdliner.Term.t} for the common options between setup.exe and
     uninstaller.exe *)

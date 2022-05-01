@@ -22,7 +22,7 @@ let box_err s =
    Logging is configured just before this function is called through Cmdliner
    Term evaluation of `log_config`. If you don't see log statement, make
    sure the log statements are created inside (or after) `setup ...`. *)
-let setup program_name package_args =
+let setup target_abi program_name package_args =
   (* deconstruct *)
   let ( prefix_opt,
         component_selector,
@@ -47,11 +47,11 @@ let setup program_name package_args =
   in
 
   let prefix =
-    Dkml_package_console_common.get_user_installation_prefix ~program_name
+    Dkml_package_console_common.get_user_installation_prefix ~program_name ~target_abi
       ~prefix_opt
   in
   let args =
-    Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config ~prefix
+    Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config  ~prefix
       ~staging_files_source
   in
 
@@ -65,11 +65,11 @@ let setup program_name package_args =
 
   let spawn_admin_if_needed () =
     if
-      Dkml_package_console_common.needs_install_admin ~reg ~selector ~log_config
+      Dkml_package_console_common.needs_install_admin ~reg ~target_abi ~selector ~log_config
         ~prefix ~staging_files_source
     then
       Dkml_package_console_common.spawn
-      @@ Dkml_package_console_common.elevated_cmd ~staging_files_source
+      @@ Dkml_package_console_common.elevated_cmd ~target_abi ~staging_files_source
            Cmd.(
              exe_cmd "dkml-install-admin-runner.exe"
              % "install-adminall" %% args)

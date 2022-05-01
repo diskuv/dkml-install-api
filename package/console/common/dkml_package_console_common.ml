@@ -1,7 +1,6 @@
 open Bos
 open Astring
 open Dkml_install_api
-
 include Error_utils
 
 type program_name = {
@@ -66,35 +65,34 @@ let version_m_n_o_p version =
   | Some (major, minor, patch, _info) -> Fmt.str "%d.%d.%d.0" major minor patch
   | None -> "0.0.0.0"
 
-let host_abi_v2 () =
+(* let target_abi_v2 () =
   match Dkml_install_runner.Host_abi.create_v2 () with
   | Ok abi -> abi
   | Error s ->
-      raise (Installation_error (Fmt.str "Could not detect the host ABI. %s" s))
+      raise (Installation_error (Fmt.str "Could not detect the host ABI. %s" s)) *)
 
-let create_minimal_context ~self_component_name ~log_config ~prefix
+let create_minimal_context ~self_component_name ~log_config ~target_abi ~prefix
     ~staging_files_source =
   let open Dkml_install_runner.Path_eval in
-  let host_abi_v2 = host_abi_v2 () in
   let interpreter =
-    Interpreter.create_minimal ~self_component_name ~abi:host_abi_v2
+    Interpreter.create_minimal ~self_component_name ~abi:target_abi
       ~staging_files_source ~prefix
   in
   {
     Context.eval = Interpreter.eval interpreter;
     path_eval = Interpreter.path_eval interpreter;
-    host_abi_v2;
+    target_abi_v2 = target_abi;
     log_config;
   }
 
-let needs_install_admin ~reg ~selector ~log_config ~prefix ~staging_files_source
+let needs_install_admin ~reg ~selector ~log_config ~target_abi ~prefix ~staging_files_source
     =
   match
     Dkml_install_register.Component_registry.eval reg ~selector ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         let ctx =
           create_minimal_context ~self_component_name:Cfg.component_name
-            ~log_config ~prefix ~staging_files_source
+            ~log_config ~target_abi ~prefix ~staging_files_source
         in
         Logs.debug (fun l ->
             l
@@ -109,14 +107,14 @@ let needs_install_admin ~reg ~selector ~log_config ~prefix ~staging_files_source
   | Ok bools -> List.exists Fun.id bools
   | Error msg -> raise (Installation_error msg)
 
-let needs_uninstall_admin ~reg ~selector ~log_config ~prefix
+let needs_uninstall_admin ~reg ~selector ~log_config ~target_abi ~prefix
     ~staging_files_source =
   match
     Dkml_install_register.Component_registry.eval reg ~selector ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         let ctx =
           create_minimal_context ~self_component_name:Cfg.component_name
-            ~log_config ~prefix ~staging_files_source
+            ~log_config ~target_abi ~prefix ~staging_files_source
         in
         Logs.debug (fun l ->
             l
@@ -152,9 +150,8 @@ let spawn cmd =
 
 let console_component_name = "xx-console"
 
-let elevated_cmd ~staging_files_source cmd =
-  let host_abi_v2 = host_abi_v2 () in
-  if Context.Abi_v2.is_windows host_abi_v2 then
+let elevated_cmd ~target_abi ~staging_files_source cmd =
+  if Context.Abi_v2.is_windows target_abi then
     (* dkml-install-admin.exe on Win32 has a UAC manifest injected
        by link.exe in dune. But still will get
        "The requested operation requires elevation" if dkml-install-admin.exe
@@ -164,7 +161,7 @@ let elevated_cmd ~staging_files_source cmd =
     let component_dir =
       Dkml_install_runner.Path_location.absdir_staging_files
         ~package_selector:Package ~component_name:console_component_name
-        ~abi_selector:(Abi host_abi_v2) staging_files_source
+        ~abi_selector:(Abi target_abi) staging_files_source
     in
     let gsudo = Fpath.(component_dir / "bin" / "gsudo.exe") in
     match Logs.level () with
@@ -232,19 +229,18 @@ let get_default_user_installation_prefix_linux ~name_kebab_lower_case =
       let* home_dir_fp = home_dir_fp () in
       Result.ok Fpath.(home_dir_fp / ".local" / "share" / name_kebab_lower_case)
 
-let get_user_installation_prefix ~program_name ~prefix_opt =
+let get_user_installation_prefix ~program_name ~target_abi ~prefix_opt =
   match prefix_opt with
   | Some prefix -> Fpath.v prefix
   | None ->
       let open Dkml_install_runner.Error_handling in
-      let host_abi_v2 = host_abi_v2 () in
-      (if Context.Abi_v2.is_windows host_abi_v2 then
+      (if Context.Abi_v2.is_windows target_abi then
        get_default_user_installation_prefix_windows
          ~name_camel_case_nospaces:program_name.name_camel_case_nospaces
-      else if Context.Abi_v2.is_darwin host_abi_v2 then
+      else if Context.Abi_v2.is_darwin target_abi then
         get_default_user_installation_prefix_darwin
           ~name_camel_case_nospaces:program_name.name_camel_case_nospaces
-      else if Context.Abi_v2.is_linux host_abi_v2 then
+      else if Context.Abi_v2.is_linux target_abi then
         get_default_user_installation_prefix_linux
           ~name_kebab_lower_case:program_name.name_kebab_lower_case
       else
@@ -252,7 +248,7 @@ let get_user_installation_prefix ~program_name ~prefix_opt =
           (Fmt.str
              "[14420023] No rules defined for the default user installation \
               prefix of the ABI %a"
-             Context.Abi_v2.pp host_abi_v2))
+             Context.Abi_v2.pp target_abi))
       |> get_ok_or_raise_string
 
 (* Command Line Processing *)
@@ -265,7 +261,7 @@ type package_args = {
   staging_files_source : Dkml_install_runner.Path_location.staging_files_source;
 }
 
-let prefix_opt_t ~program_name =
+let prefix_opt_t ~program_name ~target_abi =
   let doc =
     Fmt.str
       "$(docv) is the installation directory. If not set and $(b,--%s) is also \
@@ -273,7 +269,7 @@ let prefix_opt_t ~program_name =
       Dkml_install_runner.Cmdliner_common.opam_context_args
       (Cmdliner.Manpage.escape
          (Fpath.to_string
-            (get_user_installation_prefix ~program_name ~prefix_opt:None)))
+            (get_user_installation_prefix ~program_name ~target_abi ~prefix_opt:None)))
   in
   Cmdliner.Arg.(
     value
@@ -282,7 +278,7 @@ let prefix_opt_t ~program_name =
         [ Dkml_install_runner.Cmdliner_common.prefix_arg ]
         ~docv:"PREFIX" ~doc)
 
-let package_args_t ~program_name =
+let package_args_t ~program_name  ~target_abi =
   let package_args log_config prefix_opt component_selector static_files_source
       staging_files_source =
     {
@@ -295,7 +291,7 @@ let package_args_t ~program_name =
   in
   Cmdliner.Term.(
     const package_args $ Dkml_install_runner.Cmdliner_runner.setup_log_t
-    $ prefix_opt_t ~program_name
+    $ prefix_opt_t ~program_name ~target_abi
     $ Dkml_install_runner.Cmdliner_runner.component_selector_t ~install:true
     $ Dkml_install_runner.Cmdliner_runner.static_files_source_for_package_t
     $ Dkml_install_runner.Cmdliner_runner.staging_files_source_for_package_t)

@@ -17,7 +17,7 @@ let default_cmd =
 (** Install all non-administrative CLI subcommands for all the components.
   Even though all CLI subcommands are registered, setup.exe (setup_main) will
   only ask for some of the components if the --component option is used. *)
-let component_cmds ~reg =
+let component_cmds ~reg ~target_abi =
   let selector = Component_registry.All_components in
   let cmd_results =
     let* install_user_cmds =
@@ -25,14 +25,14 @@ let component_cmds ~reg =
           let module Cfg = (val cfg : Component_config) in
           Cfg.install_user_subcommand ~component_name:Cfg.component_name
             ~subcommand_name:(Fmt.str "install-user-%s" Cfg.component_name)
-            ~ctx_t:(ctx_for_runner_t Cfg.component_name reg))
+            ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
     in
     let* uninstall_user_cmds =
       Component_registry.reverse_eval reg ~selector ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Cfg.uninstall_user_subcommand ~component_name:Cfg.component_name
             ~subcommand_name:(Fmt.str "uninstall-user-%s" Cfg.component_name)
-            ~ctx_t:(ctx_for_runner_t Cfg.component_name reg))
+            ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
     in
     Result.ok (install_user_cmds @ uninstall_user_cmds)
   in
@@ -40,12 +40,15 @@ let component_cmds ~reg =
   | Ok cmds -> cmds
   | Error msg -> raise (Installation_error msg)
 
-let main () =
+let main ~target_abi =
   (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
      reset the logger to what was given on the command line. *)
   let (_ : Log_config.t) =
     Dkml_install_runner.Cmdliner_runner.setup_log None None
   in
+  Logs.info (fun m ->
+      m "Installing user-permissioned components with target ABI %s"
+        (Context.Abi_v2.to_canonical_string target_abi));
   (* Get all the available components *)
   let reg = Component_registry.get () in
   Dkml_install_runner.Error_handling.get_ok_or_raise_string
@@ -54,5 +57,6 @@ let main () =
     exit
     @@ catch_cmdliner_eval
          (fun () ->
-           eval_choice ~catch:false default_cmd (help_cmd :: component_cmds ~reg))
+           eval_choice ~catch:false default_cmd
+             (help_cmd :: component_cmds ~reg ~target_abi))
          (`Error `Exn))

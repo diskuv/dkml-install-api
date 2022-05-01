@@ -41,30 +41,22 @@ let setup_log_t =
 
 (* Define a context that includes all component-based fields *)
 
-let create_context ~staging_default self_component_name reg log_config prefix
-    staging_files_opt opam_context_opt =
+let create_context ~staging_default ~target_abi self_component_name reg
+    log_config prefix staging_files_opt opam_context_opt =
   let open Path_eval in
   let staging_files_source =
     Path_location.staging_files_source ~staging_default ~opam_context_opt
       ~staging_files_opt
   in
   let global_context = Global_context.create reg in
-  let host_abi_v2 =
-    match Host_abi.create_v2 () with
-    | Ok abi -> abi
-    | Error s ->
-        raise
-          (Dkml_install_api.Installation_error
-             (Fmt.str "Could not detect the host ABI. %s" s))
-  in
   let interpreter =
-    Interpreter.create global_context ~self_component_name ~abi:host_abi_v2
+    Interpreter.create global_context ~self_component_name ~abi:target_abi
       ~staging_files_source ~prefix:(Fpath.v prefix)
   in
   {
     Dkml_install_api.Context.eval = Interpreter.eval interpreter;
     path_eval = Interpreter.path_eval interpreter;
-    host_abi_v2;
+    target_abi_v2 = target_abi;
     log_config;
   }
 
@@ -219,9 +211,9 @@ let static_files_source_for_package_t =
     environment variable OPAM_SWITCH_PREFIX (if specified with the no argument
     `--opam-context` option of setup.exe) into the staging directory argument
     for admin.exe. *)
-let ctx_for_runner_t component_name reg =
+let ctx_for_runner_t ~target_abi component_name reg =
   Term.(
-    const (create_context ~staging_default:No_staging_default)
+    const (create_context ~target_abi ~staging_default:No_staging_default)
     $ const component_name $ const reg $ setup_log_t $ prefix_t
     $ staging_files_opt_t $ opam_context_opt_t)
 
@@ -236,14 +228,14 @@ let ctx_for_runner_t component_name reg =
 
     Unlike {!ctx_for_runner_t} the staging directory has a default
     (`Staging_default_dir`) based on relative paths from setup.exe. *)
-let ctx_for_package_t component_name reg =
+let ctx_for_package_t ~target_abi component_name reg =
   let staging_default =
     Path_location.Staging_default_dir
       (fun () ->
         staging_default_dir_for_package ~archive_dir:(enduser_archive_dir ()))
   in
   Term.(
-    const (create_context ~staging_default)
+    const (create_context ~target_abi ~staging_default)
     $ const component_name $ const reg $ setup_log_t $ prefix_t
     $ staging_files_opt_t $ opam_context_opt_t)
 

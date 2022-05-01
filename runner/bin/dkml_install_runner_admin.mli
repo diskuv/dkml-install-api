@@ -1,1 +1,1 @@
-val main : unit -> unit
+val main : target_abi:Dkml_install_api.Context.Abi_v2.t -> unit

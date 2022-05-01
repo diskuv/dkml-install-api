@@ -37,6 +37,25 @@ module Context = struct
       | "Windows_arm32" -> Result.ok Windows_arm32
       | s -> Result.error ("Unknown v2 ABI: " ^ s)
 
+    (** [to_string abi] is the enumeration value of
+        [abi]; for example ["Linux_x86"]. *)
+    let to_string = function
+      | Android_arm64v8a -> "Android_arm64v8a"
+      | Android_arm32v7a -> "Android_arm32v7a"
+      | Android_x86 -> "Android_x86"
+      | Android_x86_64 -> "Android_x86_64"
+      | Darwin_arm64 -> "Darwin_arm64"
+      | Darwin_x86_64 -> "Darwin_x86_64"
+      | Linux_arm64 -> "Linux_arm64"
+      | Linux_arm32v6 -> "Linux_arm32v6"
+      | Linux_arm32v7 -> "Linux_arm32v7"
+      | Linux_x86_64 -> "Linux_x86_64"
+      | Linux_x86 -> "Linux_x86"
+      | Windows_x86_64 -> "Windows_x86_64"
+      | Windows_x86 -> "Windows_x86"
+      | Windows_arm64 -> "Windows_arm64"
+      | Windows_arm32 -> "Windows_arm32"
+
     (** [to_canonical_string abi] will give the canonical representation of
         the ABI to DKML tools and APIs. *)
     let to_canonical_string = function
@@ -56,9 +75,9 @@ module Context = struct
       | Windows_arm64 -> "windows_arm64"
       | Windows_arm32 -> "windows_arm32"
 
-    let show = to_canonical_string
+    let show = to_string
 
-    let pp fmt abi = Format.pp_print_string fmt (to_canonical_string abi)
+    let pp fmt abi = Format.pp_print_string fmt (show abi)
 
     let is_windows = function
       | Windows_x86_64 | Windows_x86 | Windows_arm64 | Windows_arm32 -> true
@@ -88,7 +107,7 @@ module Context = struct
   type t = {
     path_eval : string -> Fpath.t;
     eval : string -> string;
-    host_abi_v2 : Abi_v2.t;
+    target_abi_v2 : Abi_v2.t;
     log_config : Log_config.t;
   }
   (** [t] is the record type for the context.
@@ -170,14 +189,14 @@ The following fields are available from the context:
   or will be installed
   }
 
-  {- [ctx.host_abi_v2]
+  {- [ctx.target_abi_v2]
 
-  The ABI for the host machine from the list of V2 ABIs. You cannot rely on
+  The ABI for the end-user's machine from the list of V2 ABIs. You cannot rely on
   inspecting the OCaml bytecode interpreter since the interpreter is often
-  compiled to 32-bit for maximum portability. When more host ABIs are
+  compiled to 32-bit for maximum portability. When more ABIs are
   supported they will go into a future [ctx.host_abi_v3] or later;
-  for type-safety [ctx.host_abi_v2] will give a [Result.Error] for those
-  new host ABIs.
+  for type-safety [ctx.target_abi_v2] will give a [Result.Error] for those
+  new ABIs.
 
   Values for the V2 ABI include:
 

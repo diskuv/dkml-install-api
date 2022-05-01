@@ -19,25 +19,25 @@ let default_cmd =
   Even though all CLI subcommands are registered, setup.exe (setup_main) will
   only ask for some of the components if the --component option is used. *)
 
-let install_admin_cmds ~reg ~selector =
+let install_admin_cmds ~reg ~target_abi ~selector =
   let cmd_results =
     Component_registry.eval reg ~selector ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         Cfg.install_admin_subcommand ~component_name:Cfg.component_name
           ~subcommand_name:(Fmt.str "install-admin-%s" Cfg.component_name)
-          ~ctx_t:(ctx_for_runner_t Cfg.component_name reg))
+          ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
   in
   match cmd_results with
   | Ok cmds -> cmds
   | Error msg -> raise (Installation_error msg)
 
-let uninstall_admin_cmds ~reg ~selector =
+let uninstall_admin_cmds ~reg ~target_abi ~selector =
   let cmd_results =
     Component_registry.reverse_eval reg ~selector ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         Cfg.uninstall_admin_subcommand ~component_name:Cfg.component_name
           ~subcommand_name:(Fmt.str "uninstall-admin-%s" Cfg.component_name)
-          ~ctx_t:(ctx_for_runner_t Cfg.component_name reg))
+          ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
   in
   match cmd_results with
   | Ok cmds -> cmds
@@ -94,22 +94,25 @@ let helper_all_cmd ~doc ~name ~install f =
         $ prefix_t $ staging_files_opt_t $ opam_context_opt_t)),
     Term.info name ~version:"%%VERSION%%" ~doc )
 
-let install_all_cmd ~reg =
+let install_all_cmd ~reg ~target_abi =
   let doc = "install all components" in
   helper_all_cmd ~name:"install-adminall" ~doc ~install:true
-    (install_admin_cmds ~reg)
+    (install_admin_cmds ~reg ~target_abi)
 
-let uninstall_all_cmd ~reg =
+let uninstall_all_cmd ~reg ~target_abi =
   let doc = "uninstall all components" in
   helper_all_cmd ~name:"uninstall-adminall" ~doc ~install:false
-    (uninstall_admin_cmds ~reg)
+    (uninstall_admin_cmds ~reg ~target_abi)
 
-let main () =
+let main ~target_abi =
   (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
      reset the logger to what was given on the command line. *)
   let (_ : Log_config.t) =
     Dkml_install_runner.Cmdliner_runner.setup_log None None
   in
+  Logs.info (fun m ->
+      m "Installing administrator-permissioned components with target ABI %s"
+        (Context.Abi_v2.to_canonical_string target_abi));
   (* Get all the available components *)
   let reg = Component_registry.get () in
   Dkml_install_runner.Error_handling.get_ok_or_raise_string
@@ -124,7 +127,9 @@ let main () =
               any individual component can be installed and uninstalled
               by invoking the individual subcommand. *)
            eval_choice ~catch:false default_cmd
-             (help_cmd :: install_all_cmd ~reg :: uninstall_all_cmd ~reg
-              :: install_admin_cmds ~reg ~selector:All_components
-             @ uninstall_admin_cmds ~reg ~selector:All_components))
+             (help_cmd
+              :: install_all_cmd ~reg ~target_abi
+              :: uninstall_all_cmd ~reg ~target_abi
+              :: install_admin_cmds ~reg ~target_abi ~selector:All_components
+             @ uninstall_admin_cmds ~reg ~target_abi ~selector:All_components))
          (`Error `Exn))
