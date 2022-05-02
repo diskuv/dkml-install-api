@@ -46,6 +46,7 @@ opam pin dkml-install-installer               git+file://"$SOURCEMIXED"/dkml-ins
 opam pin dkml-install-runner                  git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
 opam pin dkml-package-console                 git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
 opam pin dkml-installer-network-ocaml         git+file://"$SOURCEMIXED"/dkml-installer-ocaml#main --no-action --yes
+opam pin dkml-option-vcpkg                    git+file://"$SOURCEMIXED"/dkml-option-vcpkg#main --no-action --yes
 opam pin dkml-component-network-ocamlcompiler git+file://"$SOURCEMIXED"/dkml-component-ocamlcompiler#main --no-action --yes
 opam pin dkml-component-network-unixutils     git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
 opam pin dkml-component-staging-curl          git+file://"$SOURCEMIXED"/dkml-component-curl#main --no-action --yes
