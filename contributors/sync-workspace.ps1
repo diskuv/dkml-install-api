@@ -14,6 +14,7 @@ with-dkml opam pin dkml-base-compiler                   https://github.com/disku
 with-dkml opam pin conf-dkml-cross-toolchain            https://github.com/diskuv/conf-dkml-cross-toolchain.git#main --no-action --yes
 
 with-dkml opam pin dkml-install                         git+file://Z:/source/dkml-install-api#main --no-action --yes
+with-dkml opam pin dkml-install-installer               git+file://Z:/source/dkml-install-api#main --no-action --yes
 with-dkml opam pin dkml-install-runner                  git+file://Z:/source/dkml-install-api#main --no-action --yes
 with-dkml opam pin dkml-package-console                 git+file://Z:/source/dkml-install-api#main --no-action --yes
 with-dkml opam pin dkml-installer-network-ocaml         git+file://Z:/source/dkml-installer-ocaml#main --no-action --yes
@@ -46,10 +47,10 @@ with-dkml opam pin -k version ocamlformat-rpc       0.19.0 --no-action --yes
 
 Get-date
 
-if ($SkipUpgrade) {
+if (-not $SkipUpgrade) {
     with-dkml time opam upgrade `
         dkml-base-compiler ocaml ocaml-config `
-        dkml-install dkml-install-runner dkml-package-console `
+        dkml-install dkml-install-installer dkml-install-runner dkml-package-console `
         dkml-component-network-ocamlcompiler dkml-component-staging-ocamlrun `
         dkml-component-staging-curl `
         dkml-component-staging-unixutils dkml-component-network-unixutils `

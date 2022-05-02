@@ -11,9 +11,12 @@
 ;  (generate_opam_files true)
 (package
  (name dkml-install))
- 
+
 (package
  (name dkml-install-runner))
+
+(package
+ (name dkml-install-installer))
 
 (package
  (name dkml-package-console))

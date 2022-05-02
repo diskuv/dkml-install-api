@@ -42,6 +42,7 @@ opam pin dkml-base-compiler                   https://github.com/diskuv/dkml-com
 opam pin conf-dkml-cross-toolchain            https://github.com/diskuv/conf-dkml-cross-toolchain.git#main --no-action --yes
 
 opam pin dkml-install                         git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
+opam pin dkml-install-installer               git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
 opam pin dkml-install-runner                  git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
 opam pin dkml-package-console                 git+file://"$SOURCEMIXED"/dkml-install-api#main --no-action --yes
 opam pin dkml-installer-network-ocaml         git+file://"$SOURCEMIXED"/dkml-installer-ocaml#main --no-action --yes
@@ -76,7 +77,7 @@ date
 
 if [ "$SKIP_UPGRADE" = 0 ]; then
     PKGS=(
-        dkml-install dkml-install-runner dkml-package-console
+        dkml-install dkml-install-installer dkml-install-runner dkml-package-console
         dkml-component-network-ocamlcompiler dkml-component-staging-ocamlrun
         dkml-component-staging-curl
         dkml-component-staging-unixutils dkml-component-network-unixutils

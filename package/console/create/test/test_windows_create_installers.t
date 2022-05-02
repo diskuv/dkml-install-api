@@ -252,12 +252,6 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   work
   ├── a/
   │   ├── generic/
-  │   │   ├── bin/
-  │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   ├── dkml-install-user-runner.exe
-  │   │   │   ├── dkml-package-entry.exe
-  │   │   │   ├── dkml-package-setup.bc
-  │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
   │   │   │   └── offline-test1/
   │   │   │       └── generic/
@@ -332,12 +326,6 @@ Sidenote:
   work
   ├── a/
   │   ├── generic/
-  │   │   ├── bin/
-  │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   ├── dkml-install-user-runner.exe
-  │   │   │   ├── dkml-package-entry.exe
-  │   │   │   ├── dkml-package-setup.bc
-  │   │   │   └── dkml-package-uninstaller.bc
   │   │   ├── sg/
   │   │   │   └── offline-test1/
   │   │   │       └── generic/
