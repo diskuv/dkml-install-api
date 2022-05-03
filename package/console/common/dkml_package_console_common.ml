@@ -7,6 +7,8 @@ type program_name = {
   name_full : string;
   name_camel_case_nospaces : string;
   name_kebab_lower_case : string;
+  installation_prefix_camel_case_nospaces_opt : string option;
+  installation_prefix_kebab_lower_case_opt : string option;
 }
 
 type organization = {
@@ -66,10 +68,10 @@ let version_m_n_o_p version =
   | None -> "0.0.0.0"
 
 (* let target_abi_v2 () =
-  match Dkml_install_runner.Host_abi.create_v2 () with
-  | Ok abi -> abi
-  | Error s ->
-      raise (Installation_error (Fmt.str "Could not detect the host ABI. %s" s)) *)
+   match Dkml_install_runner.Host_abi.create_v2 () with
+   | Ok abi -> abi
+   | Error s ->
+       raise (Installation_error (Fmt.str "Could not detect the host ABI. %s" s)) *)
 
 let create_minimal_context ~self_component_name ~log_config ~target_abi ~prefix
     ~staging_files_source =
@@ -85,8 +87,8 @@ let create_minimal_context ~self_component_name ~log_config ~target_abi ~prefix
     log_config;
   }
 
-let needs_install_admin ~reg ~selector ~log_config ~target_abi ~prefix ~staging_files_source
-    =
+let needs_install_admin ~reg ~selector ~log_config ~target_abi ~prefix
+    ~staging_files_source =
   match
     Dkml_install_register.Component_registry.eval reg ~selector ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
@@ -198,7 +200,7 @@ let home_dir_fp () =
   (* ensure HOME is a pre-existing directory *)
   map_rresult_error_to_string @@ OS.Dir.must_exist home_fp
 
-let get_default_user_installation_prefix_windows ~name_camel_case_nospaces =
+let get_default_user_installation_prefix_windows ~installation_prefix_camel_case_nospaces =
   let open Dkml_install_runner.Error_handling in
   let open Dkml_install_runner.Error_handling.Monad_syntax in
   let* local_app_data_str =
@@ -211,38 +213,45 @@ let get_default_user_installation_prefix_windows ~name_camel_case_nospaces =
   let* local_app_data_fp =
     map_rresult_error_to_string @@ OS.Dir.must_exist local_app_data_fp
   in
-  Result.ok Fpath.(local_app_data_fp / "Programs" / name_camel_case_nospaces)
+  Result.ok Fpath.(local_app_data_fp / "Programs" / installation_prefix_camel_case_nospaces)
 
-let get_default_user_installation_prefix_darwin ~name_camel_case_nospaces =
+let get_default_user_installation_prefix_darwin ~installation_prefix_camel_case_nospaces =
   let open Dkml_install_runner.Error_handling.Monad_syntax in
   let* home_dir_fp = home_dir_fp () in
-  Result.ok Fpath.(home_dir_fp / "Applications" / name_camel_case_nospaces)
+  Result.ok Fpath.(home_dir_fp / "Applications" / installation_prefix_camel_case_nospaces)
 
-let get_default_user_installation_prefix_linux ~name_kebab_lower_case =
+let get_default_user_installation_prefix_linux ~installation_prefix_kebab_lower_case =
   let open Dkml_install_runner.Error_handling in
   let open Dkml_install_runner.Error_handling.Monad_syntax in
   match OS.Env.var "XDG_DATA_HOME" with
   | Some xdg_data_home ->
       let* fp = map_rresult_error_to_string @@ Fpath.of_string xdg_data_home in
-      Result.ok Fpath.(fp / name_kebab_lower_case)
+      Result.ok Fpath.(fp / installation_prefix_kebab_lower_case)
   | None ->
       let* home_dir_fp = home_dir_fp () in
-      Result.ok Fpath.(home_dir_fp / ".local" / "share" / name_kebab_lower_case)
+      Result.ok Fpath.(home_dir_fp / ".local" / "share" / installation_prefix_kebab_lower_case)
 
 let get_user_installation_prefix ~program_name ~target_abi ~prefix_opt =
+  let installation_prefix_camel_case_nospaces =
+    match program_name.installation_prefix_camel_case_nospaces_opt with
+    | Some v -> v
+    | None -> program_name.name_camel_case_nospaces
+  in
+  let installation_prefix_kebab_lower_case =
+    match program_name.installation_prefix_kebab_lower_case_opt with
+    | Some v -> v
+    | None -> program_name.name_kebab_lower_case
+  in
   match prefix_opt with
   | Some prefix -> Fpath.v prefix
   | None ->
       let open Dkml_install_runner.Error_handling in
       (if Context.Abi_v2.is_windows target_abi then
-       get_default_user_installation_prefix_windows
-         ~name_camel_case_nospaces:program_name.name_camel_case_nospaces
+       get_default_user_installation_prefix_windows ~installation_prefix_camel_case_nospaces
       else if Context.Abi_v2.is_darwin target_abi then
-        get_default_user_installation_prefix_darwin
-          ~name_camel_case_nospaces:program_name.name_camel_case_nospaces
+        get_default_user_installation_prefix_darwin ~installation_prefix_camel_case_nospaces
       else if Context.Abi_v2.is_linux target_abi then
-        get_default_user_installation_prefix_linux
-          ~name_kebab_lower_case:program_name.name_kebab_lower_case
+        get_default_user_installation_prefix_linux ~installation_prefix_kebab_lower_case
       else
         Result.error
           (Fmt.str
@@ -269,7 +278,8 @@ let prefix_opt_t ~program_name ~target_abi =
       Dkml_install_runner.Cmdliner_common.opam_context_args
       (Cmdliner.Manpage.escape
          (Fpath.to_string
-            (get_user_installation_prefix ~program_name ~target_abi ~prefix_opt:None)))
+            (get_user_installation_prefix ~program_name ~target_abi
+               ~prefix_opt:None)))
   in
   Cmdliner.Arg.(
     value
@@ -278,7 +288,7 @@ let prefix_opt_t ~program_name ~target_abi =
         [ Dkml_install_runner.Cmdliner_common.prefix_arg ]
         ~docv:"PREFIX" ~doc)
 
-let package_args_t ~program_name  ~target_abi =
+let package_args_t ~program_name ~target_abi =
   let package_args log_config prefix_opt component_selector static_files_source
       staging_files_source =
     {

@@ -35,6 +35,8 @@ type program_name = {
   name_full : string;
   name_camel_case_nospaces : string;
   name_kebab_lower_case : string;
+  installation_prefix_camel_case_nospaces_opt : string option;
+  installation_prefix_kebab_lower_case_opt : string option;
 }
 (** The type of program names.
 
@@ -46,6 +48,14 @@ type program_name = {
 
     [name_kebab_lower_case] - If the program name was "Diskuv OCaml" then
       the [name_kebab_lower_case] would be "diskuv-ocaml".
+
+    [installation_prefix_camel_case_nospaces_opt] - The name used when
+      constructing an installation prefix that takes a CamelCase with no spaces.
+      If not specified, then [name_camel_case_nospaces] is used.
+
+    [installation_prefix_kebab_lower_case_opt] - The name used when
+      constructing an installation prefix that takes a kebab-lower-case.
+      If not specified, then [name_kebab_lower_case] is used.
 *)
 
 type organization = {

@@ -32,4 +32,6 @@ let () =
            name_full = "Full Name";
            name_camel_case_nospaces = "FullName";
            name_kebab_lower_case = "full-name";
+           installation_prefix_camel_case_nospaces_opt = None;
+           installation_prefix_kebab_lower_case_opt = None;
          })

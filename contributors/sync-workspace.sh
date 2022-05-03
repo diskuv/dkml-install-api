@@ -60,6 +60,7 @@ opam pin diskuvbox                            git+file://"$SOURCEMIXED"/diskuvbo
 opam pin curly                                https://github.com/jonahbeckford/curly.git#windows-env --no-action --yes
 opam pin crunch                               https://github.com/jonahbeckford/ocaml-crunch.git#feature-windowsopen --no-action --yes
 
+opam pin -k version mtime                 1.4.0 --no-action --yes
 opam pin -k version curly 0.2.1-windows-env_r2 --no-action --yes
 opam pin -k version dune-action-plugin    2.9.3 --no-action --yes
 opam pin -k version dune-glob             2.9.3 --no-action --yes
