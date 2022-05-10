@@ -104,6 +104,9 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
      For simplicity we name it `vc_redist.dkml-target-abi.exe`.
 
      https://docs.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files
+
+     TODO: We also need ucrtbase.dll and api-ms-win-*.dll;
+     https://docs.microsoft.com/en-us/cpp/porting/upgrade-your-code-to-the-universal-crt?view=msvc-170#deployment-and-redistribution-of-the-universal-crt
   *)
   let* redist_dir_str = OS.Env.req_var "VCToolsRedistDir" in
   let* redist_dir = Fpath.of_string redist_dir_str in
