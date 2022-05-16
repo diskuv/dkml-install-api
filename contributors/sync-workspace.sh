@@ -12,6 +12,7 @@ fi
 # .../source/dkml-component-curl/...
 # .../source/dkml-component-opam/...
 # .../source/dkml-component-ocamlrun/...
+# .../source/dkml-option-vcpkg/...
 # .../source/diskuvbox/...
 HERE=$(dirname "$0")
 HERE=$(cd "$HERE" && pwd)
@@ -36,6 +37,10 @@ set -x
 
 if ! opam repository list --short | grep ^diskuv; then
     opam repository add diskuv "git+https://github.com/diskuv/diskuv-opam-repository.git#main" --yes
+fi
+
+if [ "${MSYSTEM:-}" = CLANG64 ]; then
+    pacman -S mingw-w64-clang-x86_64-pkg-config --noconfirm
 fi
 
 opam pin dkml-base-compiler                   https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
@@ -88,7 +93,7 @@ if [ "$SKIP_UPGRADE" = 0 ]; then
         alcotest
     )
     if ! opam list --short | grep '^ocaml$'; then
-        # If switch is empty, add the DKML base compiler
+        # If switch does not have an OCaml compiler, add the DKML base compiler
         PKGS+=(
             dkml-base-compiler ocaml ocaml-config conf-dkml-cross-toolchain
         )
