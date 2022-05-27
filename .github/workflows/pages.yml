@@ -39,7 +39,7 @@ jobs:
         run: opam install . --deps-only --with-doc
 
       - name: Cache conda
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           # Increase this value to reset cache if contributors/environment.yml
           # has not changed
