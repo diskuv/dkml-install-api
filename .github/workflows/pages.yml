@@ -16,7 +16,7 @@ jobs:
         uses: ocaml/setup-ocaml@v2
         with:
           ocaml-compiler: 4.12.x
-          dune-cache: true
+          dune-cache: false # true does not publish pages consistently
           opam-pin: true
           opam-depext: false # will complain that diskuvbox is missing
       - name: Add Opam pins
