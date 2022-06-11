@@ -15,7 +15,7 @@ $SOURCE_MIXED=& with-dkml cygpath -am "$SOURCEROOT"
 
 Get-date
 
-with-dkml pacman -S mingw-w64-clang-x86_64-pkg-config --noconfirm
+with-dkml pacman -S mingw-w64-clang-x86_64-pkg-config --noconfirm --needed
 
 with-dkml opam pin dkml-base-compiler                   https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
 with-dkml opam pin conf-dkml-cross-toolchain            https://github.com/diskuv/conf-dkml-cross-toolchain.git#main --no-action --yes
@@ -44,6 +44,8 @@ with-dkml opam pin -k version curly 0.2.1-windows-env_r2 --no-action --yes
 with-dkml opam pin -k version dune-action-plugin    2.9.3 --no-action --yes
 with-dkml opam pin -k version dune-glob             2.9.3 --no-action --yes
 with-dkml opam pin -k version dune-private-libs     2.9.3 --no-action --yes
+#   dune.2.9.3+shim is installed by DKML. Conflicts with other dune-* packages
+with-dkml opam pin -k version dune                  2.9.3 --no-action --yes
 Write-Output "not in 2.9.3 - with-dkml opam pin -k version dune-rpc-lwt          2.9.3 --no-action --yes"
 Write-Output "not in 2.9.3 - with-dkml opam pin -k version dune-rpc              2.9.3 --no-action --yes"
 Write-Output "dune-site is being removed - with-dkml opam pin -k version dune-site             2.9.3 --no-action --yes"

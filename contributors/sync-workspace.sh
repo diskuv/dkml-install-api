@@ -40,7 +40,7 @@ if ! opam repository list --short | grep ^diskuv; then
 fi
 
 if [ "${MSYSTEM:-}" = CLANG64 ]; then
-    pacman -S mingw-w64-clang-x86_64-pkg-config --noconfirm
+    pacman -S mingw-w64-clang-x86_64-pkg-config --noconfirm --needed
 fi
 
 opam pin dkml-base-compiler                   https://github.com/diskuv/dkml-compiler.git#main --no-action --yes
@@ -70,6 +70,8 @@ opam pin -k version curly 0.2.1-windows-env_r2 --no-action --yes
 opam pin -k version dune-action-plugin    2.9.3 --no-action --yes
 opam pin -k version dune-glob             2.9.3 --no-action --yes
 opam pin -k version dune-private-libs     2.9.3 --no-action --yes
+#   dune.2.9.3+shim is installed by DKML. Conflicts with other dune-* packages
+opam pin -k version dune                  2.9.3 --no-action --yes
 echo "not in 2.9.3 - opam pin -k version dune-rpc-lwt          2.9.3 --no-action --yes"
 echo "not in 2.9.3 - opam pin -k version dune-rpc              2.9.3 --no-action --yes"
 echo "dune-site is being removed - opam pin -k version dune-site             2.9.3 --no-action --yes"
