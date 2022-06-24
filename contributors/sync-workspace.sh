@@ -27,11 +27,16 @@ fi
 date
 
 if [ -x /usr/bin/cygpath ]; then
-    PROJROOT_WIN="$(cygpath -aw "$PROJROOT")"
-    eval "$(opam env --switch "$PROJROOT_WIN" --set-switch)"
+    PROJROOT_NATIVE="$(cygpath -aw "$PROJROOT")"
 else
-    eval "$(opam env --switch "$PROJROOT" --set-switch)"
+    PROJROOT_NATIVE="$PROJROOT"
 fi
+
+if [ ! -e "$PROJROOT/_opam/.opam-switch/switch-state" ]; then
+    opam switch create "$PROJROOT_NATIVE" 4.12.1 --yes
+fi
+
+eval "$(opam env --switch "$PROJROOT_NATIVE" --set-switch)"
 
 set -x
 
