@@ -293,7 +293,6 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │               └── icon.png
   ├── setup.exe.manifest
   └── sfx/
-      ├── 7zS2custom.sfx
       └── 7zr.exe
 [create_installers_work]
 
@@ -367,7 +366,6 @@ Sidenote:
   │               └── icon.png
   ├── setup.exe.manifest
   └── sfx/
-      ├── 7zS2custom.sfx
       └── 7zr.exe
 
   $ diskuvbox tree --encoding UTF-8 -d 5 target
@@ -376,6 +374,7 @@ Sidenote:
   ├── bundle-full-name-linux_x86_64.sh
   ├── bundle-full-name-windows_x86_64.sh
   ├── full-name-windows_x86_64-0.1.0.7z
+  ├── full-name-windows_x86_64-7zS2.sfx
   └── unsigned-full-name-windows_x86_64-0.1.0.exe
 
   $ target/bundle-full-name-linux_x86_64.sh -o target tar

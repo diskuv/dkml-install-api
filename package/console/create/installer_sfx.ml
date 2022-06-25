@@ -20,7 +20,9 @@ let sevenz_log_level_opts =
 
 let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
   let ( let* ) = Rresult.R.bind in
-  let pwd = Dkml_package_console_common.get_ok_or_failwith_rresult (OS.Dir.current ()) in
+  let pwd =
+    Dkml_package_console_common.get_ok_or_failwith_rresult (OS.Dir.current ())
+  in
   let archive_rel_dir =
     if Fpath.is_rel archive_dir then Fpath.(v "." // archive_dir)
     else
@@ -314,7 +316,10 @@ let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
         correctly hash the "extra data" (the ARCHIVE) after the executable
         sections; confer: http://download.microsoft.com/download/9/c/5/9c5b2167-8017-4bae-9fde-d599bac8184a/authenticode_pe.docx
      *)
-     let sfx_path = Fpath.(sfx_dir / "7zS2custom.sfx") in
+     let sfx_basename =
+       Fmt.str "%s-%s-7zS2.sfx" program_name_kebab_lower_case abi_name
+     in
+     let sfx_path = Fpath.(target_dir / sfx_basename) in
      let* () = OS.File.write sfx_path sfx in
      let* () =
        modify_manifest ~work_dir ~pe_file:sfx_path ~organization ~program_name
