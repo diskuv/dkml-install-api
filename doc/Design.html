@@ -13,6 +13,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -78,9 +79,9 @@
            <div itemprop="articleBody">
              
   <div class="section" id="design">
-<h1>Design<a class="headerlink" href="#design" title="Permalink to this headline"></a></h1>
+<h1>Design<a class="headerlink" href="#design" title="Permalink to this heading"></a></h1>
 <div class="section" id="goals">
-<h2>Goals<a class="headerlink" href="#goals" title="Permalink to this headline"></a></h2>
+<h2>Goals<a class="headerlink" href="#goals" title="Permalink to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Re-use existing installation software when it is available.</p></li>
 <li><p>Avoid lock-in to any existing installation software.</p></li>
@@ -88,7 +89,7 @@
 </ol>
 </div>
 <div class="section" id="terms">
-<h2>Terms<a class="headerlink" href="#terms" title="Permalink to this headline"></a></h2>
+<h2>Terms<a class="headerlink" href="#terms" title="Permalink to this heading"></a></h2>
 <dl>
 <dt>Packaging</dt><dd><p>The procedure for taking source code, doing some compiling and other
 translations, and ending up with an installable package (ex. setup.exe on
@@ -124,9 +125,9 @@ for a component, we’ll be calling that the OPAM_INSTALL Phase</p>
 </dl>
 </div>
 <div class="section" id="packaging-flow">
-<h2>Packaging Flow<a class="headerlink" href="#packaging-flow" title="Permalink to this headline"></a></h2>
+<h2>Packaging Flow<a class="headerlink" href="#packaging-flow" title="Permalink to this heading"></a></h2>
 <div class="section" id="creating-the-installer-package">
-<h3>Creating the installer package<a class="headerlink" href="#creating-the-installer-package" title="Permalink to this headline"></a></h3>
+<h3>Creating the installer package<a class="headerlink" href="#creating-the-installer-package" title="Permalink to this heading"></a></h3>
 <p>The installer can be generated directly using:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>opam switch create installer-<span class="nv">$INSTALLERNAME</span> --empty
 opam install --switch installer-<span class="nv">$INSTALLERNAME</span> ./dkml-installer-<span class="nv">$INSTALLERNAME</span>.opam
@@ -235,7 +236,7 @@ configure than 0install.</p>
 </ol>
 </div>
 <div class="section" id="user-runs-the-installer">
-<span id="userphases"></span><h3>User runs the installer<a class="headerlink" href="#user-runs-the-installer" title="Permalink to this headline"></a></h3>
+<span id="userphases"></span><h3>User runs the installer<a class="headerlink" href="#user-runs-the-installer" title="Permalink to this heading"></a></h3>
 <ol class="arabic">
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>] Load all the components with
 <a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site’s</a>

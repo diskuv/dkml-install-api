@@ -13,6 +13,7 @@
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -82,9 +83,9 @@
            <div itemprop="articleBody">
              
   <div class="section" id="writing-components">
-<span id="writingcomponents"></span><h1>Writing Components<a class="headerlink" href="#writing-components" title="Permalink to this headline"></a></h1>
+<span id="writingcomponents"></span><h1>Writing Components<a class="headerlink" href="#writing-components" title="Permalink to this heading"></a></h1>
 <div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline"></a></h2>
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
 <p>You first decision will be how to break your installation into one or more
 components.</p>
 <p>A component is an optional set of logic in the form of bytecode executables,
@@ -195,7 +196,7 @@ have only limited access to external OCaml libraries. See
 </dl>
 </div>
 <div class="section" id="configuration-module">
-<span id="configurationmodule"></span><h2>Configuration Module<a class="headerlink" href="#configuration-module" title="Permalink to this headline"></a></h2>
+<span id="configurationmodule"></span><h2>Configuration Module<a class="headerlink" href="#configuration-module" title="Permalink to this heading"></a></h2>
 <p>Configuration functions can only access:
 * the OCaml Stdlib
 * the other conventional OCaml libraries like <code class="docutils literal notranslate"><span class="pre">unix</span></code>, <code class="docutils literal notranslate"><span class="pre">str</span></code> and <code class="docutils literal notranslate"><span class="pre">bigarray</span></code>
@@ -213,7 +214,7 @@ machine. Just declare a dependency on them using the instructions in their
 documentation.</p>
 </div>
 <div class="section" id="staging-files">
-<span id="stagingfiles"></span><h2>Staging Files<a class="headerlink" href="#staging-files" title="Permalink to this headline"></a></h2>
+<span id="stagingfiles"></span><h2>Staging Files<a class="headerlink" href="#staging-files" title="Permalink to this heading"></a></h2>
 <p>As a Component author you should
 <strong>only create bytecode executables with no C stubs</strong>
 in your OPAM_BUILD phase.</p>
@@ -296,7 +297,7 @@ that Linux or macOS build machines cannot cross-compile to Windows. Instead,
 have your build machines compile into as many architectures as it supports.</p>
 </div>
 <div class="section" id="static-files">
-<span id="staticfiles"></span><h2>Static Files<a class="headerlink" href="#static-files" title="Permalink to this headline"></a></h2>
+<span id="staticfiles"></span><h2>Static Files<a class="headerlink" href="#static-files" title="Permalink to this heading"></a></h2>
 <p>Any static file will go straight into the end-user installation directory.</p>
 </div>
 </div>
