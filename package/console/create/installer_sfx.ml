@@ -276,7 +276,7 @@ let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
     program_name.Dkml_package_console_common.name_kebab_lower_case
   in
   let installer_basename =
-    Fmt.str "setup-%s-%s-%s.exe" program_name_kebab_lower_case abi_name
+    Fmt.str "unsigned-%s-%s-%s.exe" program_name_kebab_lower_case abi_name
       program_version
   in
   Logs.info (fun l -> l "Generating %s" installer_basename);

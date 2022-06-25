@@ -188,7 +188,7 @@ contents is exactly the same as the archive tree, except that
     :end-before:  [setup_exe_list_7z]
 
 We would see the same thing if we looked inside the *installer*
-``setup-NAME-VER.exe`` (which is just the SFX module and the .7z archive above):
+``unsigned-NAME-VER.exe`` (which is just the SFX module and the .7z archive above):
 
 .. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
     :language: shell-session
@@ -204,7 +204,7 @@ To make keep things confusing, the temporary executable that 7zip runs is
 the member "setup.exe" (the *packager* setup.exe) found in the .7z root
 directory.
 
-Since the *installer* ``setup-NAME-VER.exe`` will decompress the .7z archive and
+Since the *installer* ``unsigned-NAME-VER.exe`` will decompress the .7z archive and
 run the *packager proxy* ``setup.exe`` it found in the .7z root directory, we expect to
 see "Hello" printed. Which is what we see:
 
@@ -219,13 +219,23 @@ To recap:
    archive tree.
 2. You can create .tar.gz or .tar.bz2 binary distributions from the archive
    tree.
-3. You can also use the *installer* setup-NAME-VER.exe which has been designed
+3. You can also use the *installer* unsigned-NAME-VER.exe which has been designed
    to automatically run the *packager proxy* setup.exe.
 
 Whether manually uncompressing a .tar.gz binary distribution, or letting
-*installer* ``setup-NAME-VER.exe`` do it automatically, the
+*installer* ``unsigned-NAME-VER.exe`` do it automatically, the
 *packager proxy* ``setup.exe`` will have full access to the archive
 tree.
+
+The only thing that remains is digitally signing the ``unsigned-NAME-VER.exe``;
+typically you would name the signed version ``setup-NAME-VER.exe``. You would
+typically distribute *both* the signed and unsigned executables because:
+
+* Any signed executable is unreproducible for the public, but the signed
+  executable will trigger far less anti-virus warnings.
+* Everyone should be able to reproduce the unsigned executable, especially if
+  you use `locked Opam files <https://opam.ocaml.org/doc/man/opam-lock.html>`_
+  with no pinned packages.
 
 That's it for how archives and setup.exe work!
 

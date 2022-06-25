@@ -228,7 +228,7 @@ Side note:
                                               windows_x86_64]
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating setup-full-name-windows_x86_64-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating unsigned-full-name-windows_x86_64-0.1.0.exe
   Parsing of manifest successful.
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
@@ -376,7 +376,7 @@ Sidenote:
   ├── bundle-full-name-linux_x86_64.sh
   ├── bundle-full-name-windows_x86_64.sh
   ├── full-name-windows_x86_64-0.1.0.7z
-  └── setup-full-name-windows_x86_64-0.1.0.exe
+  └── unsigned-full-name-windows_x86_64-0.1.0.exe
 
   $ target/bundle-full-name-linux_x86_64.sh -o target tar
   $ tar tvf target/full-name-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
@@ -444,10 +444,10 @@ contents is exactly the same as the archive tree, except that
 [setup_exe_list_7z]
 
 We would see the same thing if we looked inside the *installer*
-`setup-NAME-VER.exe` (which is just the SFX module and the .7z archive above):
+`unsigned-NAME-VER.exe` (which is just the SFX module and the .7z archive above):
 
 [setup_exe_list_exe]
-  $ ../assets/lzma2107/bin/7zr.exe l target/setup-full-name-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
+  $ ../assets/lzma2107/bin/7zr.exe l target/unsigned-full-name-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
   Name
   ------------------------
   bin
@@ -468,11 +468,11 @@ temporary directory.
 To make keep things confusing, the temporary executable that 7zip runs is
 the member "setup.exe" (the *packager* setup.exe) found in the .7z root directory.
 
-Since the *installer* `setup-NAME-VER.exe` will decompress the .7z archive and
+Since the *installer* `unsigned-NAME-VER.exe` will decompress the .7z archive and
 run the *packager entry* `setup.exe` it found in the .7z root directory, we expect to
 see "Salut" printed. Which is what we see:
 [setup_exe_run]
-  $ target/setup-full-name-windows_x86_64-0.1.0.exe
+  $ target/unsigned-full-name-windows_x86_64-0.1.0.exe
   Salut
 [setup_exe_run]
 
@@ -481,11 +481,11 @@ To recap:
 archive tree.
 2. You can create .tar.gz or .tar.bz2 binary distributions from the archive
 tree.
-3. You can also use the *installer* setup-NAME-VER.exe which has been designed to
+3. You can also use the *installer* unsigned-NAME-VER.exe which has been designed to
 automatically run the *packager entry* setup.exe.
 
 Whether manually uncompressing a .tar.gz binary distribution, or letting
-the *installer* `setup-NAME-VER.exe` do it automatically, the *packager entry*
+the *installer* `unsigned-NAME-VER.exe` do it automatically, the *packager entry*
 `setup.exe` will have full access to the archive tree.
 
 That's it for how archives and setup.exe work!
