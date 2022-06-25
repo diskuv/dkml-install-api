@@ -317,7 +317,8 @@ let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
         sections; confer: http://download.microsoft.com/download/9/c/5/9c5b2167-8017-4bae-9fde-d599bac8184a/authenticode_pe.docx
      *)
      let sfx_basename =
-       Fmt.str "%s-%s-7zS2.sfx" program_name_kebab_lower_case abi_name
+       Fmt.str "%s-%s-%s.sfx" program_name_kebab_lower_case abi_name
+         program_version
      in
      let sfx_path = Fpath.(target_dir / sfx_basename) in
      let* () = OS.File.write sfx_path sfx in

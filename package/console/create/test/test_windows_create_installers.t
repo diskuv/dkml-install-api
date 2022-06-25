@@ -374,7 +374,7 @@ Sidenote:
   ├── bundle-full-name-linux_x86_64.sh
   ├── bundle-full-name-windows_x86_64.sh
   ├── full-name-windows_x86_64-0.1.0.7z
-  ├── full-name-windows_x86_64-7zS2.sfx
+  ├── full-name-windows_x86_64-0.1.0.sfx
   └── unsigned-full-name-windows_x86_64-0.1.0.exe
 
   $ target/bundle-full-name-linux_x86_64.sh -o target tar
