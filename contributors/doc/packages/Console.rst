@@ -6,7 +6,7 @@ specifically how self-extracting archives work on Windows.
 
 .. sidebar:: Source Code
 
-    The `test_windows_create_installers.t <https://github.com/diskuv/dkml-install-api/blob/main/package/console/setup/test/test_windows_create_installers.t>`_
+    The `test_windows_create_installers.t <https://github.com/diskuv/dkml-install-api/blob/main/package/console/create/test/test_windows_create_installers.t>`_
     CRAM test script is the source of code examples in this chapter.
 
 --------------------------------------------------------------------------------
@@ -26,7 +26,7 @@ a real executable that prints "Yoda".
 If this were not a demonstration, we would let the dkml-install-api framework
 generate those two files for us.
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [opam_switch_mimic]
     :end-before:  [opam_switch_mimic]
@@ -46,7 +46,7 @@ For now, we'll define two do-nothing test components:
 and we will also use a library to generate an executable
 called ``create_installers.exe``:
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: ocaml
     :start-after: [what_are_components]
     :end-before:  [what_are_components]
@@ -69,7 +69,7 @@ Use the generated ``create_installers.exe``
 
 Create the temporary work directory and the target installer directory:
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [create_installers_dirs]
     :end-before:  [create_installers_dirs]
@@ -83,7 +83,7 @@ If this were not a demonstration focused only on how the installer is made, we
 would let the dkml-install-api framework generate those two files for us.
 Instead we use two test executables:
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [create_installers_packagerinput]
     :end-before:  [create_installers_packagerinput]
@@ -110,7 +110,7 @@ with something like:
 
 Running the ``create_installers.exe`` gives:
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [create_installers_run]
     :end-before:  [create_installers_run]
@@ -131,7 +131,7 @@ are files that are directly copied to the end-user's installation directory.
 Each archive tree also contains the packager executables named as
 ``bin/dkml-package-setup.bc`` and ``bin/dkml-package-uninstaller.bc``.
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [create_installers_work]
     :end-before:  [create_installers_work]
@@ -164,7 +164,7 @@ to the end of the bundle script to customize the archive.
     which will be more performant, maintainable and customizable than doing
     tar (or RPM, etc.) inside of OCaml.
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [archiver_session]
     :end-before:  [archiver_session]
@@ -182,7 +182,7 @@ contents is exactly the same as the archive tree, except that
 ``bin/dkml-package-entry.exe`` (the *packager proxy* setup) has been renamed to
 ``setup.exe``.
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [setup_exe_list_7z]
     :end-before:  [setup_exe_list_7z]
@@ -190,7 +190,7 @@ contents is exactly the same as the archive tree, except that
 We would see the same thing if we looked inside the *installer*
 ``unsigned-NAME-VER.exe`` (which is just the SFX module and the .7z archive above):
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [setup_exe_list_exe]
     :end-before:  [setup_exe_list_exe]
@@ -208,7 +208,7 @@ Since the *installer* ``unsigned-NAME-VER.exe`` will decompress the .7z archive 
 run the *packager proxy* ``setup.exe`` it found in the .7z root directory, we expect to
 see "Hello" printed. Which is what we see:
 
-.. literalinclude:: ../../../package/console/setup/test/test_windows_create_installers.t
+.. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session
     :start-after: [setup_exe_run]
     :end-before:  [setup_exe_run]
