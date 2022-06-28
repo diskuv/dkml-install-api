@@ -24,14 +24,15 @@ let abi_will_popup_terminal host_abi =
     Typically this should be used before exiting the program so that the user
     has a chance to see the final messages, especially success or failure.
   *)
-let wait_for_user_confirmation_if_popup_terminal { ci } host_abi =
+let wait_for_user_confirmation_if_popup_terminal ?info_ci { ci } host_abi =
   match (ci, abi_will_popup_terminal host_abi, Unix.isatty Unix.stdin) with
   | false, true, true ->
       prerr_newline ();
-      prerr_endline
-        (Fmt.str
-           "[INFO] Use --ci at beginning of command line arguments to skip the \
-            confirmation question in future installations.");
+      if info_ci = None || info_ci = Some true then
+        prerr_endline
+          (Fmt.str
+             "[INFO] Use --ci at beginning of command line arguments to skip \
+              the confirmation question in future installations.");
       (* Sigh. Would just like to wait for a single character "y" rather
           than "y" + ENTER. However no easy OCaml interface to that, and more
           importantly we don't have any discard-prior-keyboard-events API
@@ -127,8 +128,8 @@ let spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts cmd =
     in
     OS.Cmd.run_status ~env:new_env new_cmd
   in
-  let wait () =
-    wait_for_user_confirmation_if_popup_terminal cli_opts target_abi
+  let wait ?info_ci () =
+    wait_for_user_confirmation_if_popup_terminal ?info_ci cli_opts target_abi
   in
   match sequence with
   | Ok (`Exited 0) ->
@@ -136,19 +137,19 @@ let spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts cmd =
       wait ()
   | Ok (`Exited c) ->
       Logs.err (fun l -> l "The command %a exited with status %d" Cmd.pp cmd c);
-      wait ();
+      wait ~info_ci:false ();
       exit 2
   | Ok (`Signaled c) ->
       Logs.err (fun l ->
           l "The command %a terminated from a signal %d" Cmd.pp cmd c);
-      wait ();
+      wait ~info_ci:false ();
       (* https://stackoverflow.com/questions/1101957/are-there-any-standard-exit-status-codes-in-linux/1535733#1535733 *)
       exit (128 + c)
   | Error rmsg ->
       Logs.err (fun l ->
           l "The command %a could not be run due to: %a" Cmd.pp cmd
             Rresult.R.pp_msg rmsg);
-      wait ();
+      wait ~info_ci:false ();
       exit 3
 
 let entry ~target_abi =
