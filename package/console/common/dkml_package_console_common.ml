@@ -3,6 +3,8 @@ open Astring
 open Dkml_install_api
 include Error_utils
 
+type program_control = Continue_program | Exit_code of int
+
 type program_name = {
   name_full : string;
   name_camel_case_nospaces : string;
@@ -17,6 +19,9 @@ type organization = {
   common_name_camel_case_nospaces : string;
   common_name_kebab_lower_case : string;
 }
+
+let bind_program_control r f =
+  match r with Continue_program -> f () | Exit_code e -> Exit_code e
 
 (** [parse_version] parses ["[v|V]major.minor[.patch][(+|-)info]"].
     Verbatim from https://erratique.ch/software/astring/doc/Astring/index.html
@@ -132,23 +137,26 @@ let needs_uninstall_admin ~reg ~selector ~log_config ~target_abi ~prefix
   | Ok bools -> List.exists Fun.id bools
   | Error msg -> raise (Installation_error msg)
 
-let spawn cmd =
-  let open Dkml_install_runner.Error_handling.Monad_syntax in
+let spawn ?print_errors_and_controlled_exit cmd =
   Logs.info (fun m -> m "Running: %a" Cmd.pp cmd);
-  Rresult.R.kignore_error ~use:(fun e ->
+  let handle_err msg =
+    if print_errors_and_controlled_exit = Some true then (
+      Fmt.epr "%s@." msg;
+      Exit_code 1)
+    else raise (Installation_error msg)
+  in
+  match OS.Cmd.(run_status cmd) with
+  | Error e ->
       let msg =
         Fmt.str "@[Failed to run:@,@[%s@]@]@,@[%a@]" (Cmd.to_string cmd)
           Rresult.R.pp_msg e
       in
-      if Dkml_install_runner.Error_handling.errors_are_immediate () then
-        raise (Installation_error msg)
-      else Result.error msg)
-  @@ (OS.Cmd.(run_status cmd) >>= function
-      | `Exited 0 -> Result.ok ()
-      | `Exited v ->
-          Rresult.R.error_msgf "Exited with exit code %d: %a" v Cmd.pp cmd
-      | `Signaled v ->
-          Rresult.R.error_msgf "Signaled with signal %d: %a" v Cmd.pp cmd)
+      handle_err msg
+  | Ok (`Exited 0) -> Continue_program
+  | Ok (`Exited v) ->
+      handle_err @@ Fmt.str "Exited with exit code %d: %a" v Cmd.pp cmd
+  | Ok (`Signaled v) ->
+      handle_err @@ Fmt.str "Signaled with signal %d: %a" v Cmd.pp cmd
 
 let console_component_name = "xx-console"
 
@@ -200,7 +208,8 @@ let home_dir_fp () =
   (* ensure HOME is a pre-existing directory *)
   map_rresult_error_to_string @@ OS.Dir.must_exist home_fp
 
-let get_default_user_installation_prefix_windows ~installation_prefix_camel_case_nospaces =
+let get_default_user_installation_prefix_windows
+    ~installation_prefix_camel_case_nospaces =
   let open Dkml_install_runner.Error_handling in
   let open Dkml_install_runner.Error_handling.Monad_syntax in
   let* local_app_data_str =
@@ -213,14 +222,20 @@ let get_default_user_installation_prefix_windows ~installation_prefix_camel_case
   let* local_app_data_fp =
     map_rresult_error_to_string @@ OS.Dir.must_exist local_app_data_fp
   in
-  Result.ok Fpath.(local_app_data_fp / "Programs" / installation_prefix_camel_case_nospaces)
+  Result.ok
+    Fpath.(
+      local_app_data_fp / "Programs" / installation_prefix_camel_case_nospaces)
 
-let get_default_user_installation_prefix_darwin ~installation_prefix_camel_case_nospaces =
+let get_default_user_installation_prefix_darwin
+    ~installation_prefix_camel_case_nospaces =
   let open Dkml_install_runner.Error_handling.Monad_syntax in
   let* home_dir_fp = home_dir_fp () in
-  Result.ok Fpath.(home_dir_fp / "Applications" / installation_prefix_camel_case_nospaces)
+  Result.ok
+    Fpath.(
+      home_dir_fp / "Applications" / installation_prefix_camel_case_nospaces)
 
-let get_default_user_installation_prefix_linux ~installation_prefix_kebab_lower_case =
+let get_default_user_installation_prefix_linux
+    ~installation_prefix_kebab_lower_case =
   let open Dkml_install_runner.Error_handling in
   let open Dkml_install_runner.Error_handling.Monad_syntax in
   match OS.Env.var "XDG_DATA_HOME" with
@@ -229,7 +244,10 @@ let get_default_user_installation_prefix_linux ~installation_prefix_kebab_lower_
       Result.ok Fpath.(fp / installation_prefix_kebab_lower_case)
   | None ->
       let* home_dir_fp = home_dir_fp () in
-      Result.ok Fpath.(home_dir_fp / ".local" / "share" / installation_prefix_kebab_lower_case)
+      Result.ok
+        Fpath.(
+          home_dir_fp / ".local" / "share"
+          / installation_prefix_kebab_lower_case)
 
 let get_user_installation_prefix ~program_name ~target_abi ~prefix_opt =
   let installation_prefix_camel_case_nospaces =
@@ -247,11 +265,14 @@ let get_user_installation_prefix ~program_name ~target_abi ~prefix_opt =
   | None ->
       let open Dkml_install_runner.Error_handling in
       (if Context.Abi_v2.is_windows target_abi then
-       get_default_user_installation_prefix_windows ~installation_prefix_camel_case_nospaces
+       get_default_user_installation_prefix_windows
+         ~installation_prefix_camel_case_nospaces
       else if Context.Abi_v2.is_darwin target_abi then
-        get_default_user_installation_prefix_darwin ~installation_prefix_camel_case_nospaces
+        get_default_user_installation_prefix_darwin
+          ~installation_prefix_camel_case_nospaces
       else if Context.Abi_v2.is_linux target_abi then
-        get_default_user_installation_prefix_linux ~installation_prefix_kebab_lower_case
+        get_default_user_installation_prefix_linux
+          ~installation_prefix_kebab_lower_case
       else
         Result.error
           (Fmt.str

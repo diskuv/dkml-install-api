@@ -1,7 +1,6 @@
 open Bos
 open Dkml_install_register
 open Dkml_install_api
-open Dkml_install_runner.Error_handling.Monad_syntax
 
 (* Load dkml-install-api module so that Dynlink access control
    does not prohibit plugins (components) from loading it by
@@ -53,38 +52,70 @@ let uninstall target_abi program_name package_args =
   in
 
   let spawn_admin_if_needed () =
+    let open Dkml_package_console_common in
     if
-      Dkml_package_console_common.needs_uninstall_admin ~reg ~target_abi
-        ~selector ~log_config ~prefix ~staging_files_source
+      needs_uninstall_admin ~reg ~target_abi ~selector ~log_config ~prefix
+        ~staging_files_source
     then
-      Dkml_package_console_common.spawn
-      @@ Dkml_package_console_common.elevated_cmd ~target_abi
-           ~staging_files_source
+      spawn
+      @@ elevated_cmd ~target_abi ~staging_files_source
            Cmd.(
              exe_cmd "dkml-install-admin-runner.exe"
              % "uninstall-adminall" %% args)
-    else Result.ok ()
+    else Continue_program
   in
   let install_sequence =
-    (* Validate *)
-    let* () = Component_registry.validate reg in
-    (* Run user-runner.exe *)
-    let* (_ : unit list) =
-      Component_registry.eval reg ~selector ~f:(fun cfg ->
-          let module Cfg = (val cfg : Component_config) in
-          Dkml_package_console_common.spawn
-            Cmd.(
-              exe_cmd "dkml-install-user-runner.exe"
-              % ("uninstall-user-" ^ Cfg.component_name)
-              %% args))
+    let open Dkml_package_console_common in
+    let ( >>= ) = bind_program_control in
+    let lift_result : ('a, string) result -> program_control = function
+      | Ok _ -> Continue_program
+      | Error v ->
+          Fmt.epr "@[Could not uninstall %s.@]@,@[%a@]@." program_name.name_full
+            Fmt.lines v;
+          Exit_code 1
     in
+    let map_unit_list : (unit list, string) result -> (unit, string) result =
+      function
+      | Ok (_ : unit list) -> Ok ()
+      | Error e -> Error e
+    in
+    (* Validate *)
+    lift_result (Component_registry.validate reg) >>= fun () ->
+    (* Diagnostics *)
+    lift_result @@ map_unit_list
+    @@ Component_registry.reverse_eval reg ~selector ~f:(fun cfg ->
+           let module Cfg = (val cfg : Component_config) in
+           Result.ok
+           @@ Logs.debug (fun m ->
+                  m "Will uninstall component %s" Cfg.component_name))
+    >>= fun () ->
+    (* Run user-runner.exe *)
+    lift_result @@ map_unit_list
+    @@ Component_registry.reverse_eval reg ~selector ~f:(fun cfg ->
+           let module Cfg = (val cfg : Component_config) in
+           match
+             Dkml_package_console_common.spawn
+               ~print_errors_and_controlled_exit:true
+               Cmd.(
+                 exe_cmd "dkml-install-user-runner.exe"
+                 % ("uninstall-user-" ^ Cfg.component_name)
+                 %% args)
+           with
+           | Continue_program | Exit_code 0 -> Ok ()
+           | Exit_code ec ->
+               Error
+                 (Fmt.str
+                    "Exited from dkml-install-user-runner.exe wth exit code %d"
+                    ec))
+    >>= fun () ->
     (* Run admin-runner.exe commands *)
     spawn_admin_if_needed ()
   in
   match install_sequence with
-  | Ok _ -> ()
-  | Error e ->
-      raise
-        (Installation_error
-           (Fmt.str "@[Could not uninstall %s.@]@,@[%a@]" program_name.name_full
-              Fmt.lines e))
+  | Dkml_package_console_common.Continue_program
+  | Dkml_package_console_common.Exit_code 0 ->
+      Logs.debug (fun l -> l "Finished uninstall");
+      ()
+  | Dkml_package_console_common.Exit_code ec ->
+      Logs.debug (fun l -> l "Finished uninstall in error");
+      exit ec
