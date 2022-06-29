@@ -3,8 +3,6 @@ open Astring
 open Dkml_install_api
 include Error_utils
 
-type program_control = Continue_program | Exit_code of int
-
 type program_name = {
   name_full : string;
   name_camel_case_nospaces : string;
@@ -19,9 +17,6 @@ type organization = {
   common_name_camel_case_nospaces : string;
   common_name_kebab_lower_case : string;
 }
-
-let bind_program_control r f =
-  match r with Continue_program -> f () | Exit_code e -> Exit_code e
 
 (** [parse_version] parses ["[v|V]major.minor[.patch][(+|-)info]"].
     Verbatim from https://erratique.ch/software/astring/doc/Astring/index.html
@@ -137,13 +132,11 @@ let needs_uninstall_admin ~reg ~selector ~log_config ~target_abi ~prefix
   | Ok bools -> List.exists Fun.id bools
   | Error msg -> raise (Installation_error msg)
 
-let spawn ?print_errors_and_controlled_exit cmd =
+let spawn fatallog cmd =
   Logs.info (fun m -> m "Running: %a" Cmd.pp cmd);
   let handle_err msg =
-    if print_errors_and_controlled_exit = Some true then (
-      Fmt.epr "%s@." msg;
-      Exit_code 1)
-    else raise (Installation_error msg)
+    fatallog ~id:"5f927a8b" msg;
+    Forward_progress.(Halted_progress Exit_transient_failure)
   in
   match OS.Cmd.(run_status cmd) with
   | Error e ->
@@ -152,7 +145,7 @@ let spawn ?print_errors_and_controlled_exit cmd =
           Rresult.R.pp_msg e
       in
       handle_err msg
-  | Ok (`Exited 0) -> Continue_program
+  | Ok (`Exited 0) -> Forward_progress.(return ((), fatallog))
   | Ok (`Exited v) ->
       handle_err @@ Fmt.str "Exited with exit code %d: %a" v Cmd.pp cmd
   | Ok (`Signaled v) ->

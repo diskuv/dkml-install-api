@@ -1,13 +1,3 @@
-type program_control =
-  | Continue_program
-  | Exit_code of int
-      (** [Exit_code] is used when the program should exit and it has already
-    printed any errors; otherwise [Continue_program] *)
-
-val bind_program_control :
-  program_control -> (unit -> program_control) -> program_control
-(** Bind monad for the type {!program_control} *)
-
 val console_component_name : string
 (** [console_component_name] is the name of the component that has executables
     that help run console installers (like gsudo.exe on Windows to elevate
@@ -97,13 +87,12 @@ Confer https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifest
 (** {1 Running Programs} *)
 
 val spawn :
-  ?print_errors_and_controlled_exit:bool -> Bos.Cmd.t -> program_control
-(** [spawn ?print_errors_and_controlled_exit cmd] launches the command [cmd]
-    and waits for its response.
-
-    If [print_errors_and_controlled_exit = True] then, on any error, the
-    error is printed and the result of the [spawn] function is
-    an [Ok (Exit_code 1)]. Otherwise errors are raised immediately. *)
+  Dkml_install_api.Forward_progress.fatal_logger ->
+  Bos.Cmd.t ->
+  unit Dkml_install_api.Forward_progress.t
+(** [spawn fl cmd] launches the command [cmd] and waits for its response.
+    
+    Errors will be sent to the fatal logger [fl]. *)
 
 val elevated_cmd :
   target_abi:Dkml_install_api.Context.Abi_v2.t ->

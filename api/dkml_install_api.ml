@@ -1,6 +1,7 @@
 open Bos
 open Cmdliner
 module Context = Types.Context
+module Forward_progress = Forward_progress
 
 module type Component_config = Dkml_install_api_intf.Component_config
 
