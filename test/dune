@@ -1,3 +1,9 @@
 (tests
  (names test_dkml_install_api test_validate test_registry)
- (libraries dkml-install.api dkml-install.register alcotest))
+ (modules test_dkml_install_api test_validate test_registry)
+ (libraries dkml-install.api dkml-install.register alcotest more_testables))
+
+(library
+ (name more_testables)
+ (modules more_testables)
+ (libraries astring alcotest dkml-install.api))

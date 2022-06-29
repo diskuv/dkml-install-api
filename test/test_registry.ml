@@ -2,7 +2,11 @@ open Dkml_install_api
 open Dkml_install_register
 open More_testables
 
-let ( >>= ) = Result.bind
+let ( let* ) = Forward_progress.bind
+
+let return = Forward_progress.return
+
+let fatallog = Dkml_install_api.Forward_progress.stderr_fatallog
 
 let ops = Queue.create ()
 
@@ -35,72 +39,81 @@ module C = struct
 end
 
 let evaluate_in_registry ~eval reg =
-  eval reg ~f:(fun cfg ->
-      let module Cfg = (val cfg : Component_config) in
-      Cfg.test ();
-      Result.ok (Fmt.str "(return %s)" Cfg.component_name))
-  >>= fun results_lst ->
+  let* results_lst, fl =
+    eval reg
+      ~f:(fun cfg ->
+        let module Cfg = (val cfg : Component_config) in
+        Cfg.test ();
+        return
+          ( Fmt.str "(return %s)" Cfg.component_name,
+            Dkml_install_api.Forward_progress.stderr_fatallog ))
+      ~fl:Dkml_install_api.Forward_progress.stderr_fatallog
+  in
   Queue.add
     (Fmt.str "results %a" (Fmt.list ~sep:(Fmt.any ", ") Fmt.string) results_lst)
     ops;
-  Result.ok (Queue.to_seq ops |> List.of_seq)
+  return (Queue.to_seq ops |> List.of_seq, fl)
 
 let test_eval selector () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
-  Alcotest.(check (result (list string) string_starts_with))
+  Alcotest.(check (list string_starts_with))
     "evaluate in order of dependencies; return results in evaluation order"
-    (Result.ok
-       [
-         "test eval b";
-         "test eval a";
-         "test eval c";
-         "results (return b), (return a), (return c)";
-       ])
+    [
+      "test eval b";
+      "test eval a";
+      "test eval c";
+      "results (return b), (return a), (return c)";
+    ]
     (let reg = Component_registry.get () in
-     Component_registry.add_component reg (module A);
-     Component_registry.add_component reg (module B);
-     Component_registry.add_component reg (module C);
-     evaluate_in_registry ~eval:(Component_registry.eval ~selector) reg)
+     Component_registry.add_component ~raise_on_error:true reg (module A);
+     Component_registry.add_component ~raise_on_error:true reg (module B);
+     Component_registry.add_component ~raise_on_error:true reg (module C);
+     More_testables.get_success_or_fail
+     @@ evaluate_in_registry ~eval:(Component_registry.eval ~selector) reg)
 
 let test_reverse_eval selector () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
-  Alcotest.(check (result (list string) string_starts_with))
+  Alcotest.(check (list string_starts_with))
     "evaluate in order of dependencies; return results in evaluation order"
-    (Result.ok
-       [
-         "test eval c";
-         "test eval a";
-         "test eval b";
-         "results (return c), (return a), (return b)";
-       ])
+    [
+      "test eval c";
+      "test eval a";
+      "test eval b";
+      "results (return c), (return a), (return b)";
+    ]
     (let reg = Component_registry.get () in
-     Component_registry.add_component reg (module A);
-     Component_registry.add_component reg (module B);
-     Component_registry.add_component reg (module C);
-     evaluate_in_registry ~eval:(Component_registry.reverse_eval ~selector) reg)
+     Component_registry.add_component ~raise_on_error:true reg (module A);
+     Component_registry.add_component ~raise_on_error:true reg (module B);
+     Component_registry.add_component ~raise_on_error:true reg (module C);
+     More_testables.get_success_or_fail
+     @@ evaluate_in_registry
+          ~eval:(Component_registry.reverse_eval ~selector)
+          reg)
 
 let test_validate_failure () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
-  Alcotest.(check (result unit string_starts_with))
-    "validate failure when dependency not addded"
-    (Result.error "[14b63c08]")
+  Alcotest.(check string_starts_with)
+    "validate failure when dependency not addded" "FATAL [14b63c08]"
     (let reg = Component_registry.get () in
-     Component_registry.add_component reg (module A);
-     Component_registry.validate reg)
+     Component_registry.add_component ~raise_on_error:true reg (module A);
+     try
+       Component_registry.validate ~raise_on_error:true reg;
+       "expected to raise an exception but didn't"
+     with Invalid_argument s -> s)
 
 let test_validate_success () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
-  Alcotest.(check (result unit string_starts_with))
-    "validate success when all dependencies added" (Result.ok ())
+  Alcotest.(check unit)
+    "validate success when all dependencies added" ()
     (let reg = Component_registry.get () in
-     Component_registry.add_component reg (module A);
-     Component_registry.add_component reg (module B);
-     Component_registry.add_component reg (module C);
-     Component_registry.validate reg)
+     Component_registry.add_component ~raise_on_error:true reg (module A);
+     Component_registry.add_component ~raise_on_error:true reg (module B);
+     Component_registry.add_component ~raise_on_error:true reg (module C);
+     Component_registry.validate ~raise_on_error:true reg)
 
 let () =
   let open Alcotest in

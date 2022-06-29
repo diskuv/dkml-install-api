@@ -52,6 +52,12 @@ module Exit_code : sig
     | Exit_reboot_needed
     | Exit_upgrade_required
 
+  val show : t -> string
+  (** Pretty print as a string *)
+
+  val pp : Format.formatter -> t -> unit
+  (** Pretty print on the formatter *)
+
   val to_int_exitcode : t -> int
   (** An exitcode that can be supplied to {!exit} *)
 
@@ -90,6 +96,34 @@ val stderr : unit -> unit t
     The standard error output may include a timestamp, be word-wrapped,
     be colorized, etc. for friendliness to the end-user. *)
 
+val stderr_fatallog : fatal_logger
+(** [stderr_fatallog] is a fatal logger that prints to the standard error.
+
+    [stderr_fatallog] is the same fatal logger used in {!stderr}.
+
+    The standard error output may include a timestamp, be word-wrapped,
+    be colorized, etc. for friendliness to the end-user. *)
+
+val styled_fatal_id : string Fmt.t
+(** Pretty-printer of an {!fatal_logger} [id]. Has color and styles.
+
+    Example: [[
+        # Prints something like the following in color:
+        #   FATAL [724a6562].
+        # without any newline.
+        Fmt.epr "%a" styled_fatal_id "724a6562"
+    ]] *)
+
+val styled_fatal_message : string Fmt.t
+(** Pretty-printer of an {!fatal_logger} error message. Has color and styles.
+
+    Example: [[
+        # Prints something like the following in color:
+        #   I like blue
+        # including a newline.
+        Fmt.epr "%a" styled_fatal_message "I like blue"
+    ]] *)
+
 val catch_exceptions :
   id:string -> fatal_logger -> (fatal_logger -> 'a t) -> 'a t
 (** [catch_exceptions ~id fl f] takes the fatal logger [fl] and executes [f fl],
@@ -108,8 +142,8 @@ val bind : 'a t -> ('a * fatal_logger -> 'b t) -> 'b t
     [fatal_logger] before returning [Halted_progress exitcode].
     *)
 
-val map : 'a t -> ('a -> 'b) -> 'b t
-(** [map fwd f] is the map monad function that, if [fwd = Continue_progress (u, fatal_logger)],
+val map : ('a -> 'b) -> 'a t -> 'b t
+(** [map f fwd] is the map monad function that, if [fwd = Continue_progress (u, fatal_logger)],
     will return [Continue_progress (f u, fatal_logger)] *)
 
 val lift_result :
@@ -140,6 +174,11 @@ val lift_result :
 val pos_to_id : string * int * int * int -> string
 (** [pos_to_id (file,lnum,cnum,enum)] converts a compiled location
     [(file,lnum,cnum,enum)] into an 8 digit lowercase hex identifier.
-    
+
     Only the basename of the source code [file] and the line number
     [lnum] participate in the identification. *)
+
+val iter : fl:fatal_logger -> ('a -> unit t) -> 'a list -> unit t
+(** [iter ~fl f lst] iterates over the items of the list [lst] with the function [f].
+    If any [lst] item gives back anything but {!Continue_progress} then the
+    iteration will stop. *)

@@ -5,6 +5,7 @@
     a final archive.tar.gz, archive.tar.bz2, etc. *)
 
 open Bos
+open Dkml_install_runner.Error_handling.Monad_syntax
 
 let generate ~archive_dir ~target_dir ~abi_selector ~program_name
     ~program_version =
@@ -23,10 +24,9 @@ let generate ~archive_dir ~target_dir ~abi_selector ~program_name
   let installer_create_sh =
     Fpath.(target_dir / ("bundle-" ^ installer_basename_without_ver ^ ".sh"))
   in
+  let* buildhost_abi', _fl = Dkml_install_runner.Host_abi.create_v2 () in
   let buildhost_abi =
-    match Dkml_install_runner.Host_abi.create_v2 () with
-    | Ok v -> Dkml_install_api.Context.Abi_v2.to_canonical_string v
-    | _ -> "unknown_abi"
+    Dkml_install_api.Context.Abi_v2.to_canonical_string buildhost_abi'
   in
   let translate s =
     Str.(
@@ -44,6 +44,6 @@ let generate ~archive_dir ~target_dir ~abi_selector ~program_name
   Logs.info (fun l ->
       l "Generating script %a that can produce %s.tar.gz (etc.) archives"
         Fpath.pp installer_create_sh installer_basename_with_ver);
-  Dkml_package_console_common.get_ok_or_failwith_rresult
+  Dkml_install_runner.Error_handling.map_rresult_error_to_progress
     (OS.File.write ~mode:0o750 installer_create_sh
        (translate (Option.get (Shell_scripts.read "bundle.sh"))))

@@ -14,26 +14,23 @@ let test_add_once () =
 
 let test_add_twice () =
   Alcotest.(check string_starts_with)
-    "fail to add same component name" "[debe504f]"
+    "fail to add same component name" "FATAL [debe504f]"
     (let reg = Component_registry.get () in
-     Component_registry.add_component reg
+     Component_registry.add_component ~raise_on_error:true reg
        (module struct
          include Dkml_install_api.Default_component_config
 
          let component_name = "add-twice"
        end);
-     let actual_error =
-       ref "expected the second add_component to raise an error"
-     in
-     (try
-        Component_registry.add_component reg
-          (module struct
-            include Dkml_install_api.Default_component_config
+     try
+       Component_registry.add_component ~raise_on_error:true reg
+         (module struct
+           include Dkml_install_api.Default_component_config
 
-            let component_name = "add-twice"
-          end)
-      with Dkml_install_api.Installation_error msg -> actual_error := msg);
-     !actual_error)
+           let component_name = "add-twice"
+         end);
+       "Was supposed to raise an exception, but didn't"
+     with Invalid_argument msg -> msg)
 
 let () =
   let open Alcotest in

@@ -11,30 +11,48 @@ module type Intf = sig
   val get : unit -> t
   (** Get a reference to the global component registry *)
 
-  val add_component : t -> (module Dkml_install_api.Component_config) -> unit
-  (** [add_component registry component] adds the component to the registry *)
+  val add_component :
+    ?raise_on_error:bool ->
+    t ->
+    (module Dkml_install_api.Component_config) ->
+    unit
+  (** [add_component ?raise_on_error registry component] adds the component to the registry.
+      
+      Ordinarily if there is an error a process {!exit} is performed. Set
+      [raise_on_error] to [true] to raise an {!Invalid_argument} error instead. *)
 
-  val validate : t -> (unit, string) result
-  (** [validate registry] succeeds if and only if all dependencies of all
-      [add_component registry] have been themselves added *)
+  val validate : ?raise_on_error:bool -> t -> unit
+  (** [validate ?raise_on_error registry] succeeds if and only if all dependencies of all
+      [add_component registry] have been themselves added.
+        
+      Ordinarily if there is an error a process {!exit} is performed. Set
+      [raise_on_error] to [true] to raise an {!Invalid_argument} error instead. *)
 
   val eval :
     t ->
     selector:component_selector ->
-    f:((module Dkml_install_api.Component_config) -> ('a, string) result) ->
-    ('a list, string) result
-  (** [eval registry ~f] iterates through the registry in dependency order,
+    f:
+      ((module Dkml_install_api.Component_config) ->
+      'a Dkml_install_api.Forward_progress.t) ->
+    fl:Dkml_install_api.Forward_progress.fatal_logger ->
+    'a list Dkml_install_api.Forward_progress.t
+  (** [eval registry ~f ~fl] iterates through the registry in dependency order,
       executing function [f] on each component configuration.
-   *)
+    
+      Errors will go to the fatal logger [fl]. *)
 
   val reverse_eval :
     t ->
     selector:component_selector ->
-    f:((module Dkml_install_api.Component_config) -> ('a, string) result) ->
-    ('a list, string) result
-  (** [reverse_eval registry ~f] iterates through the registry in reverse
+    f:
+      ((module Dkml_install_api.Component_config) ->
+      'a Dkml_install_api.Forward_progress.t) ->
+    fl:Dkml_install_api.Forward_progress.fatal_logger ->
+    'a list Dkml_install_api.Forward_progress.t
+  (** [reverse_eval registry ~f ~fl] iterates through the registry in reverse
       dependency order, executing function [f] on each component configuration.
-   *)
+
+      Errors will go to the fatal logger [fl]. *)
 
   (** The module [Private] is meant for internal use only. *)
   module Private : sig

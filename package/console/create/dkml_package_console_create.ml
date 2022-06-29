@@ -1,5 +1,6 @@
 open Cmdliner
 open Bos
+open Dkml_install_runner.Error_handling.Monad_syntax
 
 let generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
     ~organization ~program_name ~program_version ~target_dir =
@@ -41,12 +42,12 @@ let create_forone_abi ~abi_selector ~all_component_names ~organization
     ~runner_user_exe ~packager_entry_exe ~packager_setup_bytecode
     ~packager_uninstaller_bytecode;
   (* Get Opam sources *)
-  let opam_staging_files_source =
+  let* opam_staging_files_source, _fl =
     Dkml_install_runner.Path_location.staging_files_source
       ~staging_default:No_staging_default ~opam_context_opt:(Some opam_context)
       ~staging_files_opt:None
   in
-  let opam_static_files_source =
+  let* opam_static_files_source, _fl =
     Dkml_install_runner.Path_location.static_files_source
       ~static_default:No_static_default ~opam_context_opt:(Some opam_context)
       ~static_files_opt:None
@@ -57,12 +58,12 @@ let create_forone_abi ~abi_selector ~all_component_names ~organization
      allows us to use the same code and context paths that the end-user
      machine will use.
   *)
-  let archive_staging_files_dest =
+  let* archive_staging_files_dest, _fl =
     Dkml_install_runner.Path_location.staging_files_source
       ~staging_default:No_staging_default ~opam_context_opt:None
       ~staging_files_opt:(Some (Fpath.to_string archive_staging_dir))
   in
-  let archive_static_files_dest =
+  let* archive_static_files_dest, _fl =
     Dkml_install_runner.Path_location.static_files_source
       ~static_default:No_static_default ~opam_context_opt:None
       ~static_files_opt:(Some (Fpath.to_string archive_static_dir))
@@ -86,16 +87,11 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
   (* Get component plugins; logging already setup *)
   let reg = Dkml_install_register.Component_registry.get () in
   (* Get component names *)
-  let all_component_names_res =
+  let* all_component_names, _fl =
     Dkml_install_register.Component_registry.eval reg ~selector:All_components
-      ~f:(fun cfg ->
+      ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
         let module Cfg = (val cfg : Dkml_install_api.Component_config) in
-        Result.ok Cfg.component_name)
-  in
-  let all_component_names =
-    match all_component_names_res with
-    | Ok var_list -> var_list
-    | Error err -> failwith err
+        return Cfg.component_name)
   in
   Logs.info (fun l ->
       l "Installers will be created that include the components: %a"
@@ -110,7 +106,8 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
       l "Installers will be created for the ABIs: %a"
         Fmt.(Dump.list Dkml_install_runner.Path_location.pp_abi_selector)
         abi_selectors);
-  List.iter
+  Dkml_install_api.Forward_progress.iter
+    ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
     (fun abi_selector ->
       create_forone_abi ~abi_selector ~all_component_names ~organization
         ~program_name ~program_version ~opam_context
@@ -252,4 +249,5 @@ let create_installers organization program_name =
       $ runner_user_exe_t $ entry_exe_t $ setup_bytecode_t
       $ uninstaller_bytecode_t)
   in
-  Term.(eval (t, info ~version:"%%VERSION%%" "dkml-install-create-installers"))
+  Dkml_install_runner.Cmdliner_runner.eval_progress
+    (t, Term.info ~version:"%%VERSION%%" "dkml-install-create-installers")

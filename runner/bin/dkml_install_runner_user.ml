@@ -2,7 +2,6 @@ open Cmdliner
 open Dkml_install_register
 open Dkml_install_api
 open Dkml_install_runner.Cmdliner_runner
-open Dkml_install_runner.Error_handling
 open Dkml_install_runner.Error_handling.Monad_syntax
 
 let default_cmd =
@@ -19,26 +18,26 @@ let default_cmd =
   only ask for some of the components if the --component option is used. *)
 let component_cmds ~reg ~target_abi =
   let selector = Component_registry.All_components in
-  let cmd_results =
-    let* install_user_cmds =
-      Component_registry.eval reg ~selector ~f:(fun cfg ->
-          let module Cfg = (val cfg : Component_config) in
-          Cfg.install_user_subcommand ~component_name:Cfg.component_name
-            ~subcommand_name:(Fmt.str "install-user-%s" Cfg.component_name)
-            ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
-    in
-    let* uninstall_user_cmds =
-      Component_registry.reverse_eval reg ~selector ~f:(fun cfg ->
-          let module Cfg = (val cfg : Component_config) in
-          Cfg.uninstall_user_subcommand ~component_name:Cfg.component_name
-            ~subcommand_name:(Fmt.str "uninstall-user-%s" Cfg.component_name)
-            ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
-    in
-    Result.ok (install_user_cmds @ uninstall_user_cmds)
-  in
-  match cmd_results with
-  | Ok cmds -> cmds
-  | Error msg -> raise (Installation_error msg)
+  Dkml_install_runner.Error_handling.continue_or_exit
+    (let* install_user_cmds, _fl =
+       Component_registry.eval reg ~selector
+         ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
+           let module Cfg = (val cfg : Component_config) in
+           Cfg.install_user_subcommand ~component_name:Cfg.component_name
+             ~subcommand_name:(Fmt.str "install-user-%s" Cfg.component_name)
+             ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
+             ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
+     in
+     let* uninstall_user_cmds, _fl =
+       Component_registry.reverse_eval reg ~selector
+         ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
+           let module Cfg = (val cfg : Component_config) in
+           Cfg.uninstall_user_subcommand ~component_name:Cfg.component_name
+             ~subcommand_name:(Fmt.str "uninstall-user-%s" Cfg.component_name)
+             ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
+             ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
+     in
+     return (install_user_cmds @ uninstall_user_cmds))
 
 let main ~target_abi =
   (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
@@ -51,12 +50,10 @@ let main ~target_abi =
         (Context.Abi_v2.to_canonical_string target_abi));
   (* Get all the available components *)
   let reg = Component_registry.get () in
-  Dkml_install_runner.Error_handling.get_ok_or_raise_string
-    (Component_registry.validate reg);
+  let open Dkml_install_runner.Error_handling in
+  Component_registry.validate reg;
   Term.(
     exit
-    @@ catch_cmdliner_eval
-         (fun () ->
+    @@ catch_and_exit_on_error ~id:"f59b4702" (fun () ->
            eval_choice ~catch:false default_cmd
-             (help_cmd :: component_cmds ~reg ~target_abi))
-         (`Error `Exn))
+             (help_cmd :: component_cmds ~reg ~target_abi)))

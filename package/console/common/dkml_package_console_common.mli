@@ -10,7 +10,7 @@ val needs_install_admin :
   target_abi:Dkml_install_api.Context.Abi_v2.t ->
   prefix:Fpath.t ->
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
-  bool
+  bool Dkml_install_api.Forward_progress.t
 
 val needs_uninstall_admin :
   reg:Dkml_install_register.Component_registry.t ->
@@ -19,7 +19,7 @@ val needs_uninstall_admin :
   target_abi:Dkml_install_api.Context.Abi_v2.t ->
   prefix:Fpath.t ->
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
-  bool
+  bool Dkml_install_api.Forward_progress.t
 
 (** {1 Error Handling} *)
 
@@ -86,19 +86,14 @@ Confer https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifest
 
 (** {1 Running Programs} *)
 
-val spawn :
-  Dkml_install_api.Forward_progress.fatal_logger ->
-  Bos.Cmd.t ->
-  unit Dkml_install_api.Forward_progress.t
-(** [spawn fl cmd] launches the command [cmd] and waits for its response.
-    
-    Errors will be sent to the fatal logger [fl]. *)
+val spawn : Bos.Cmd.t -> unit Dkml_install_api.Forward_progress.t
+(** [spawn cmd] launches the command [cmd] and waits for its response. *)
 
 val elevated_cmd :
   target_abi:Dkml_install_api.Context.Abi_v2.t ->
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
   Bos.Cmd.t ->
-  Bos.Cmd.t
+  Bos.Cmd.t Dkml_install_api.Forward_progress.t
 (** [elevated_cmd ~target_abi ~staging_files_source cmd] translates the command [cmd]
     into a command that elevates privileges using ["gsudo.exe"] from the staging
     files [staging_files_source] on Windows machines, or ["doas"], ["sudo"] or
@@ -110,7 +105,7 @@ val get_user_installation_prefix :
   program_name:program_name ->
   target_abi:Dkml_install_api__Types.Context.Abi_v2.t ->
   prefix_opt:string option ->
-  Fpath.t
+  Fpath.t Dkml_install_api.Forward_progress.t
 (** [get_user_installation_prefix ~program_name ~target_abi ~prefix_opt]
     returns where user programs should be installed; either the prefix
     [prefix_opt = Some prefix] or uses the platform convention

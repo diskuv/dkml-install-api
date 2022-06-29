@@ -8,8 +8,9 @@ module type Component_config_defaultable = sig
   val install_user_subcommand :
     component_name:string ->
     subcommand_name:string ->
+    fl:Forward_progress.fatal_logger ->
     ctx_t:Types.Context.t Cmdliner.Term.t ->
-    (unit Cmdliner.Term.t * Cmdliner.Term.info, string) Result.t
+    (unit Cmdliner.Term.t * Cmdliner.Term.info) Forward_progress.t
   (** [install_user_subcommand ~component_name ~subcommand_name ~ctx_t] defines a
       subcommand that should be added to {b dkml-install-runner.exe}
       that, when invoked, will install the component with non-privileged
@@ -20,6 +21,9 @@ module type Component_config_defaultable = sig
 
       [~subcommand_name]: Typically but not always the subcommand name is
       ["install-user-" ^ component_name].
+
+      [~fl]: A fatal logger used whenver there is an error requiring the
+      process to exit.
 
       [~ctx_t]: A Cmdliner term that sets up common options and delivers a
       context record. The common options include options for logging. The
@@ -34,9 +38,9 @@ module type Component_config_defaultable = sig
             "We can run bytecode using: %s@\n"
             (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share-abi}/bin/ocamlrun")
 
-        let install_user_subcommand ~component_name ~subcommand_name ~ctx_t =
+        let install_user_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
           let doc = "Install the pieces that don't require Administrative rights" in
-          Result.ok @@ Cmdliner.Term.(const execute_install $ ctx_t, info subcommand_name ~doc)
+          Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Term.(const execute_install $ ctx_t, info subcommand_name ~doc), fl)
       ]}
 
       Your [Term.t] function ([install_user_subcommand ctx]) should raise
@@ -45,8 +49,9 @@ module type Component_config_defaultable = sig
   val uninstall_user_subcommand :
     component_name:string ->
     subcommand_name:string ->
+    fl:Forward_progress.fatal_logger ->
     ctx_t:Types.Context.t Cmdliner.Term.t ->
-    (unit Cmdliner.Term.t * Cmdliner.Term.info, string) Result.t
+    (unit Cmdliner.Term.t * Cmdliner.Term.info) Forward_progress.t
   (** [uninstall_user_subcommand ~component_name ~ctx_t] defines a
       subcommand that should be added to {b dkml-install-runner.exe}
       that, when invoked, will uninstall the component with non-privileged
@@ -57,6 +62,9 @@ module type Component_config_defaultable = sig
 
       [~subcommand_name]: Typically but not always the subcommand name is
       ["uninstall-user-" ^ component_name].
+
+      [~fl]: A fatal logger used whenver there is an error requiring the
+      process to exit.
 
       [~ctx_t]: A Cmdliner term that sets up common options and delivers a
       context record. The common options include options for logging. The
@@ -71,9 +79,9 @@ module type Component_config_defaultable = sig
           "We can run bytecode using: %s@\n"
           (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share-abi}/bin/ocamlrun")
 
-      let uninstall_user_subcommand ~component_name ~subcommand_name ~ctx_t =
+      let uninstall_user_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
           let doc = "Uninstall the pieces that don't require Administrative rights" in
-        Result.ok @@ Cmdliner.Term.(const execute_uninstall $ ctx_t, info subcommand_name ~doc)
+        Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Term.(const execute_uninstall $ ctx_t, info subcommand_name ~doc), fl)
       ]}
 
       Your [Term.t] function ([uninstall_user_subcommand ctx]) should raise
@@ -96,9 +104,10 @@ module type Component_config_defaultable = sig
   val install_admin_subcommand :
     component_name:string ->
     subcommand_name:string ->
+    fl:Forward_progress.fatal_logger ->
     ctx_t:Types.Context.t Cmdliner.Term.t ->
-    (unit Cmdliner.Term.t * Cmdliner.Term.info, string) Result.t
-  (** [install_admin_subcommand ~component_name ~subcommand_name ~ctx_t] defines a
+    (unit Cmdliner.Term.t * Cmdliner.Term.info) Forward_progress.t
+  (** [install_admin_subcommand ~component_name ~subcommand_name ~fl ~ctx_t] defines a
       subcommand that should be added to {b dkml-install-runner.exe}
       that, when invoked, will install the component with privileged
       administrator (`root` or `sudo` on Unix) permissions.
@@ -108,6 +117,9 @@ module type Component_config_defaultable = sig
 
       [~subcommand_name]: Typically but not always the subcommand name is
       ["install-admin-" ^ component_name].
+
+      [~fl]: A fatal logger used whenver there is an error requiring the
+      process to exit.
 
       [~ctx_t]: A Cmdliner term that sets up common options and delivers a
       context record. The common options include options for logging. The
@@ -124,7 +136,7 @@ module type Component_config_defaultable = sig
 
         let install_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Install the pieces requiring Administrative rights" in
-          Result.ok @@ Cmdliner.Term.(const execute_install_admin $ ctx_t, info subcommand_name ~doc)
+          Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Term.(const execute_install_admin $ ctx_t, info subcommand_name ~doc), fl)
       ]}
 
       Your [Term.t] function ([execute_install_admin ctx]) should raise
@@ -133,8 +145,9 @@ module type Component_config_defaultable = sig
   val uninstall_admin_subcommand :
     component_name:string ->
     subcommand_name:string ->
+    fl:Forward_progress.fatal_logger ->
     ctx_t:Types.Context.t Cmdliner.Term.t ->
-    (unit Cmdliner.Term.t * Cmdliner.Term.info, string) Result.t
+    (unit Cmdliner.Term.t * Cmdliner.Term.info) Forward_progress.t
   (** [uninstall_admin_subcommand ~component_name ~ctx_t] defines a
       subcommand that should be added to {b dkml-install-runner.exe}
       that, when invoked, will uninstall the component with privileged
@@ -145,6 +158,9 @@ module type Component_config_defaultable = sig
 
       [~subcommand_name]: Typically but not always the subcommand name is
       ["uninstall-" ^ component_name].
+
+      [~fl]: A fatal logger used whenver there is an error requiring the
+      process to exit.
 
       [~ctx_t]: A Cmdliner term that sets up common options and delivers a
       context record. The common options include options for logging. The
@@ -159,9 +175,9 @@ module type Component_config_defaultable = sig
           "We can run bytecode using: %s@\n"
           (ctx.Dkml_install_api.Context.path_eval "%{ocamlrun:share-abi}/bin/ocamlrun")
 
-        let uninstall_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
+        let uninstall_admin_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
           let doc = "Install the pieces requiring Administrative rights" in
-          Result.ok @@ Cmdliner.Term.(const execute_uninstall_admin $ ctx_t, info subcommand_name ~doc)
+          Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Term.(const execute_uninstall_admin $ ctx_t, info subcommand_name ~doc), fl)
       ]}
 
       Your [Term.t] function ([execute_uninstall_admin ctx]) should raise
@@ -203,21 +219,16 @@ module type Intf = sig
     (** @inline *)
   end
 
-  (** {2 Error handling} *)
-
-  exception Installation_error of string
-  (** Raise [Installation_error message] when your component has a terminal
-    failure  *)
-
   (** {2 Process execution} *)
 
-  val log_spawn_and_raise : Bos.Cmd.t -> unit
-  (** [log_spawn_and_raise cmd] logs the command [cmd] and runs it
-      synchronously, raising {!Installation_error} if the command exits with a
-      non-zero error code.
+  val log_spawn_onerror_exit : id:string -> Bos.Cmd.t -> unit
+  (** [log_spawn_onerror_exit ~id cmd] logs the command [cmd] and runs it
+      synchronously, and prints an error on the fatal logger [fl ~id]
+      and exits with a non-zero exit code if
+      the command exits with a non-zero error code.
 
       The environment variable ["OCAMLRUNPARAM"] will be set to ["b"] so that
-      any OCaml bytecode launched by [log_spawn_and_raise] will have
+      any OCaml bytecode launched by [log_spawn_onerror_exit] will have
       backtraces. Any exiting environment variable ["OCAMLRUNPARAM"] will
       be kept, however. *)
 
@@ -277,7 +288,7 @@ module type Intf = sig
       let ocamlrun =
         ctx.Context.path_eval "%{staging-ocamlrun:share-abi}/bin/ocamlrun"
       in
-      log_spawn_and_raise
+      log_spawn_onerror_exit
         Cmd.(
           v (Fpath.to_string
               (ctx.Context.path_eval "%{staging-ocamlrun:share-abi}/bin/ocamlrun"))
@@ -296,10 +307,9 @@ module type Intf = sig
 
           let depends_on = [ "staging-ocamlrun" ]
 
-          let install_user_subcommand ~component_name:_ ~subcommand_name ~ctx_t =
+          let install_user_subcommand ~component_name:_ ~subcommand_name ~fl ~ctx_t =
             let doc = "Install your component" in
-            Result.ok
-            @@ Cmdliner.Term.(const execute $ ctx_t, info subcommand_name ~doc)
+            Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Term.(const execute $ ctx_t, info subcommand_name ~doc), fl)
         end)
   ]}
 

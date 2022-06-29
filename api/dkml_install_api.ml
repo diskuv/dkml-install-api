@@ -18,7 +18,7 @@ module Default_component_config = struct
 
   let sdocs = Manpage.s_common_options
 
-  let install_user_subcommand ~component_name ~subcommand_name ~ctx_t =
+  let install_user_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
     let doc =
       Fmt.str
         "Currently does nothing. Would install the component '%s' except the \
@@ -29,9 +29,9 @@ module Default_component_config = struct
       Term.
         (const do_nothing_with_ctx_t $ ctx_t, info subcommand_name ~sdocs ~doc)
     in
-    Result.ok cmd
+    Forward_progress.return (cmd, fl)
 
-  let uninstall_user_subcommand ~component_name ~subcommand_name ~ctx_t =
+  let uninstall_user_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
     let doc =
       Fmt.str
         "Currently does nothing. Would uninstall the component '%s' except the \
@@ -42,13 +42,13 @@ module Default_component_config = struct
       Term.
         (const do_nothing_with_ctx_t $ ctx_t, info subcommand_name ~sdocs ~doc)
     in
-    Result.ok cmd
+    Forward_progress.return (cmd, fl)
 
   let needs_install_admin ~ctx:(_ : Context.t) = false
 
   let needs_uninstall_admin ~ctx:(_ : Context.t) = false
 
-  let install_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
+  let install_admin_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
     let doc =
       Fmt.str
         "Currently does nothing. Would install the parts of the component '%s' \
@@ -59,9 +59,9 @@ module Default_component_config = struct
       Term.
         (const do_nothing_with_ctx_t $ ctx_t, info subcommand_name ~sdocs ~doc)
     in
-    Result.ok cmd
+    Forward_progress.return (cmd, fl)
 
-  let uninstall_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
+  let uninstall_admin_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
     let doc =
       Fmt.str
         "Currently does nothing. Would uninstall the parts of the component \
@@ -72,7 +72,7 @@ module Default_component_config = struct
       Term.
         (const do_nothing_with_ctx_t $ ctx_t, info subcommand_name ~sdocs ~doc)
     in
-    Result.ok cmd
+    Forward_progress.return (cmd, fl)
 
   let test () = ()
 end
@@ -81,13 +81,12 @@ module Log_config = struct
   include Log_config
 end
 
-exception Installation_error of string
-
-let log_spawn_and_raise cmd =
+let log_spawn_onerror_exit ~id cmd =
   Logs.info (fun m -> m "Running command: %a" Cmd.pp cmd);
-  let ( let* ) = Result.bind in
+  let fl = Forward_progress.stderr_fatallog in
   let open Astring in
   let sequence =
+    let ( let* ) = Result.bind in
     let* env = OS.Env.current () in
     let new_env =
       let is_not_defined =
@@ -103,17 +102,16 @@ let log_spawn_and_raise cmd =
   match sequence with
   | Ok (`Exited 0) ->
       Logs.info (fun m ->
-          m "%a ran successfully" Fmt.(option string) (Cmd.line_tool cmd))
+          m "%a ran successfully" Fmt.(option string) (Cmd.line_tool cmd));
+      ()
   | Ok (`Exited c) ->
-      raise
-        (Installation_error
-           (Fmt.str "The command %a exited with status %d" Cmd.pp cmd c))
+      fl ~id (Fmt.str "The command %a exited with status %d" Cmd.pp cmd c);
+      exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)
   | Ok (`Signaled c) ->
-      raise
-        (Installation_error
-           (Fmt.str "The command %a terminated from a signal %d" Cmd.pp cmd c))
+      fl ~id (Fmt.str "The command %a terminated from a signal %d" Cmd.pp cmd c);
+      exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)
   | Error rmsg ->
-      raise
-        (Installation_error
-           (Fmt.str "The command %a could not be run due to: %a" Cmd.pp cmd
-              Rresult.R.pp_msg rmsg))
+      fl ~id
+        (Fmt.str "The command %a could not be run due to: %a" Cmd.pp cmd
+           Rresult.R.pp_msg rmsg);
+      exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)

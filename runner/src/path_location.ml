@@ -23,38 +23,46 @@ type static_default =
   | Static_default_dir of (unit -> Fpath.t)
 
 let static_files_source ~static_default ~opam_context_opt ~static_files_opt =
+  let return = Error_handling.Monad_syntax.return in
   match (opam_context_opt, static_files_opt, static_default) with
   | None, None, No_static_default ->
-      raise
-        (Dkml_install_api.Installation_error
-           "Either `--opam-context [SWITCH_PREFIX]` or `--static-files DIR` \
-            must be specified")
-  | None, None, Static_default_dir f_fp -> Static_files_dir (f_fp ())
+      Error_handling.runner_fatal_log ~id:"7dc7e463"
+        "Either `--opam-context [SWITCH_PREFIX]` or `--static-files DIR` must \
+         be specified";
+      Dkml_install_api.Forward_progress.(
+        Halted_progress Exit_unrecoverable_failure)
+  | None, None, Static_default_dir f_fp -> return (Static_files_dir (f_fp ()))
   | Some switch_prefix, None, _ ->
-      Opam_static_switch_prefix (Fpath.v switch_prefix)
-  | None, Some static_files, _ -> Static_files_dir (Fpath.v static_files)
+      return (Opam_static_switch_prefix (Fpath.v switch_prefix))
+  | None, Some static_files, _ ->
+      return (Static_files_dir (Fpath.v static_files))
   | Some _, Some _, _ ->
-      raise
-        (Dkml_install_api.Installation_error
-           "Only one, not both, of `--opam-context [SWITCH_PREFIX]` and \
-            `--static-files DIR` should be specified.")
+      Error_handling.runner_fatal_log ~id:"4f547eff"
+        "Only one, not both, of `--opam-context [SWITCH_PREFIX]` and \
+         `--static-files DIR` should be specified.";
+      Dkml_install_api.Forward_progress.(
+        Halted_progress Exit_unrecoverable_failure)
 
 let staging_files_source ~staging_default ~opam_context_opt ~staging_files_opt =
+  let return = Error_handling.Monad_syntax.return in
   match (opam_context_opt, staging_files_opt, staging_default) with
   | None, None, No_staging_default ->
-      raise
-        (Dkml_install_api.Installation_error
-           "Either `--opam-context [SWITCH_PREFIX]` or `--staging-files DIR` \
-            must be specified")
-  | None, None, Staging_default_dir f_fp -> Staging_files_dir (f_fp ())
+      Error_handling.runner_fatal_log ~id:"a7fc52e2"
+        "Either `--opam-context [SWITCH_PREFIX]` or `--staging-files DIR` must \
+         be specified";
+      Dkml_install_api.Forward_progress.(
+        Halted_progress Exit_unrecoverable_failure)
+  | None, None, Staging_default_dir f_fp -> return (Staging_files_dir (f_fp ()))
   | Some switch_prefix, None, _ ->
-      Opam_staging_switch_prefix (Fpath.v switch_prefix)
-  | None, Some staging_files, _ -> Staging_files_dir (Fpath.v staging_files)
+      return (Opam_staging_switch_prefix (Fpath.v switch_prefix))
+  | None, Some staging_files, _ ->
+      return (Staging_files_dir (Fpath.v staging_files))
   | Some _, Some _, _ ->
-      raise
-        (Dkml_install_api.Installation_error
-           "Only one, not both, of `--opam-context [SWITCH_PREFIX]` and \
-            `--staging-files DIR` should be specified.")
+      Error_handling.runner_fatal_log ~id:"d8badf27"
+        "Only one, not both, of `--opam-context [SWITCH_PREFIX]` and \
+         `--staging-files DIR` should be specified.";
+      Dkml_install_api.Forward_progress.(
+        Halted_progress Exit_unrecoverable_failure)
 
 (** [absdir_static_files ~component_name static_files_source] is
         the [component_name] component's static-files directory *)

@@ -2,7 +2,9 @@ module Global_context : sig
   type t
   (** the type of the global context *)
 
-  val create : Dkml_install_register.Component_registry.t -> t
+  val create :
+    Dkml_install_register.Component_registry.t ->
+    t Dkml_install_api.Forward_progress.t
   (** [create registry] creates a global context for components in the
       [registry] *)
 end
@@ -16,7 +18,7 @@ module Interpreter : sig
     abi:Dkml_install_api.Context.Abi_v2.t ->
     staging_files_source:Path_location.staging_files_source ->
     prefix:Fpath.t ->
-    t
+    t Dkml_install_api.Forward_progress.t
   (** [create global_ctx ~self_component_name ~abi ~staging_files_source ~prefix]
       creates an interpreter
       for the component [self_component_name] for installations into
@@ -29,7 +31,7 @@ module Interpreter : sig
     abi:Dkml_install_api.Context.Abi_v2.t ->
     staging_files_source:Path_location.staging_files_source ->
     prefix:Fpath.t ->
-    t
+    t Dkml_install_api.Forward_progress.t
   (** [create_minimal ~self_component_name ~abi ~staging_files_source ~prefix]
       creates a "minimal" interpreter with only one [self_component_name]
       component. The interpreter also has access to non-component
@@ -46,5 +48,7 @@ end
 
 module Private : sig
   val mock_default_tmp_dir : Fpath.t
-  val mock_interpreter : unit -> Interpreter.t
+
+  val mock_interpreter :
+    unit -> Interpreter.t Dkml_install_api.Forward_progress.t
 end

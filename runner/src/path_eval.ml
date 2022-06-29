@@ -5,6 +5,15 @@ open Bos
 open Os_utils
 module StringMap = Map.Make (String)
 
+let ( let* ) = Dkml_install_api.Forward_progress.bind
+
+let patheval_fatal_log ~id s =
+  Logs.err (fun l ->
+      l "%a %a" Dkml_install_api.Forward_progress.styled_fatal_id id
+        Dkml_install_api.Forward_progress.styled_fatal_message s)
+
+let return a = Dkml_install_api.Forward_progress.return (a, patheval_fatal_log)
+
 module Global_context = struct
   type t = {
     global_vars : (string * string) list;
@@ -14,22 +23,22 @@ module Global_context = struct
   }
 
   let create reg =
-    let all_component_vars_res =
-      Component_registry.eval reg ~selector:All_components ~f:(fun cfg ->
+    let* var_list, _fl =
+      Component_registry.eval reg ~selector:All_components
+        ~fl:patheval_fatal_log ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
-          Result.ok Cfg.component_name)
+          return Cfg.component_name)
     in
     let all_components_var =
-      match all_component_vars_res with
-      | Ok var_list -> ("components:all", String.concat ~sep:" " var_list)
-      | Error err -> raise (Installation_error err)
+      ("components:all", String.concat ~sep:" " var_list)
     in
-    {
-      global_vars = [ all_components_var ];
-      global_pathonly_vars = [];
-      default_tmp_dir = OS.Dir.default_tmp ();
-      reg;
-    }
+    return
+      {
+        global_vars = [ all_components_var ];
+        global_pathonly_vars = [];
+        default_tmp_dir = OS.Dir.default_tmp ();
+        reg;
+      }
 
   let global_pathonly_vars { global_pathonly_vars; _ } = global_pathonly_vars
 
@@ -47,11 +56,11 @@ module Interpreter = struct
 
   let create_minimal ~self_component_name ~abi ~staging_files_source ~prefix =
     let name_var = ("name", self_component_name) in
-    let temp_var =
-      ( "tmp",
-        Fpath.to_string @@ Rresult.R.error_msg_to_invalid_arg
-        @@ OS.Dir.tmp "path_eval_%s" )
+
+    let* temp_val, _fl =
+      Error_handling.map_msg_error_to_progress (OS.Dir.tmp "path_eval_%s")
     in
+    let temp_var = ("tmp", Fpath.to_string temp_val) in
     let prefix_var = ("prefix", Fpath.to_string prefix) in
     let current_share_generic_var =
       ( "_:share-generic",
@@ -74,16 +83,16 @@ module Interpreter = struct
     in
     let local_vars = [ name_var ] @ local_pathonly_vars in
 
-    { all_vars = local_vars; all_pathonly_vars = local_pathonly_vars }
+    return { all_vars = local_vars; all_pathonly_vars = local_pathonly_vars }
 
   let create global_ctx ~self_component_name ~abi ~staging_files_source ~prefix
       =
     let name_var = ("name", self_component_name) in
-    let temp_var =
-      ( "tmp",
-        Fpath.to_string @@ Rresult.R.error_msg_to_invalid_arg
-        @@ Global_context.tmp_dir global_ctx )
+    let* temp_val, _fl =
+      Error_handling.map_msg_error_to_progress
+        (Global_context.tmp_dir global_ctx)
     in
+    let temp_var = ("tmp", Fpath.to_string temp_val) in
     let prefix_var = ("prefix", Fpath.to_string prefix) in
     let current_share_generic_var =
       ( "_:share-generic",
@@ -109,11 +118,11 @@ module Interpreter = struct
       Component_registry.Just_named_components_plus_their_dependencies
         [ self_component_name ]
     in
-    let self_component_vars_res =
+    let* self_component_vars, _fl =
       Component_registry.eval global_ctx.reg ~selector:self_selector
-        ~f:(fun cfg ->
+        ~fl:patheval_fatal_log ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
-          Result.ok
+          return
             [
               ( Cfg.component_name ^ ":share-generic",
                 Fpath.to_string
@@ -127,11 +136,7 @@ module Interpreter = struct
                      staging_files_source) );
             ])
     in
-    let self_share_vars =
-      List.flatten
-        (Error_handling.get_ok_or_raise_string self_component_vars_res)
-    in
-
+    let self_share_vars = List.flatten self_component_vars in
     let all_vars =
       List.concat
         [ Global_context.global_vars global_ctx; local_vars; self_share_vars ]
@@ -144,7 +149,7 @@ module Interpreter = struct
           self_share_vars;
         ]
     in
-    { all_vars; all_pathonly_vars }
+    return { all_vars; all_pathonly_vars }
 
   let first_expression = Str.regexp {|.*\(%{[^}]*}%\)|}
 
@@ -193,7 +198,8 @@ module Private = struct
     }
 
   let mock_interpreter () =
-    let orig =
+    let open Error_handling.Monad_syntax in
+    let* orig, _fl =
       Interpreter.create mock_global_ctx
         ~self_component_name:"component_under_test" ~abi:Windows_x86
         ~staging_files_source:mock_staging_files_sources
@@ -211,8 +217,9 @@ module Private = struct
                ~abi_selector:(Abi Windows_x86) mock_staging_files_sources) );
       ]
     in
-    {
-      Interpreter.all_vars = orig.all_vars @ extra_pathonly_vars;
-      all_pathonly_vars = orig.all_pathonly_vars @ extra_pathonly_vars;
-    }
+    return
+      {
+        Interpreter.all_vars = orig.all_vars @ extra_pathonly_vars;
+        all_pathonly_vars = orig.all_pathonly_vars @ extra_pathonly_vars;
+      }
 end

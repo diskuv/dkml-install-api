@@ -176,7 +176,8 @@ let entry ~target_abi =
   let args = Cmd.of_list argl in
   (* Find ocamlrun and ocaml lib *)
   let archive_dir =
-    Dkml_install_runner.Cmdliner_runner.enduser_archive_dir ()
+    Dkml_install_runner.Error_handling.continue_or_exit
+    @@ Dkml_install_runner.Cmdliner_runner.enduser_archive_dir ()
   in
   let ocamlrun_dir =
     Fpath.(

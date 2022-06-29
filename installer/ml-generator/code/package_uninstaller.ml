@@ -17,6 +17,5 @@ let uninstall_cmd =
 let () =
   Term.(
     exit
-    @@ Dkml_install_runner.Error_handling.catch_cmdliner_eval
-         (fun () -> eval ~catch:false uninstall_cmd)
-         (`Error `Exn))
+    @@ Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"68c85707"
+         (fun () -> eval ~catch:false uninstall_cmd))

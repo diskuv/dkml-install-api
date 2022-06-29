@@ -17,6 +17,5 @@ let setup_cmd =
 let () =
   Term.(
     exit
-    @@ Dkml_install_runner.Error_handling.catch_cmdliner_eval
-         (fun () -> eval ~catch:false setup_cmd)
-         (`Error `Exn))
+    @@ Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"bed30047"
+         (fun () -> eval ~catch:false setup_cmd))

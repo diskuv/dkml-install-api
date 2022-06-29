@@ -6,6 +6,15 @@ module Exit_code = struct
     | Exit_reboot_needed
     | Exit_upgrade_required
 
+  let show = function
+    | Exit_transient_failure -> "Exit_transient_failure"
+    | Exit_unrecoverable_failure -> "Exit_unrecoverable_failure"
+    | Exit_restart_needed -> "Exit_restart_needed"
+    | Exit_reboot_needed -> "Exit_reboot_needed"
+    | Exit_upgrade_required -> "Exit_upgrade_required"
+
+  let pp fmt v = Fmt.pf fmt "%s" (show v)
+
   let to_int_exitcode = function
     | Exit_transient_failure -> 20
     | Exit_unrecoverable_failure -> 21
@@ -30,12 +39,18 @@ type 'a t =
 
 let return (a, fl) = Continue_progress (a, fl)
 
-let stderr () =
-  Continue_progress
-    ( (),
-      fun ~id s ->
-        if s = "" then Fmt.epr "FATAL [%s].@." id
-        else Fmt.epr "FATAL [%s]. %s@." id s )
+let styled_fatal_id =
+  let pp1 = Fmt.styled (`Fg `Red) (fun fmt -> Fmt.pf fmt "FATAL [%s].") in
+  Fmt.styled `Bold pp1
+
+let styled_fatal_message =
+  Fmt.styled (`Fg `Red) (fun fmt -> Fmt.pf fmt "%a@." Fmt.lines)
+
+let stderr_fatallog ~id s =
+  if s = "" then Fmt.epr "%a@." styled_fatal_id id
+  else Fmt.epr "%a %a@." styled_fatal_id id styled_fatal_message s
+
+let stderr () = Continue_progress ((), stderr_fatallog)
 
 let bind fwd f =
   match fwd with
@@ -43,7 +58,7 @@ let bind fwd f =
   | Halted_progress exitcode -> Halted_progress exitcode
   | Completed -> Completed
 
-let map fwd f =
+let map f fwd =
   match fwd with
   | Continue_progress (u, fl) -> Continue_progress (f u, fl)
   | Halted_progress exitcode -> Halted_progress exitcode
@@ -71,3 +86,12 @@ let lift_result pos efmt fl = function
   | Error e ->
       fl ~id:(pos_to_id pos) (Fmt.str "%a" efmt e);
       Halted_progress Exit_transient_failure
+
+let iter ~fl f =
+  List.fold_left
+    (fun acc v ->
+      match acc with
+      | Continue_progress ((), _fl) -> f v
+      | Halted_progress u -> Halted_progress u
+      | Completed -> Completed)
+    (Continue_progress ((), fl))

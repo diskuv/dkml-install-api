@@ -69,7 +69,7 @@ Use it in your project as follows:
 1. (TODO) Declare a Dune ``(libraries ...)`` dependency on ``dkml-component-unixutils``
 2. Declare a component ``let depends_on = [...])`` dependency on
    ``unixutils``.
-3. Use the ``log_spawn_and_raise`` function
+3. Use the ``log_spawn_onerror_exit`` function
    (TODO: provide link to odoc documentation) which will handle
    all the details of spawning ocamlc on the **OCaml source code** you installed
    into ``<share>/work-files/``.

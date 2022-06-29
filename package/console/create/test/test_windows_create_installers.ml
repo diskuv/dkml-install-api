@@ -4,7 +4,8 @@ open Cmdliner
 
 let () =
   let reg = Dkml_install_register.Component_registry.get () in
-  Dkml_install_register.Component_registry.add_component reg
+  Dkml_install_register.Component_registry.add_component ~raise_on_error:true
+    reg
     (module struct
       include Dkml_install_api.Default_component_config
 

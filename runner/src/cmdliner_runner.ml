@@ -44,21 +44,23 @@ let setup_log_t =
 let create_context ~staging_default ~target_abi self_component_name reg
     log_config prefix staging_files_opt opam_context_opt =
   let open Path_eval in
-  let staging_files_source =
+  let open Error_handling.Monad_syntax in
+  let* staging_files_source, _fl =
     Path_location.staging_files_source ~staging_default ~opam_context_opt
       ~staging_files_opt
   in
-  let global_context = Global_context.create reg in
-  let interpreter =
+  let* global_context, _fl = Global_context.create reg in
+  let* interpreter, _fl =
     Interpreter.create global_context ~self_component_name ~abi:target_abi
       ~staging_files_source ~prefix:(Fpath.v prefix)
   in
-  {
-    Dkml_install_api.Context.eval = Interpreter.eval interpreter;
-    path_eval = Interpreter.path_eval interpreter;
-    target_abi_v2 = target_abi;
-    log_config;
-  }
+  return
+    {
+      Dkml_install_api.Context.eval = Interpreter.eval interpreter;
+      path_eval = Interpreter.path_eval interpreter;
+      target_abi_v2 = target_abi;
+      log_config;
+    }
 
 (* Cmdliner, at least in 1.0.4, has the pp_str treated as an escaped OCaml
    string. Not sure why, but backslashes on Windows path are interpreted
@@ -97,24 +99,26 @@ let exec_dir = Fpath.(parent (v OS.Arg.exec))
 (** The root directory that was uncompressed at end-user install time *)
 let enduser_archive_dir () =
   (* get path to .archivetree *)
+  let open Error_handling.Monad_syntax in
   let archivetree () =
     Diskuvbox.find_up ~from_dir:exec_dir ~basenames:[ Fpath.v ".archivetree" ]
       ~max_ascent:3 ()
   in
-  let archivetree_opt =
-    Error_handling.get_ok_or_raise_string (archivetree ())
+  let* archivetree_opt, fl =
+    Dkml_install_api.Forward_progress.lift_result __POS__ Fmt.lines
+      Error_handling.runner_fatal_log (archivetree ())
   in
   match archivetree_opt with
   | Some archivetree ->
       (* the archive directory is the directory containing .archivetree *)
-      fst (Fpath.split_base archivetree)
+      return (fst (Fpath.split_base archivetree))
   | None ->
-      raise
-        (Dkml_install_api.Installation_error
-           (Fmt.str
-              "The archive directory containing .archivetree could not be \
-               located in %a or an ancestor"
-              Fpath.pp exec_dir))
+      fl ~id:"855c1e64"
+        (Fmt.str
+           "The archive directory containing .archivetree could not be located \
+            in %a or an ancestor"
+           Fpath.pp exec_dir);
+      Dkml_install_api.Forward_progress.Halted_progress Exit_transient_failure
 
 (** [staging_default_dir_for_package ~archive_dir].
     For the benefit of Windows and macOS we keep the directory name ("sg") small. *)
@@ -173,7 +177,9 @@ let staging_files_source_for_package_t =
     let staging_default =
       Path_location.Staging_default_dir
         (fun () ->
-          staging_default_dir_for_package ~archive_dir:(enduser_archive_dir ()))
+          staging_default_dir_for_package
+            ~archive_dir:
+              (Error_handling.continue_or_exit @@ enduser_archive_dir ()))
     in
     Path_location.staging_files_source ~staging_default ~opam_context_opt
       ~staging_files_opt
@@ -188,12 +194,35 @@ let static_files_source_for_package_t =
     let static_default =
       Path_location.Static_default_dir
         (fun () ->
-          static_default_dir_for_package ~archive_dir:(enduser_archive_dir ()))
+          static_default_dir_for_package
+            ~archive_dir:
+              (Error_handling.continue_or_exit @@ enduser_archive_dir ()))
     in
     Path_location.static_files_source ~static_default ~opam_context_opt
       ~static_files_opt
   in
   Term.(const static_files_source' $ opam_context_opt_t $ static_files_opt_t)
+
+let unwrap_progress_t ~default t =
+  let unwrap = function
+    | Dkml_install_api.Forward_progress.Completed -> default
+    | Dkml_install_api.Forward_progress.Continue_progress (a, _fl) -> a
+    | Dkml_install_api.Forward_progress.Halted_progress exitcode ->
+        exit
+          (Dkml_install_api.Forward_progress.Exit_code.to_int_exitcode exitcode)
+  in
+  Term.(const unwrap $ t)
+
+let unwrap_progress_nodefault_t t =
+  let unwrap = function
+    | Dkml_install_api.Forward_progress.Completed ->
+        raise (Invalid_argument "Completed forward progress was not expected")
+    | Dkml_install_api.Forward_progress.Continue_progress (a, _fl) -> a
+    | Dkml_install_api.Forward_progress.Halted_progress exitcode ->
+        exit
+          (Dkml_install_api.Forward_progress.Exit_code.to_int_exitcode exitcode)
+  in
+  Term.(const unwrap $ t)
 
 (** [ctx_for_runner_t component_name reg] creates a user.exe/admin.exe [Term]
     for component [component_name]
@@ -212,10 +241,13 @@ let static_files_source_for_package_t =
     `--opam-context` option of setup.exe) into the staging directory argument
     for admin.exe. *)
 let ctx_for_runner_t ~target_abi component_name reg =
-  Term.(
-    const (create_context ~target_abi ~staging_default:No_staging_default)
-    $ const component_name $ const reg $ setup_log_t $ prefix_t
-    $ staging_files_opt_t $ opam_context_opt_t)
+  let t =
+    Term.(
+      const (create_context ~target_abi ~staging_default:No_staging_default)
+      $ const component_name $ const reg $ setup_log_t $ prefix_t
+      $ staging_files_opt_t $ opam_context_opt_t)
+  in
+  unwrap_progress_nodefault_t t
 
 (** [ctx_for_package_t component_name reg] creates a setup.exe/uninstall.exe [Term]
     for component [component_name] that sets up logging and any other global
@@ -232,12 +264,17 @@ let ctx_for_package_t ~target_abi component_name reg =
   let staging_default =
     Path_location.Staging_default_dir
       (fun () ->
-        staging_default_dir_for_package ~archive_dir:(enduser_archive_dir ()))
+        staging_default_dir_for_package
+          ~archive_dir:
+            (Error_handling.continue_or_exit @@ enduser_archive_dir ()))
   in
-  Term.(
-    const (create_context ~target_abi ~staging_default)
-    $ const component_name $ const reg $ setup_log_t $ prefix_t
-    $ staging_files_opt_t $ opam_context_opt_t)
+  let t =
+    Term.(
+      const (create_context ~target_abi ~staging_default)
+      $ const component_name $ const reg $ setup_log_t $ prefix_t
+      $ staging_files_opt_t $ opam_context_opt_t)
+  in
+  unwrap_progress_nodefault_t t
 
 let to_selector component_selector =
   if component_selector = [] then
@@ -299,3 +336,19 @@ let help_cmd =
   in
   ( Term.(ret (const help $ Arg.man_format $ Term.choice_names $ topic)),
     Term.info "help" ~doc ~exits:Term.default_exits ~man )
+
+(* Term evalation *)
+
+let eval_progress (term, info) =
+  match Term.eval (term, info) with
+  | `Ok v -> (
+      match v with
+      | Dkml_install_api.Forward_progress.Completed -> `Ok ()
+      | Dkml_install_api.Forward_progress.Continue_progress _ -> `Ok ()
+      | Dkml_install_api.Forward_progress.Halted_progress exitcode ->
+          exit
+            (Dkml_install_api.Forward_progress.Exit_code.to_int_exitcode
+               exitcode))
+  | `Version -> `Version
+  | `Help -> `Help
+  | `Error e -> `Error e
