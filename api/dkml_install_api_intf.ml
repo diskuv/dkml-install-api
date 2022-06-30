@@ -305,6 +305,12 @@ module type Intf = sig
         ctx.Context.path_eval "%{staging-ocamlrun:share-abi}/bin/ocamlrun"
       in
       log_spawn_onerror_exit
+        (* Always use your own unique id; create it with PowerShell on Windows:
+              [guid]::NewGuid().Guid.Substring(0,8)
+           or on macOS/Unix:
+              uuidgen | tr A-Z a-z | cut -c1-8
+         *)
+        ~id:"9b7e32e0"
         Cmd.(
           v (Fpath.to_string
               (ctx.Context.path_eval "%{staging-ocamlrun:share-abi}/bin/ocamlrun"))
