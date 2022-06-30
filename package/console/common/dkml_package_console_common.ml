@@ -163,12 +163,16 @@ let spawn cmd =
           Forward_progress.Exit_code.values
       in
       handle_err exitcode
-        (Fmt.str "%s. Root cause: The command had exit code %d: %a"
+        (Fmt.str
+           "%s\n\n\
+            Root cause: @[The command had exit code %d:@ %a@]\n\n\
+            >>> %s <<<"
            (Forward_progress.Exit_code.to_short_sentence exitcode)
-           spawned_exitcode Cmd.pp cmd)
+           spawned_exitcode Cmd.pp cmd
+           (Forward_progress.Exit_code.to_short_sentence exitcode))
   | Ok (`Signaled v) ->
       handle_err Forward_progress.Exit_code.Exit_transient_failure
-        (Fmt.str "Subprocess signaled with signal %d: %a" v Cmd.pp cmd)
+        (Fmt.str "Subprocess signaled with signal %d:@ %a" v Cmd.pp cmd)
 
 let console_component_name = "xx-console"
 

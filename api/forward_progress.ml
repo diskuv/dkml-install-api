@@ -50,10 +50,12 @@ let return (a, fl) = Continue_progress (a, fl)
 
 let styled_fatal_id =
   let pp1 = Fmt.styled (`Fg `Red) (fun fmt -> Fmt.pf fmt "FATAL [%s].") in
-  Fmt.styled `Bold pp1
+  let pp2 = Fmt.styled `Bold pp1 in
+  Fmt.styled `Underline pp2
 
 let styled_fatal_message =
-  Fmt.styled (`Fg `Red) (fun fmt -> Fmt.pf fmt "%a@." Fmt.lines)
+  let pp1 = Fmt.styled (`Fg `Red) (fun fmt -> Fmt.pf fmt "%a@." Fmt.lines) in
+  Fmt.styled `Bold pp1
 
 let stderr_fatallog ~id s =
   if s = "" then Fmt.epr "%a@." styled_fatal_id id

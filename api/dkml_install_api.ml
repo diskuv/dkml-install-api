@@ -121,15 +121,19 @@ let log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd =
               Forward_progress.Exit_code.values )
       in
       fl ~id
-        (Fmt.str "%s. Root cause: The %scommand %a exited with code %d"
+        (Fmt.str
+           "%s\n\n\
+            Root cause: @[The %scommand had exit code %d:@ %a@]\n\n\
+            >>> %s <<<"
            (Forward_progress.Exit_code.to_short_sentence exitcode)
-           adjective Cmd.pp cmd spawned_exitcode);
+           adjective spawned_exitcode Cmd.pp cmd
+           (Forward_progress.Exit_code.to_short_sentence exitcode));
       exit (Forward_progress.Exit_code.to_int_exitcode exitcode)
   | Ok (`Signaled c) ->
-      fl ~id (Fmt.str "The command %a terminated from a signal %d" Cmd.pp cmd c);
+      fl ~id (Fmt.str "The command@ %a@ terminated from a signal %d" Cmd.pp cmd c);
       exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)
   | Error rmsg ->
       fl ~id
-        (Fmt.str "The command %a could not be run due to: %a" Cmd.pp cmd
+        (Fmt.str "The command@ %a@ could not be run due to: %a" Cmd.pp cmd
            Rresult.R.pp_msg rmsg);
       exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)

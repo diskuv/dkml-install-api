@@ -136,7 +136,17 @@ let spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts cmd =
       Logs.info (fun l -> l "The command %a ran successfully" Cmd.pp cmd);
       wait ()
   | Ok (`Exited c) ->
-      Logs.err (fun l -> l "The command %a exited with status %d" Cmd.pp cmd c);
+      (* An exit code from one of the predefined exit codes already has
+         the root cause printed. Don't obscure the console by printing
+         more errors. *)
+      let conforming_exitcode =
+        List.map Dkml_install_api.Forward_progress.Exit_code.to_int_exitcode
+          Dkml_install_api.Forward_progress.Exit_code.values
+        |> List.mem c
+      in
+      if not conforming_exitcode then
+        Logs.err (fun l ->
+            l "The command %a exited with status %d" Cmd.pp cmd c);
       wait ~info_ci:false ();
       exit 2
   | Ok (`Signaled c) ->
