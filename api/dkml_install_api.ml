@@ -81,7 +81,7 @@ module Log_config = struct
   include Log_config
 end
 
-let log_spawn_onerror_exit ~id cmd =
+let log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd =
   Logs.info (fun m -> m "Running command: %a" Cmd.pp cmd);
   let fl = Forward_progress.stderr_fatallog in
   let open Astring in
@@ -104,9 +104,27 @@ let log_spawn_onerror_exit ~id cmd =
       Logs.info (fun m ->
           m "%a ran successfully" Fmt.(option string) (Cmd.line_tool cmd));
       ()
-  | Ok (`Exited c) ->
-      fl ~id (Fmt.str "The command %a exited with status %d" Cmd.pp cmd c);
-      exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)
+  | Ok (`Exited spawned_exitcode) ->
+      let adjective, exitcode =
+        if conformant_subprocess_exitcodes = Some false then
+          ("", Forward_progress.Exit_code.Exit_transient_failure)
+        else
+          ( "conformant ",
+            List.fold_left
+              (fun acc ec ->
+                if
+                  spawned_exitcode
+                  = Forward_progress.Exit_code.to_int_exitcode ec
+                then ec
+                else acc)
+              Forward_progress.Exit_code.Exit_transient_failure
+              Forward_progress.Exit_code.values )
+      in
+      fl ~id
+        (Fmt.str "%s. Root cause: The %scommand %a exited with code %d"
+           (Forward_progress.Exit_code.to_short_sentence exitcode)
+           adjective Cmd.pp cmd spawned_exitcode);
+      exit (Forward_progress.Exit_code.to_int_exitcode exitcode)
   | Ok (`Signaled c) ->
       fl ~id (Fmt.str "The command %a terminated from a signal %d" Cmd.pp cmd c);
       exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)

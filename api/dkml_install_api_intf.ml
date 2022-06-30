@@ -90,14 +90,14 @@ module type Component_config_defaultable = sig
   val needs_install_admin : ctx:Types.Context.t -> bool
   (** [needs_install_admin ~ctx] should inspect the environment and say [true]
       if and only if the [install_admin_subcommand] is necessary.
-        
+
       [ctx] will be a minimal context that does not have access to other
       components. *)
 
   val needs_uninstall_admin : ctx:Types.Context.t -> bool
   (** [needs_uninstall_admin] should inspect the environment and say [true]
       if and only if the [install_admin_subcommand] is necessary.
-        
+
       [ctx] will be a minimal context that does not have access to other
       components. *)
 
@@ -221,16 +221,32 @@ module type Intf = sig
 
   (** {2 Process execution} *)
 
-  val log_spawn_onerror_exit : id:string -> Bos.Cmd.t -> unit
-  (** [log_spawn_onerror_exit ~id cmd] logs the command [cmd] and runs it
+  val log_spawn_onerror_exit :
+    id:string -> ?conformant_subprocess_exitcodes:bool -> Bos.Cmd.t -> unit
+  (** [log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd] logs the command [cmd] and runs it
       synchronously, and prints an error on the fatal logger [fl ~id]
-      and exits with a non-zero exit code if
-      the command exits with a non-zero error code.
+      and then exits with a non-zero exit code if the command exits with a non-zero
+      error code.
 
       The environment variable ["OCAMLRUNPARAM"] will be set to ["b"] so that
       any OCaml bytecode launched by [log_spawn_onerror_exit] will have
       backtraces. Any exiting environment variable ["OCAMLRUNPARAM"] will
-      be kept, however. *)
+      be kept, however.
+
+      {3 Exit Codes}
+
+      The exit code used to leave this process depends on [conformant_subprocess_exitcodes].
+
+      When [conformant_subprocess_exitcodes = true] or [conformant_subprocess_exitcodes] is not
+      specified, the exit code will be the same as the
+      spawned process exit code if and only if the exit code belongs to one of
+      {!Forward_progress.Exit_code}; if the spawned exit code does not belong then
+      the exit code will be {!Forward_progress.Exit_code.Exit_transient_failure}.
+
+      When [conformant_subprocess_exitcodes = false] the exit code will always be
+      {!Forward_progress.Exit_code.Exit_transient_failure} if the spawned process
+      ends in error.
+      *)
 
   (**
   {2 Logging}

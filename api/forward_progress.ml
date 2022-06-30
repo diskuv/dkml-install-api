@@ -15,6 +15,15 @@ module Exit_code = struct
 
   let pp fmt v = Fmt.pf fmt "%s" (show v)
 
+  let values =
+    [
+      Exit_transient_failure;
+      Exit_unrecoverable_failure;
+      Exit_restart_needed;
+      Exit_reboot_needed;
+      Exit_upgrade_required;
+    ]
+
   let to_int_exitcode = function
     | Exit_transient_failure -> 20
     | Exit_unrecoverable_failure -> 21

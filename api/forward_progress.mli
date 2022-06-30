@@ -58,6 +58,9 @@ module Exit_code : sig
   val pp : Format.formatter -> t -> unit
   (** Pretty print on the formatter *)
 
+  val values : t list
+  (** All the possible exit codes *)
+
   val to_int_exitcode : t -> int
   (** An exitcode that can be supplied to {!exit} *)
 
