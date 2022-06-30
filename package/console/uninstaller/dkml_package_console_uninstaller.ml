@@ -93,7 +93,7 @@ let uninstall target_abi program_name package_args : unit =
     Forward_progress.catch_exceptions ~id:"b8738356"
       Dkml_install_runner.Error_handling.runner_fatal_log uninstall_sequence
   with
-  | Forward_progress.Completed | Continue_progress _ ->
+  | Forward_progress.Completed | Continue_progress ((), _) ->
       Logs.debug (fun l -> l "Finished uninstall")
   | Halted_progress ec ->
       Logs.debug (fun l -> l "Finished uninstall in error");

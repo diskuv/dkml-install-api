@@ -344,7 +344,7 @@ let eval_progress (term, info) =
   | `Ok v -> (
       match v with
       | Dkml_install_api.Forward_progress.Completed -> `Ok ()
-      | Dkml_install_api.Forward_progress.Continue_progress _ -> `Ok ()
+      | Dkml_install_api.Forward_progress.Continue_progress ((), _) -> `Ok ()
       | Dkml_install_api.Forward_progress.Halted_progress exitcode ->
           exit
             (Dkml_install_api.Forward_progress.Exit_code.to_int_exitcode

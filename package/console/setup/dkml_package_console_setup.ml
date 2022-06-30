@@ -128,7 +128,7 @@ let setup target_abi program_name package_args : unit =
     Forward_progress.catch_exceptions ~id:"7a222f5c"
       Dkml_install_runner.Error_handling.runner_fatal_log install_sequence
   with
-  | Forward_progress.Completed | Continue_progress _ ->
+  | Forward_progress.Completed | Continue_progress ((), _) ->
       Logs.debug (fun l -> l "Finished setup");
       ()
   | Halted_progress ec ->
