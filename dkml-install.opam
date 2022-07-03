@@ -9,6 +9,7 @@ license: "Apache-2.0"
 homepage: "https://github.com/diskuv/dkml-install-api"
 bug-reports: "https://github.com/diskuv/dkml-install-api/issues"
 depends: [
+  "ocaml" {>= "4.08.0"}
   "alcotest" {>= "1.4.0" & with-test}
   "odoc" {>= "1.5.3" & with-doc}
   "dune" {>= "2.9" & >= "2.9"}
