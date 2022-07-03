@@ -35,7 +35,7 @@ module Context = struct
       | "Windows_x86" -> Ok Windows_x86
       | "Windows_arm64" -> Ok Windows_arm64
       | "Windows_arm32" -> Ok Windows_arm32
-      | s -> Result.error ("Unknown v2 ABI: " ^ s)
+      | s -> Error ("Unknown v2 ABI: " ^ s)
 
     (** [to_string abi] is the enumeration value of
         [abi]; for example ["Linux_x86"]. *)
