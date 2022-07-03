@@ -4,11 +4,6 @@
 (name dkml-install-api)
 (version 0.1.0)
 
-; Since dkml-install-runner.opam.template does not support build:[] steps
-; (at least in Dune 2.9.3) we cannot use --relocatable as in:
-;   ["dune" "install" "-p" name "--relocatable" "--create-install-files" name]
-; So we cannot do:
-;  (generate_opam_files true)
 (package
  (name dkml-install))
 
@@ -20,9 +15,6 @@
 
 (package
  (name dkml-package-console))
-
-(package
- (name dkml-component-xx-console))
 
 ; (source
 ;  (github diskuv/dkml-install-api))
