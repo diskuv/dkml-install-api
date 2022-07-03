@@ -36,6 +36,7 @@
 
 (rule
   (alias runtest)
+  (package dkml-install-runner)
   (target validate_user.dlls.txt.corrected)
   (deps (:bc validate_user.bc))
   ; (enabled_if (<> %{os_type} Win32))
@@ -47,6 +48,7 @@
 
 (rule
   (alias runtest)
+  (package dkml-install-runner)
   (target validate_admin.dlls.txt.corrected)
   (deps (:bc validate_admin.bc))
   ; (enabled_if (<> %{os_type} Win32))

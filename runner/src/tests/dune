@@ -1,3 +1,4 @@
 (test
+ (package dkml-install-runner)
  (name test_path_eval)
  (libraries alcotest bos fpath dkml-install-runner more_testables))
