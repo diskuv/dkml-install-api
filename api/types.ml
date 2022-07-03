@@ -20,21 +20,21 @@ module Context = struct
     [@@deriving eq, ord, enum]
 
     let of_string = function
-      | "Android_arm64v8a" -> Result.ok Android_arm64v8a
-      | "Android_arm32v7a" -> Result.ok Android_arm32v7a
-      | "Android_x86" -> Result.ok Android_x86
-      | "Android_x86_64" -> Result.ok Android_x86_64
-      | "Darwin_arm64" -> Result.ok Darwin_arm64
-      | "Darwin_x86_64" -> Result.ok Darwin_x86_64
-      | "Linux_arm64" -> Result.ok Linux_arm64
-      | "Linux_arm32v6" -> Result.ok Linux_arm32v6
-      | "Linux_arm32v7" -> Result.ok Linux_arm32v7
-      | "Linux_x86_64" -> Result.ok Linux_x86_64
-      | "Linux_x86" -> Result.ok Linux_x86
-      | "Windows_x86_64" -> Result.ok Windows_x86_64
-      | "Windows_x86" -> Result.ok Windows_x86
-      | "Windows_arm64" -> Result.ok Windows_arm64
-      | "Windows_arm32" -> Result.ok Windows_arm32
+      | "Android_arm64v8a" -> Ok Android_arm64v8a
+      | "Android_arm32v7a" -> Ok Android_arm32v7a
+      | "Android_x86" -> Ok Android_x86
+      | "Android_x86_64" -> Ok Android_x86_64
+      | "Darwin_arm64" -> Ok Darwin_arm64
+      | "Darwin_x86_64" -> Ok Darwin_x86_64
+      | "Linux_arm64" -> Ok Linux_arm64
+      | "Linux_arm32v6" -> Ok Linux_arm32v6
+      | "Linux_arm32v7" -> Ok Linux_arm32v7
+      | "Linux_x86_64" -> Ok Linux_x86_64
+      | "Linux_x86" -> Ok Linux_x86
+      | "Windows_x86_64" -> Ok Windows_x86_64
+      | "Windows_x86" -> Ok Windows_x86
+      | "Windows_arm64" -> Ok Windows_arm64
+      | "Windows_arm32" -> Ok Windows_arm32
       | s -> Result.error ("Unknown v2 ABI: " ^ s)
 
     (** [to_string abi] is the enumeration value of

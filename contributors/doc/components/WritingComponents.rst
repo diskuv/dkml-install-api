@@ -51,7 +51,7 @@ For example, when the following configuration values are defined:
         let cmd =
             ( Term.(const execute_install $ ctx_t), Term.info subcommand_name ~doc )
         in
-        Result.ok cmd
+        Ok cmd
 
 the ``dkml-install-runner.exe`` executable will be generated so that
 the following can occur:

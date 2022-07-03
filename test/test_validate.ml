@@ -14,7 +14,7 @@ let test_uppercase () =
 
 let test_lowercase () =
   Alcotest.(check (result unit string_starts_with))
-    "result starts with" (Result.ok ())
+    "result starts with" (Ok ())
     (Private.validate
        (module struct
          include Dkml_install_api.Default_component_config
@@ -35,7 +35,7 @@ let test_underscore () =
 
 let test_dash () =
   Alcotest.(check (result unit string_starts_with))
-    "result starts with" (Result.ok ())
+    "result starts with" (Ok ())
     (Private.validate
        (module struct
          include Dkml_install_api.Default_component_config

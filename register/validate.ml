@@ -5,7 +5,7 @@ let validate (module Cfg : Component_config) =
   let alphanumeric c =
     (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c = '-'
   in
-  if String.for_all alphanumeric Cfg.component_name then Result.ok ()
+  if String.for_all alphanumeric Cfg.component_name then Ok ()
   else
     Result.error
       (Fmt.str
