@@ -14,6 +14,7 @@ depends: [
   "odoc" {>= "1.5.3" & with-doc}
   "dune" {>= "2.9" & >= "2.9"}
   "ppx_deriving" {>= "5.2.1"}
+  "result" {>= "1.5"}
   "astring" {>= "0.8.5"}
   "bos" {>= "0.2.0"}
   "cmdliner" {= "1.0.4"}
