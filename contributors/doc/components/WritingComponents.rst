@@ -37,7 +37,7 @@ For example, when the following configuration values are defined:
 
 .. code:: ocaml
 
-    open Cmdliner
+    module Term = Cmdliner.Term
 
     let component_name = "something"
 

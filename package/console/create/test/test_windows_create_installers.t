@@ -108,7 +108,7 @@ called `create_installers.exe`:
 
 [what_are_components]
   $ cat test_windows_create_installers.ml
-  open Cmdliner
+  module Term = Cmdliner.Term
   
   (* Create some demonstration components that are immediately registered *)
   

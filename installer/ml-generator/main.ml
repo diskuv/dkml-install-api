@@ -1,7 +1,8 @@
-open Cmdliner
 open Bos
 open Dkml_install_api
 open Dkml_install_runner.Error_handling.Monad_syntax
+module Arg = Cmdliner.Arg
+module Term = Cmdliner.Term
 
 let copy_as_is file =
   let content =

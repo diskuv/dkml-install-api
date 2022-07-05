@@ -1,4 +1,4 @@
-open Cmdliner
+module Term = Cmdliner.Term
 
 (* Create some demonstration components that are immediately registered *)
 

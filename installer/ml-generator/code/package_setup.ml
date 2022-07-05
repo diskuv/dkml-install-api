@@ -1,5 +1,5 @@
-open Cmdliner
 open Dkml_package_console_setup
+module Term = Cmdliner.Term
 
 (* TEMPLATE: register () *)
 

@@ -1,5 +1,6 @@
 open Bos
-open Cmdliner
+module Arg = Cmdliner.Arg
+module Term = Cmdliner.Term
 module Context = Types.Context
 module Forward_progress = Forward_progress
 
@@ -16,7 +17,7 @@ module Default_component_config = struct
 
   let do_nothing_with_ctx_t _ctx = ()
 
-  let sdocs = Manpage.s_common_options
+  let sdocs = Cmdliner.Manpage.s_common_options
 
   let install_user_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
     let doc =

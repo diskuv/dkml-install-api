@@ -1,6 +1,7 @@
-open Cmdliner
 open Sexplib0
 open Bos
+module Arg = Cmdliner.Arg
+module Term = Cmdliner.Term
 
 (* {1 Directories} *)
 

@@ -1,12 +1,12 @@
-open Cmdliner
 open Dkml_install_register
 open Dkml_install_api
 open Dkml_install_runner.Cmdliner_runner
 open Dkml_install_runner.Error_handling.Monad_syntax
+module Term = Cmdliner.Term
 
 let default_cmd =
   let doc = "the OCaml CLI user installer" in
-  let sdocs = Manpage.s_common_options in
+  let sdocs = Cmdliner.Manpage.s_common_options in
   let exits = Term.default_exits in
   let man = help_secs in
   ( Term.(ret (const (fun _log_config -> `Help (`Pager, None)) $ setup_log_t)),

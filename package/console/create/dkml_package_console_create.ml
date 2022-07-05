@@ -1,6 +1,7 @@
-open Cmdliner
 open Bos
 open Dkml_install_runner.Error_handling.Monad_syntax
+module Arg = Cmdliner.Arg
+module Term = Cmdliner.Term
 
 let generate_installer_from_archive_dir ~archive_dir ~work_dir ~abi_selector
     ~organization ~program_name ~program_version ~target_dir =
@@ -210,8 +211,8 @@ let opam_context_t =
        OPAM_SWITCH_PREFIX environment variable; otherwise the value of \
        OPAM_SWITCH_PREFIX is the default for $(opt). The OPAM_SWITCH_PREFIX \
        environment variable is set automatically by commands like `%s`."
-      (Manpage.escape "$OPAMROOT")
-      (Manpage.escape
+      (Cmdliner.Manpage.escape "$OPAMROOT")
+      (Cmdliner.Manpage.escape
          "(& opam env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression \
           $_ }` for Windows PowerShell or `eval $(opam env)")
   in

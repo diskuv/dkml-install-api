@@ -1,5 +1,6 @@
-open Cmdliner
 open Bos
+module Arg = Cmdliner.Arg
+module Term = Cmdliner.Term
 
 let help man_format cmds topic =
   match topic with
@@ -21,7 +22,7 @@ let help man_format cmds topic =
 
 let help_secs =
   [
-    `S Manpage.s_common_options;
+    `S Cmdliner.Manpage.s_common_options;
     `P "These options are common to all commands.";
     `S "MORE HELP";
     `P "Use $(mname) $(i,COMMAND) --help for help on a single command.";
@@ -155,14 +156,14 @@ let opam_context_opt_t =
        variable; the OPAM_SWITCH_PREFIX environment variable is set \
        automatically by commands like `%s`."
       Cmdliner_common.staging_files_arg
-      (Manpage.escape "$OPAMROOT")
-      (Manpage.escape
+      (Cmdliner.Manpage.escape "$OPAMROOT")
+      (Cmdliner.Manpage.escape
          "(& opam env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression \
           $_ }` for Windows PowerShell or `eval $(opam env)")
   in
   let opt_escaped = function
     | None -> None
-    | Some s -> Some (Manpage.escape s)
+    | Some s -> Some (Cmdliner.Manpage.escape s)
   in
   Arg.(
     value
@@ -329,7 +330,7 @@ let help_cmd =
   let doc = "display help about $(mname) and $(mname) commands" in
   let man =
     [
-      `S Manpage.s_description;
+      `S Cmdliner.Manpage.s_description;
       `P "Prints help about $(mname) commands and other subjects...";
       `Blocks help_secs;
     ]
