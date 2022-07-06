@@ -33,19 +33,18 @@ let main () =
          ~output_file:(Fpath.v filename) content
   in
 
-  Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"878ee300"
-    (fun () ->
-      let* target_abi, _fl = Dkml_install_runner.Ocaml_abi.create_v2 () in
-      copy_as_is "discover.ml";
-      copy_as_is "entry-application.manifest";
-      copy_as_is "entry_assembly_manifest.ml";
-      copy ~target_abi ~components "entry_main.ml";
-      copy ~target_abi ~components "create_installers.ml";
-      copy ~target_abi ~components "runner_admin.ml";
-      copy ~target_abi ~components "runner_user.ml";
-      copy ~target_abi ~components "package_setup.ml";
-      copy ~target_abi ~components "package_uninstaller.ml";
-      return ())
+  Dkml_install_runner.Error_handling.continue_or_exit
+    (let* target_abi, _fl = Dkml_install_runner.Ocaml_abi.create_v2 () in
+     copy_as_is "discover.ml";
+     copy_as_is "entry-application.manifest";
+     copy_as_is "entry_assembly_manifest.ml";
+     copy ~target_abi ~components "entry_main.ml";
+     copy ~target_abi ~components "create_installers.ml";
+     copy ~target_abi ~components "runner_admin.ml";
+     copy ~target_abi ~components "runner_user.ml";
+     copy ~target_abi ~components "package_setup.ml";
+     copy ~target_abi ~components "package_uninstaller.ml";
+     return ())
 
 let target_abi_t =
   let open Context.Abi_v2 in
@@ -60,4 +59,7 @@ let () =
   let doc =
     "Writes $(b,.ml) files that are used by dune-of-installer-generator.exe"
   in
-  Term.(exit @@ eval (main_t, info "ml-of-installer-generator" ~doc))
+  Term.(
+    exit
+    @@ Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"878ee300"
+         (fun () -> eval (main_t, info "ml-of-installer-generator" ~doc)))
