@@ -56,7 +56,12 @@ let main () project_root corrected =
           ];
         rule
           [
-            targets [ "admin-link-flags.sexp"; "console-link-flags.sexp" ];
+            targets
+              [
+                "admin-link-flags.sexp";
+                "user-link-flags.sexp";
+                "console-link-flags.sexp";
+              ];
             deps
               [
                 named_dep ~name:"discover" "discover.exe";
@@ -70,6 +75,12 @@ let main () project_root corrected =
             public_name "dkml-install-user-runner";
             name "runner_user";
             modules [ "runner_user" ];
+            ocamlopt_flags
+              [
+                List
+                  (loglevel_flags
+                  @ [ Atom ":include"; Atom "user-link-flags.sexp" ]);
+              ];
             libraries ([ "dkml-install-runner.user" ] @ dkml_components);
           ];
         executable
