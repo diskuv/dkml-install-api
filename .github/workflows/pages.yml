@@ -71,7 +71,7 @@ jobs:
         run: cd contributors && make publish-prepare-docs
 
       - name: Build odoc
-        run: opam exec -- dune build @doc
+        run: opam exec -- dune build --release @doc
       - name: Copy odoc into Sphinx site
         run: |
           cmake -E copy_directory _build/default/_doc/_html contributors/_build/html/odoc
