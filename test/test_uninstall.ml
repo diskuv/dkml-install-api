@@ -50,7 +50,7 @@ let () =
     [
       ( "directory",
         [
-          (* test_case "Empty" `Quick test_empty_directory; *)
+          test_case "Empty" `Quick test_empty_directory;
           test_case "Running process" `Slow test_directory_with_running_process;
         ] );
     ]
