@@ -1,8 +1,13 @@
 (tests
  (package dkml-install)
- (names test_dkml_install_api test_validate test_registry)
- (modules test_dkml_install_api test_validate test_registry)
- (libraries dkml-install.api dkml-install.register alcotest more_testables))
+ (names test_dkml_install_api test_validate test_registry test_uninstall)
+ (modules test_dkml_install_api test_validate test_registry test_uninstall)
+ (libraries
+  dkml-install.api
+  dkml-install.register
+  alcotest
+  more_testables
+  diskuvbox))
 
 (library
  (name more_testables)
