@@ -17,6 +17,8 @@ module A = struct
 
   let install_depends_on = [ "b" ]
 
+  let uninstall_depends_on = [ "b" ]
+
   let test () = Queue.add ("test eval " ^ "a") ops
 end
 
@@ -34,6 +36,9 @@ module C = struct
   let component_name = "c"
 
   let install_depends_on = [ "a" ]
+
+  (* Test different install/uninstall_depends_on *)
+  let uninstall_depends_on = []
 
   let test () = Queue.add ("test eval " ^ "c") ops
 end
@@ -54,35 +59,29 @@ let evaluate_in_registry ~eval reg =
     ops;
   return (Queue.to_seq ops |> List.of_seq, fl)
 
-let test_install_eval selector () =
+let test_install_eval selector expected_sequence () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
   Alcotest.(check (list string_starts_with))
-    "evaluate in order of dependencies; return results in evaluation order"
-    [
-      "test eval b";
-      "test eval a";
-      "test eval c";
-      "results (return b), (return a), (return c)";
-    ]
+    "evaluate in order of dependencies; return results in install evaluation \
+     order"
+    expected_sequence
     (let reg = Component_registry.get () in
      Component_registry.add_component ~raise_on_error:true reg (module A);
      Component_registry.add_component ~raise_on_error:true reg (module B);
      Component_registry.add_component ~raise_on_error:true reg (module C);
      More_testables.get_success_or_fail
-     @@ evaluate_in_registry ~eval:(Component_registry.install_eval ~selector) reg)
+     @@ evaluate_in_registry
+          ~eval:(Component_registry.install_eval ~selector)
+          reg)
 
-let test_uninstall_eval selector () =
+let test_uninstall_eval selector expected_sequence () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
   Alcotest.(check (list string_starts_with))
-    "evaluate in order of dependencies; return results in evaluation order"
-    [
-      "test eval c";
-      "test eval a";
-      "test eval b";
-      "results (return c), (return a), (return b)";
-    ]
+    "evaluate in order of dependencies; return results in uninstall evaluation \
+     order"
+    expected_sequence
     (let reg = Component_registry.get () in
      Component_registry.add_component ~raise_on_error:true reg (module A);
      Component_registry.add_component ~raise_on_error:true reg (module B);
@@ -121,8 +120,22 @@ let () =
     [
       ( "dependency-order all",
         [
-          test_case "install_eval" `Quick (test_install_eval All_components);
-          test_case "uninstall_eval" `Quick (test_uninstall_eval All_components);
+          test_case "install-eval" `Quick
+            (test_install_eval All_components
+               [
+                 "test eval b";
+                 "test eval a";
+                 "test eval c";
+                 "results (return b), (return a), (return c)";
+               ]);
+          test_case "uninstall-eval" `Quick
+            (test_uninstall_eval All_components
+               [
+                 "test eval a";
+                 "test eval b";
+                 "test eval c";
+                 "results (return a), (return b), (return c)";
+               ]);
         ] );
       ( "dependency-order select c",
         let selector =
@@ -130,8 +143,17 @@ let () =
             [ "c" ]
         in
         [
-          test_case "eval" `Quick (test_install_eval selector);
-          test_case "reverse-eval" `Quick (test_uninstall_eval selector);
+          test_case "install-eval" `Quick
+            (test_install_eval selector
+               [
+                 "test eval b";
+                 "test eval a";
+                 "test eval c";
+                 "results (return b), (return a), (return c)";
+               ]);
+          test_case "uninstall-eval" `Quick
+            (test_uninstall_eval selector
+               [ "test eval c"; "results (return c)" ]);
         ] );
       ( "validation",
         [
