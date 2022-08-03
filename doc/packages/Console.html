@@ -154,13 +154,14 @@ file support. These pieces of an application are called components.</p>
 <p>and we will also use a library to generate an executable
 called <code class="docutils literal notranslate"><span class="pre">create_installers.exe</span></code>:</p>
 <div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span>  <span class="o">$</span> <span class="n">cat</span> <span class="n">test_windows_create_installers</span><span class="o">.</span><span class="n">ml</span>
-  <span class="k">open</span> <span class="nc">Cmdliner</span>
+  <span class="k">module</span> <span class="nc">Term</span> <span class="o">=</span> <span class="nn">Cmdliner</span><span class="p">.</span><span class="nc">Term</span>
   
   <span class="c">(* Create some demonstration components that are immediately registered *)</span>
   
   <span class="k">let</span> <span class="bp">()</span> <span class="o">=</span>
     <span class="k">let</span> <span class="n">reg</span> <span class="o">=</span> <span class="nn">Dkml_install_register</span><span class="p">.</span><span class="nn">Component_registry</span><span class="p">.</span><span class="n">get</span> <span class="bp">()</span> <span class="k">in</span>
-    <span class="nn">Dkml_install_register</span><span class="p">.</span><span class="nn">Component_registry</span><span class="p">.</span><span class="n">add_component</span> <span class="n">reg</span>
+    <span class="nn">Dkml_install_register</span><span class="p">.</span><span class="nn">Component_registry</span><span class="p">.</span><span class="n">add_component</span> <span class="o">~</span><span class="n">raise_on_error</span><span class="o">:</span><span class="bp">true</span>
+      <span class="n">reg</span>
       <span class="o">(</span><span class="k">module</span> <span class="k">struct</span>
         <span class="k">include</span> <span class="nn">Dkml_install_api</span><span class="p">.</span><span class="nc">Default_component_config</span>
   
