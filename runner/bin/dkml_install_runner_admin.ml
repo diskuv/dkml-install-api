@@ -21,23 +21,27 @@ let default_cmd =
 
 let install_admin_cmds ~reg ~target_abi ~selector =
   Dkml_install_runner.Error_handling.continue_or_exit
-  @@ Component_registry.eval reg ~selector
+  @@ Component_registry.install_eval reg ~selector
        ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
          let module Cfg = (val cfg : Component_config) in
          Cfg.install_admin_subcommand ~component_name:Cfg.component_name
            ~subcommand_name:(Fmt.str "install-admin-%s" Cfg.component_name)
            ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
-           ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
+           ~ctx_t:
+             (ctx_for_runner_t ~install_direction:Install ~target_abi
+                Cfg.component_name reg))
 
 let uninstall_admin_cmds ~reg ~target_abi ~selector =
   Dkml_install_runner.Error_handling.continue_or_exit
-  @@ Component_registry.reverse_eval reg ~selector
+  @@ Component_registry.uninstall_eval reg ~selector
        ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
          let module Cfg = (val cfg : Component_config) in
          Cfg.uninstall_admin_subcommand ~component_name:Cfg.component_name
            ~subcommand_name:(Fmt.str "uninstall-admin-%s" Cfg.component_name)
            ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
-           ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
+           ~ctx_t:
+             (ctx_for_runner_t ~install_direction:Uninstall ~target_abi
+                Cfg.component_name reg))
 
 (* For admin we have {un}install-adminall commands to do all the components
    at once. This is important since on Win32 we want only one

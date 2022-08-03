@@ -20,22 +20,26 @@ let component_cmds ~reg ~target_abi =
   let selector = Component_registry.All_components in
   Dkml_install_runner.Error_handling.continue_or_exit
     (let* install_user_cmds, _fl =
-       Component_registry.eval reg ~selector
+       Component_registry.install_eval reg ~selector
          ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
            let module Cfg = (val cfg : Component_config) in
            Cfg.install_user_subcommand ~component_name:Cfg.component_name
              ~subcommand_name:(Fmt.str "install-user-%s" Cfg.component_name)
              ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
-             ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
+             ~ctx_t:
+               (ctx_for_runner_t ~install_direction:Install ~target_abi
+                  Cfg.component_name reg))
      in
      let* uninstall_user_cmds, _fl =
-       Component_registry.reverse_eval reg ~selector
+       Component_registry.uninstall_eval reg ~selector
          ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
            let module Cfg = (val cfg : Component_config) in
            Cfg.uninstall_user_subcommand ~component_name:Cfg.component_name
              ~subcommand_name:(Fmt.str "uninstall-user-%s" Cfg.component_name)
              ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
-             ~ctx_t:(ctx_for_runner_t ~target_abi Cfg.component_name reg))
+             ~ctx_t:
+               (ctx_for_runner_t ~install_direction:Uninstall ~target_abi
+                  Cfg.component_name reg))
      in
      return (install_user_cmds @ uninstall_user_cmds))
 

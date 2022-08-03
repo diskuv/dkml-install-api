@@ -8,7 +8,7 @@ open Dkml_install_api
 
    Confer:
    https://ocaml.org/api/Dynlink.html#1_Accesscontrol "set_allowed_units" *)
-let (_ : string list) = Default_component_config.depends_on
+let (_ : string list) = Default_component_config.uninstall_depends_on
 
 (* Create command line options for dkml-install-{user,admin}-runner.exe *)
 
@@ -68,7 +68,7 @@ let uninstall target_abi program_name package_args : unit =
     Component_registry.validate reg;
     (* Diagnostics *)
     let* (_ : unit list), _fl =
-      Component_registry.reverse_eval reg ~selector
+      Component_registry.uninstall_eval reg ~selector
         ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Logs.debug (fun m ->
@@ -77,7 +77,7 @@ let uninstall target_abi program_name package_args : unit =
     in
     (* Run user-runner.exe *)
     let* (_ : unit list), _fl =
-      Component_registry.reverse_eval reg ~selector
+      Component_registry.uninstall_eval reg ~selector
         ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           Dkml_package_console_common.spawn

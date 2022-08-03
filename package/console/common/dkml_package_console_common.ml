@@ -92,7 +92,7 @@ let create_minimal_context ~self_component_name ~log_config ~target_abi ~prefix
 let needs_install_admin ~reg ~selector ~log_config ~target_abi ~prefix
     ~staging_files_source =
   let+ bools =
-    Dkml_install_register.Component_registry.eval reg ~selector
+    Dkml_install_register.Component_registry.install_eval reg ~selector
       ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         let* ctx, _fl =
@@ -114,7 +114,7 @@ let needs_install_admin ~reg ~selector ~log_config ~target_abi ~prefix
 let needs_uninstall_admin ~reg ~selector ~log_config ~target_abi ~prefix
     ~staging_files_source =
   let+ bools =
-    Dkml_install_register.Component_registry.eval reg ~selector
+    Dkml_install_register.Component_registry.uninstall_eval reg ~selector
       ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         let* ctx, _fl =

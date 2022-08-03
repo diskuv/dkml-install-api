@@ -1,6 +1,6 @@
 opam-version: "2.0"
 name: "dkml-install-installer"
-version: "0.1.1"
+version: "0.2.0"
 synopsis: "Build tools for DKML installers"
 description:
   "Build-time executables that can generate Dune include files which will compile essential end-user executables."

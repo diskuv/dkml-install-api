@@ -22,10 +22,16 @@ module Global_context = struct
     reg : Component_registry.t;
   }
 
-  let create reg =
+  type install_direction = Install | Uninstall
+
+  let create ~install_direction reg =
     let* var_list, _fl =
-      Component_registry.eval reg ~selector:All_components
-        ~fl:patheval_fatal_log ~f:(fun cfg ->
+      let eval =
+        match install_direction with
+        | Install -> Component_registry.install_eval
+        | Uninstall -> Component_registry.uninstall_eval
+      in
+      eval reg ~selector:All_components ~fl:patheval_fatal_log ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           return Cfg.component_name)
     in
@@ -85,8 +91,8 @@ module Interpreter = struct
 
     return { all_vars = local_vars; all_pathonly_vars = local_pathonly_vars }
 
-  let create global_ctx ~self_component_name ~abi ~staging_files_source ~prefix
-      =
+  let create global_ctx ~install_direction ~self_component_name ~abi
+      ~staging_files_source ~prefix =
     let name_var = ("name", self_component_name) in
     let* temp_val, _fl =
       Error_handling.map_msg_error_to_progress
@@ -118,9 +124,14 @@ module Interpreter = struct
       Component_registry.Just_named_components_plus_their_dependencies
         [ self_component_name ]
     in
+    let eval =
+      match install_direction with
+      | Global_context.Install -> Component_registry.install_eval
+      | Uninstall -> Component_registry.uninstall_eval
+    in
     let* self_component_vars, _fl =
-      Component_registry.eval global_ctx.reg ~selector:self_selector
-        ~fl:patheval_fatal_log ~f:(fun cfg ->
+      eval global_ctx.reg ~selector:self_selector ~fl:patheval_fatal_log
+        ~f:(fun cfg ->
           let module Cfg = (val cfg : Component_config) in
           return
             [
@@ -200,7 +211,7 @@ module Private = struct
   let mock_interpreter () =
     let open Error_handling.Monad_syntax in
     let* orig, _fl =
-      Interpreter.create mock_global_ctx
+      Interpreter.create mock_global_ctx ~install_direction:Install
         ~self_component_name:"component_under_test" ~abi:Windows_x86
         ~staging_files_source:mock_staging_files_sources
         ~prefix:(Fpath.v "/test/prefix")

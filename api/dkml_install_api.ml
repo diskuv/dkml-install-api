@@ -13,7 +13,9 @@ let administrator =
   if Sys.win32 then "Administrator privileges" else "root permissions"
 
 module Default_component_config = struct
-  let depends_on = []
+  let install_depends_on = []
+
+  let uninstall_depends_on = []
 
   let do_nothing_with_ctx_t _ctx = ()
 

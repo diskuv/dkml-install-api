@@ -47,18 +47,19 @@ let setup_log_t =
 
 (* Define a context that includes all component-based fields *)
 
-let create_context ~staging_default ~target_abi self_component_name reg
-    log_config prefix staging_files_opt opam_context_opt =
+let create_context ~install_direction ~staging_default ~target_abi
+    self_component_name reg log_config prefix staging_files_opt opam_context_opt
+    =
   let open Path_eval in
   let open Error_handling.Monad_syntax in
   let* staging_files_source, _fl =
     Path_location.staging_files_source ~staging_default ~opam_context_opt
       ~staging_files_opt
   in
-  let* global_context, _fl = Global_context.create reg in
+  let* global_context, _fl = Global_context.create ~install_direction reg in
   let* interpreter, _fl =
-    Interpreter.create global_context ~self_component_name ~abi:target_abi
-      ~staging_files_source ~prefix:(Fpath.v prefix)
+    Interpreter.create global_context ~install_direction ~self_component_name
+      ~abi:target_abi ~staging_files_source ~prefix:(Fpath.v prefix)
   in
   return
     {
@@ -246,10 +247,12 @@ let unwrap_progress_nodefault_t t =
     environment variable OPAM_SWITCH_PREFIX (if specified with the no argument
     `--opam-context` option of setup.exe) into the staging directory argument
     for admin.exe. *)
-let ctx_for_runner_t ~target_abi component_name reg =
+let ctx_for_runner_t ~install_direction ~target_abi component_name reg =
   let t =
     Term.(
-      const (create_context ~target_abi ~staging_default:No_staging_default)
+      const
+        (create_context ~install_direction ~target_abi
+           ~staging_default:No_staging_default)
       $ const component_name $ const reg $ setup_log_t $ prefix_t
       $ staging_files_opt_t $ opam_context_opt_t)
   in
@@ -266,7 +269,7 @@ let ctx_for_runner_t ~target_abi component_name reg =
 
     Unlike {!ctx_for_runner_t} the staging directory has a default
     (`Staging_default_dir`) based on relative paths from setup.exe. *)
-let ctx_for_package_t ~target_abi component_name reg =
+let ctx_for_package_t ~install_direction ~target_abi component_name reg =
   let staging_default =
     Path_location.Staging_default_dir
       (fun () ->
@@ -276,7 +279,7 @@ let ctx_for_package_t ~target_abi component_name reg =
   in
   let t =
     Term.(
-      const (create_context ~target_abi ~staging_default)
+      const (create_context ~install_direction ~target_abi ~staging_default)
       $ const component_name $ const reg $ setup_log_t $ prefix_t
       $ staging_files_opt_t $ opam_context_opt_t)
   in

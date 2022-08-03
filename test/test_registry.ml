@@ -15,7 +15,7 @@ module A = struct
 
   let component_name = "a"
 
-  let depends_on = [ "b" ]
+  let install_depends_on = [ "b" ]
 
   let test () = Queue.add ("test eval " ^ "a") ops
 end
@@ -33,7 +33,7 @@ module C = struct
 
   let component_name = "c"
 
-  let depends_on = [ "a" ]
+  let install_depends_on = [ "a" ]
 
   let test () = Queue.add ("test eval " ^ "c") ops
 end
@@ -54,7 +54,7 @@ let evaluate_in_registry ~eval reg =
     ops;
   return (Queue.to_seq ops |> List.of_seq, fl)
 
-let test_eval selector () =
+let test_install_eval selector () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
   Alcotest.(check (list string_starts_with))
@@ -70,9 +70,9 @@ let test_eval selector () =
      Component_registry.add_component ~raise_on_error:true reg (module B);
      Component_registry.add_component ~raise_on_error:true reg (module C);
      More_testables.get_success_or_fail
-     @@ evaluate_in_registry ~eval:(Component_registry.eval ~selector) reg)
+     @@ evaluate_in_registry ~eval:(Component_registry.install_eval ~selector) reg)
 
-let test_reverse_eval selector () =
+let test_uninstall_eval selector () =
   let () = Queue.clear ops in
   let () = Component_registry.Private.reset () in
   Alcotest.(check (list string_starts_with))
@@ -89,7 +89,7 @@ let test_reverse_eval selector () =
      Component_registry.add_component ~raise_on_error:true reg (module C);
      More_testables.get_success_or_fail
      @@ evaluate_in_registry
-          ~eval:(Component_registry.reverse_eval ~selector)
+          ~eval:(Component_registry.uninstall_eval ~selector)
           reg)
 
 let test_validate_failure () =
@@ -121,8 +121,8 @@ let () =
     [
       ( "dependency-order all",
         [
-          test_case "eval" `Quick (test_eval All_components);
-          test_case "reverse-eval" `Quick (test_reverse_eval All_components);
+          test_case "install_eval" `Quick (test_install_eval All_components);
+          test_case "uninstall_eval" `Quick (test_uninstall_eval All_components);
         ] );
       ( "dependency-order select c",
         let selector =
@@ -130,8 +130,8 @@ let () =
             [ "c" ]
         in
         [
-          test_case "eval" `Quick (test_eval selector);
-          test_case "reverse-eval" `Quick (test_reverse_eval selector);
+          test_case "eval" `Quick (test_install_eval selector);
+          test_case "reverse-eval" `Quick (test_uninstall_eval selector);
         ] );
       ( "validation",
         [

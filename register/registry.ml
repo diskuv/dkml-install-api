@@ -38,11 +38,14 @@ let add_component ?raise_on_error reg cfg =
       | None ->
           Logs.debug (fun m ->
               m
-                "@[Adding component '%s' to the registry with dependencies:@]@ \
-                 @[%a@]"
+                "@[Adding component '%s' to the registry with installation \
+                 dependencies:@]@ @[<v>%a@]@ @[and uninstallation \
+                 dependencies:@]@ @[<v>%a@]"
                 Cfg.component_name
                 Fmt.(Dump.list string)
-                Cfg.depends_on);
+                Cfg.install_depends_on
+                Fmt.(Dump.list string)
+                Cfg.uninstall_depends_on);
           Hashtbl.add reg Cfg.component_name cfg)
   | Error s -> on_error (Fmt.str "FATAL [7c039d7e]. %s" s) raise_on_error
 
@@ -69,14 +72,14 @@ let validate ?raise_on_error reg =
                    Fmt.Dump.string dependency
                in
                on_error msg raise_on_error)
-           Cfg.depends_on)
+           (Cfg.install_depends_on @ Cfg.uninstall_depends_on))
 
-let toposort reg ~selector ~fl =
+let toposort reg ~dependency_getter ~selector ~fl =
   let vertex_map =
     Hashtbl.to_seq_values reg |> List.of_seq
     |> List.map (fun cfg ->
            let module Cfg = (val cfg : Component_config) in
-           (Cfg.component_name, Cfg.depends_on))
+           (Cfg.component_name, dependency_getter cfg))
   in
   let+ tsorted_all =
     match Tsort.sort vertex_map with
@@ -122,7 +125,7 @@ let toposort reg ~selector ~fl =
                       Hashtbl.add visited cfg_name ();
                       List.iter
                         (fun cfg_name' -> visit_dep_graph cfg_name')
-                        Cfg.depends_on)
+                        (dependency_getter cfg))
                 | None -> ()
               in
               visit_dep_graph hd;
@@ -151,16 +154,18 @@ let eval_each ~f ~fl lst =
     (return ([], fl))
     lst
 
-let eval reg ~selector ~f ~fl =
+let install_eval reg ~selector ~f ~fl =
+  let dependency_getter cfg = let module Cfg = (val cfg : Component_config) in Cfg.install_depends_on in
   let* res, _fl =
-    Forward_progress.map (eval_each ~f ~fl) (toposort ~selector ~fl reg)
+    Forward_progress.map (eval_each ~f ~fl) (toposort ~dependency_getter ~selector ~fl reg)
   in
   Forward_progress.map List.rev res
 
-let reverse_eval reg ~selector ~f ~fl =
+let uninstall_eval reg ~selector ~f ~fl =
+  let dependency_getter cfg = let module Cfg = (val cfg : Component_config) in Cfg.uninstall_depends_on in
   let* res, _fl =
     Forward_progress.map (eval_each ~f ~fl)
-      (Forward_progress.map List.rev (toposort ~selector ~fl reg))
+      (Forward_progress.map List.rev (toposort ~dependency_getter ~selector ~fl reg))
   in
   Forward_progress.map List.rev res
 

@@ -1,3 +1,8 @@
+## 0.2.0
+
+* Breaking change: The `depends_on` component value has been split into
+  `install_depends_on` and `uninstall_depends_on`
+
 ## 0.1.1
 
 * Change Opam `available:` to only `win32`, `macos` and `linux` operating systems to reflect conditions in

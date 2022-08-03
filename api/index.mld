@@ -11,7 +11,7 @@ your {e *.opam} file:
 {v
 opam-version: "2.0"
 depends: [
-  "dkml-install" {>= "0.1.0"}
+  "dkml-install" {>= "0.2.0"}
   (* ... *)
 ]
 v}

@@ -4,11 +4,17 @@
 [@@@alert "-deprecated"]
 
 module type Component_config_defaultable = sig
-  val depends_on : string list
-  (** [depends_on] are the components, if any, that this component depends on.
+  val install_depends_on : string list
+  (** [install_depends_on] are the components, if any, that this component depends on
+      during installation.
 
-      Dependencies will be installed in order and uninstalled in reverse
-      order. *)
+      Dependencies will be installed in topological order. *)
+
+  val uninstall_depends_on : string list
+  (** [uninstall_depends_on] are the components, if any, that this component depends on
+      during uninstallation.
+    
+      Dependencies will be uninstalled in reverse topological order. *)
 
   val install_user_subcommand :
     component_name:string ->
@@ -346,7 +352,7 @@ module type Intf = sig
 
           let component_name = "enduser-yourcomponent"
 
-          let depends_on = [ "staging-ocamlrun" ]
+          let install_depends_on = [ "staging-ocamlrun" ]
 
           let install_user_subcommand ~component_name:_ ~subcommand_name ~fl ~ctx_t =
             let doc = "Install your component" in

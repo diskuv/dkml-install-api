@@ -11,7 +11,7 @@ provided ``ocamlrun`` by doing the following:
 
 1. (TODO) Declare an Opam dependency on ``dkml-component-ocamlrun-api``
 2. (TODO) Declare a Dune ``(libraries ...)`` dependency on ``dkml-component-ocamlrun-api``
-3. Declare a component ``let depends_on = [...])`` dependency on
+3. Declare a component ``let install_depends_on = [...])`` dependency on
    ``ocamlrun``. *Do not declare the component dependency on the API!*
 4. Use the XXX function (TODO: provide link to odoc documentation) which will handle
    all the details of spawning ocamlrun on the **bytecode executable** you installed
@@ -25,7 +25,7 @@ provided ``ocamlopt.opt`` by doing the following:
 
 1. (TODO) Declare an Opam dependency on ``dkml-component-ocamlcompiler-api``
 2. (TODO) Declare a Dune ``(libraries ...)`` dependency on ``dkml-component-ocamlcompiler-api``
-3. Declare a component ``let depends_on = [...])`` dependency on
+3. Declare a component ``let install_depends_on = [...])`` dependency on
    ``ocamlcompiler``. *Do not declare the component dependency on the API!*
 4. Use the XXX function (TODO: provide link to odoc documentation) which will handle
    all the details of spawning ocamlc on the **OCaml source code** you installed
@@ -67,7 +67,7 @@ All of the above utilities are available in the USER_INSTALL phase.
 Use it in your project as follows:
 
 1. (TODO) Declare a Dune ``(libraries ...)`` dependency on ``dkml-component-unixutils``
-2. Declare a component ``let depends_on = [...])`` dependency on
+2. Declare a component ``let install_depends_on = [...])`` dependency on
    ``unixutils``.
 3. Use the ``log_spawn_onerror_exit`` function
    (TODO: provide link to odoc documentation) which will handle

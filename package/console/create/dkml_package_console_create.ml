@@ -89,7 +89,8 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
   let reg = Dkml_install_register.Component_registry.get () in
   (* Get component names *)
   let* all_component_names, _fl =
-    Dkml_install_register.Component_registry.eval reg ~selector:All_components
+    Dkml_install_register.Component_registry.install_eval reg
+      ~selector:All_components
       ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
         let module Cfg = (val cfg : Dkml_install_api.Component_config) in
         return Cfg.component_name)
