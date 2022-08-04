@@ -290,16 +290,17 @@ let to_selector component_selector =
     Dkml_install_register.Component_registry.All_components
   else Just_named_components_plus_their_dependencies component_selector
 
-let component_selector_t ~install =
+let component_selector_t ~install_direction =
   let doc =
-    if install then
-      "A component to install; all the components it depends on are implicitly \
-       added. May be repeated. If no components are specified, then all \
-       components are installed."
-    else
-      "A component to uninstall; all the components it depends on are \
-       implicitly added. May be repeated. If no components are specified, then \
-       all components are uninstalled."
+    match install_direction with
+    | Path_eval.Global_context.Install ->
+        "A component to install; all the components it depends on are \
+         implicitly added. May be repeated. If no components are specified, \
+         then all components are installed."
+    | Uninstall ->
+        "A component to uninstall; all the components it depends on are \
+         implicitly added. May be repeated. If no components are specified, \
+         then all components are uninstalled."
   in
   Arg.(value & opt_all string [] & info [ "component" ] ~doc)
 

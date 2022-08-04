@@ -75,7 +75,7 @@ let run_terms_with_common_runner_args ~log_config ~prefix ~staging_files_source
       | `Help -> `Help (`Pager, None))
   | _ as a -> a
 
-let helper_all_cmd ~doc ~name ~install f =
+let helper_all_cmd ~doc ~name ~install_direction f =
   let runall log_config selector prefix staging_files_opt opam_context_opt =
     let* staging_files_source, _fl =
       Dkml_install_runner.Path_location.staging_files_source
@@ -92,18 +92,20 @@ let helper_all_cmd ~doc ~name ~install f =
       ret
         (Dkml_install_runner.Cmdliner_runner.unwrap_progress_nodefault_t
            (const runall $ setup_log_t
-           $ component_selector_t ~install
+           $ component_selector_t ~install_direction
            $ prefix_t $ staging_files_opt_t $ opam_context_opt_t))),
     Term.info name ~version:"%%VERSION%%" ~doc )
 
 let install_all_cmd ~reg ~target_abi =
   let doc = "install all components" in
-  helper_all_cmd ~name:"install-adminall" ~doc ~install:true
+  helper_all_cmd ~name:"install-adminall" ~doc
+    ~install_direction:Dkml_install_runner.Path_eval.Global_context.Install
     (install_admin_cmds ~reg ~target_abi)
 
 let uninstall_all_cmd ~reg ~target_abi =
   let doc = "uninstall all components" in
-  helper_all_cmd ~name:"uninstall-adminall" ~doc ~install:false
+  helper_all_cmd ~name:"uninstall-adminall" ~doc
+    ~install_direction:Dkml_install_runner.Path_eval.Global_context.Uninstall
     (uninstall_admin_cmds ~reg ~target_abi)
 
 let main ~target_abi =

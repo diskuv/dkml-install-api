@@ -324,7 +324,7 @@ let prefix_opt_t ~program_name ~target_abi =
         [ Dkml_install_runner.Cmdliner_common.prefix_arg ]
         ~docv:"PREFIX" ~doc)
 
-let package_args_t ~program_name ~target_abi =
+let package_args_t ~program_name ~target_abi ~install_direction =
   let package_args log_config prefix_opt component_selector static_files_source
       staging_files_source =
     {
@@ -340,6 +340,6 @@ let package_args_t ~program_name ~target_abi =
   Cmdliner.Term.(
     const package_args $ Dkml_install_runner.Cmdliner_runner.setup_log_t
     $ prefix_opt_t ~program_name ~target_abi
-    $ Dkml_install_runner.Cmdliner_runner.component_selector_t ~install:true
+    $ Dkml_install_runner.Cmdliner_runner.component_selector_t ~install_direction
     $ Dkml_install_runner.Cmdliner_runner.static_files_source_for_package_t
     $ Dkml_install_runner.Cmdliner_runner.staging_files_source_for_package_t)

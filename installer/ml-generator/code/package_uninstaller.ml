@@ -11,7 +11,8 @@ let uninstall_cmd =
       $ const Private_common.program_name
       $ Dkml_package_console_common.package_args_t
           ~program_name:Private_common.program_name
-          ~target_abi:(failwith "TEMPLATE: target_abi")),
+          ~target_abi:(failwith "TEMPLATE: target_abi")
+          ~install_direction:Dkml_install_runner.Path_eval.Global_context.Uninstall),
     Term.info "dkml-package-uninstaller" ~version:"%%VERSION%%" ~doc )
 
 let () =
