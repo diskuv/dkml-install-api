@@ -10,6 +10,16 @@ let () =
       include Dkml_install_api.Default_component_config
 
       let component_name = "offline-test1"
+
+      (* During installation test1 needs ocamlrun.exe *)
+      let install_depends_on = [ "staging-ocamlrun" ]
+
+      (* But during uninstallation test1 doesn't need ocamlrun.exe.
+
+         Often uninstallers just need to delete a directory and other
+         small tasks that can be done directly using the install API
+         and/or the install API's standard libraries (ex. Bos). *)
+      let uninstall_depends_on = []
     end);
   Dkml_install_register.Component_registry.add_component reg
     (module struct

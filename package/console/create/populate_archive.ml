@@ -11,8 +11,7 @@ let copy_dir_if_exists ~src ~dst =
       failwith (Fmt.str "%a" Rresult.R.pp_msg msg)
 
 let populate_archive ~archive_dir ~abi_selector ~runner_admin_exe
-    ~runner_user_exe ~packager_entry_exe ~packager_setup_bytecode
-    ~packager_uninstaller_bytecode =
+    ~runner_user_exe ~packager_entry_exe ~packager_bytecode =
   (* Make a `.archivetree` empty file so executables like
      bin/dkml-package-setup.bc can be renamed setup.exe, but still
      setup.exe will be able to locate all the other archive files. *)
@@ -59,13 +58,8 @@ let populate_archive ~archive_dir ~abi_selector ~runner_admin_exe
            ());
       get_ok_or_failwith_string
         (Diskuvbox.copy_file ~err:box_err
-           ~src:(resolve packager_setup_bytecode)
-           ~dst:Fpath.(archive_dir / "bin" / "dkml-package-setup.bc")
-           ());
-      get_ok_or_failwith_string
-        (Diskuvbox.copy_file ~err:box_err
-           ~src:(resolve packager_uninstaller_bytecode)
-           ~dst:Fpath.(archive_dir / "bin" / "dkml-package-uninstaller.bc")
+           ~src:(resolve packager_bytecode)
+           ~dst:Fpath.(archive_dir / "bin" / "dkml-package.bc")
            ())
 
 let populate_archive_component ~component_name ~abi_selector

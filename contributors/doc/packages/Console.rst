@@ -128,8 +128,8 @@ installation is finished.
 Each archive tree also contains a "st" folder for the static files ... these
 are files that are directly copied to the end-user's installation directory.
 
-Each archive tree also contains the packager executables named as
-``bin/dkml-package-setup.bc`` and ``bin/dkml-package-uninstaller.bc``.
+Each archive tree also contains the packager executables named
+``bin/dkml-package.bc``.
 
 .. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
     :language: shell-session

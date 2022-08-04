@@ -197,6 +197,6 @@ let entry ~target_abi =
   let ocamlrun_exe = Fpath.(ocamlrun_dir / "bin" / "ocamlrun.exe") in
   let lib_ocaml = Fpath.(ocamlrun_dir / "lib" / "ocaml") in
   (* Run the packager setup.bc with any arguments it needs *)
-  let setup_bc = Fpath.(archive_dir / "bin" / "dkml-package-setup.bc") in
+  let setup_bc = Fpath.(archive_dir / "bin" / "dkml-package.bc") in
   spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts
     Cmd.(v (Fpath.to_string setup_bc) %% args)

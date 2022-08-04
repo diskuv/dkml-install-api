@@ -18,7 +18,8 @@ let sevenz_log_level_opts =
   | Some Info -> Cmd.(output_log_level_min %% disable_stdout_stream)
   | _ -> disable_stdout_stream
 
-let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
+let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~archive_path
+    ~archive_dir =
   let ( let* ) = Rresult.R.bind in
   let pwd =
     Dkml_package_console_common.get_ok_or_failwith_rresult (OS.Dir.current ())
@@ -85,7 +86,12 @@ let create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir =
       v (Fpath.to_string sevenz_exe)
       % "rn" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
       % Fpath.to_string archive_path
-      % "bin/dkml-package-entry.exe" % "setup.exe")
+      % "bin/dkml-package-entry.exe"
+      %
+      match install_direction with
+      | Dkml_install_runner.Path_eval.Global_context.Install -> "setup.exe"
+      | Dkml_install_runner.Path_eval.Global_context.Uninstall ->
+          "uninstall.exe")
   in
   Logs.debug (fun l ->
       l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
@@ -269,8 +275,8 @@ let modify_manifest ~pe_file ~work_dir ~organization ~program_name
       Logs.err (fun l -> l "FATAL: %s" msg);
       failwith msg
 
-let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
-    ~program_version ~work_dir =
+let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
+    ~organization ~program_name ~program_version ~work_dir =
   let abi_name =
     Dkml_install_runner.Path_location.show_abi_selector abi_selector
   in
@@ -281,7 +287,8 @@ let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
     Fmt.str "unsigned-%s-%s-%s.exe" program_name_kebab_lower_case abi_name
       program_version
   in
-  Logs.info (fun l -> l "Generating %s" installer_basename);
+  let installer_path = Fpath.(target_dir / installer_basename) in
+  Logs.info (fun l -> l "Generating %a" Fpath.pp installer_path);
   Dkml_package_console_common.get_ok_or_failwith_rresult
     (let ( let* ) = Rresult.R.bind in
      let sfx_dir = Fpath.(work_dir / "sfx") in
@@ -291,7 +298,6 @@ let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
          / Fmt.str "%s-%s-%s.7z" program_name_kebab_lower_case abi_name
              program_version)
      in
-     let installer_path = Fpath.(target_dir / installer_basename) in
      let sevenz_exe = Fpath.(sfx_dir / "7zr.exe") in
      let* (_was_created : bool) = OS.Dir.create sfx_dir in
      let* () =
@@ -328,7 +334,8 @@ let generate ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
      in
      (* Step 2. Create ARCHIVE *)
      let* () =
-       create_7z_archive ~sevenz_exe ~abi_selector ~archive_path ~archive_dir
+       create_7z_archive ~sevenz_exe ~install_direction ~abi_selector
+         ~archive_path ~archive_dir
      in
      (* Step 3. Create SFX || ARCHIVE *)
      let* () = create_sfx_exe ~sfx_path ~archive_path ~installer_path in

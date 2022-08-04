@@ -99,7 +99,7 @@ let prefix_t =
     & opt (some string) None
     & info [ Cmdliner_common.prefix_arg ] ~docv:"PREFIX" ~doc)
 
-(** Directory containing dkml-package-setup.bc or whatever executable
+(** Directory containing dkml-package.bc or whatever executable
    (perhaps a renamed setup.exe in a non-bin folder) is currently running. *)
 let exec_dir = Fpath.(parent (v OS.Arg.exec))
 

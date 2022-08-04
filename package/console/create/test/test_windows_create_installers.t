@@ -120,6 +120,16 @@ called `create_installers.exe`:
         include Dkml_install_api.Default_component_config
   
         let component_name = "offline-test1"
+  
+        (* During installation test1 needs ocamlrun.exe *)
+        let install_depends_on = [ "staging-ocamlrun" ]
+  
+        (* But during uninstallation test1 doesn't need ocamlrun.exe.
+  
+           Often uninstallers just need to delete a directory and other
+           small tasks that can be done directly using the install API
+           and/or the install API's standard libraries (ex. Bos). *)
+        let uninstall_depends_on = []
       end);
     Dkml_install_register.Component_registry.add_component reg
       (module struct
@@ -221,17 +231,24 @@ Side note:
 |   ]
 
 [create_installers_run]
-  $ ./test_windows_create_installers.exe --program-version 0.1.0 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
-  test_windows_create_installers.exe: [INFO] Installers will be created that include the components: 
+  $ ./test_windows_create_installers.exe --program-version 0.1.0 --component=offline-test1 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
+  test_windows_create_installers.exe: [INFO] Installers will be created that include the components:
                                              [staging-ocamlrun; offline-test1]
-  test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: 
+  test_windows_create_installers.exe: [INFO] Uninstallers will be created that include the components:
+                                             [offline-test1]
+  test_windows_create_installers.exe: [INFO] Installers and uninstallers will be created for the ABIs:
                                              [generic; linux_x86_64;
                                               windows_x86_64]
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating unsigned-full-name-windows_x86_64-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating script target\i\bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\u\bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\i\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\u\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating target\i\unsigned-full-name-windows_x86_64-0.1.0.exe
   Parsing of manifest successful.
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\i\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating target\u\unsigned-full-name-windows_x86_64-0.1.0.exe
+  Parsing of manifest successful.
+  test_windows_create_installers.exe: [INFO] Generating script target\u\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
 
 The --work-dir will have ABI-specific archive trees in its "a" folder.
@@ -251,47 +268,81 @@ Each archive tree also contains the packager executables named as
 bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
 
 [create_installers_work]
-  $ diskuvbox tree --encoding UTF-8 -d 5 work
+  $ diskuvbox tree --encoding UTF-8 -d 6 work
   work
   ├── a/
-  │   ├── generic/
-  │   │   ├── sg/
-  │   │   │   └── offline-test1/
-  │   │   │       └── generic/
-  │   │   └── st/
-  │   │       └── offline-test1/
-  │   │           ├── README.txt
-  │   │           └── icon.png
-  │   ├── linux_x86_64/
-  │   │   ├── bin/
-  │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   ├── dkml-install-user-runner.exe
-  │   │   │   ├── dkml-package-entry.exe
-  │   │   │   ├── dkml-package-setup.bc
-  │   │   │   └── dkml-package-uninstaller.bc
-  │   │   ├── sg/
-  │   │   │   └── offline-test1/
-  │   │   │       └── generic/
-  │   │   └── st/
-  │   │       └── offline-test1/
-  │   │           ├── README.txt
-  │   │           └── icon.png
-  │   └── windows_x86_64/
-  │       ├── bin/
-  │       │   ├── dkml-install-admin-runner.exe
-  │       │   ├── dkml-install-user-runner.exe
-  │       │   ├── dkml-package-entry.exe
-  │       │   ├── dkml-package-setup.bc
-  │       │   └── dkml-package-uninstaller.bc
-  │       ├── sg/
-  │       │   ├── offline-test1/
-  │       │   │   └── generic/
-  │       │   └── staging-ocamlrun/
-  │       │       └── windows_x86_64/
-  │       └── st/
-  │           └── offline-test1/
-  │               ├── README.txt
-  │               └── icon.png
+  │   ├── i/
+  │   │   ├── generic/
+  │   │   │   ├── sg/
+  │   │   │   │   └── offline-test1/
+  │   │   │   │       └── generic/
+  │   │   │   └── st/
+  │   │   │       └── offline-test1/
+  │   │   │           ├── README.txt
+  │   │   │           └── icon.png
+  │   │   ├── linux_x86_64/
+  │   │   │   ├── bin/
+  │   │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   │   ├── dkml-install-user-runner.exe
+  │   │   │   │   ├── dkml-package-entry.exe
+  │   │   │   │   └── dkml-package.bc
+  │   │   │   ├── sg/
+  │   │   │   │   └── offline-test1/
+  │   │   │   │       └── generic/
+  │   │   │   └── st/
+  │   │   │       └── offline-test1/
+  │   │   │           ├── README.txt
+  │   │   │           └── icon.png
+  │   │   └── windows_x86_64/
+  │   │       ├── bin/
+  │   │       │   ├── dkml-install-admin-runner.exe
+  │   │       │   ├── dkml-install-user-runner.exe
+  │   │       │   ├── dkml-package-entry.exe
+  │   │       │   └── dkml-package.bc
+  │   │       ├── sg/
+  │   │       │   ├── offline-test1/
+  │   │       │   │   └── generic/
+  │   │       │   └── staging-ocamlrun/
+  │   │       │       └── windows_x86_64/
+  │   │       └── st/
+  │   │           └── offline-test1/
+  │   │               ├── README.txt
+  │   │               └── icon.png
+  │   └── u/
+  │       ├── generic/
+  │       │   ├── sg/
+  │       │   │   └── offline-test1/
+  │       │   │       └── generic/
+  │       │   └── st/
+  │       │       └── offline-test1/
+  │       │           ├── README.txt
+  │       │           └── icon.png
+  │       ├── linux_x86_64/
+  │       │   ├── bin/
+  │       │   │   ├── dkml-install-admin-runner.exe
+  │       │   │   ├── dkml-install-user-runner.exe
+  │       │   │   ├── dkml-package-entry.exe
+  │       │   │   └── dkml-package.bc
+  │       │   ├── sg/
+  │       │   │   └── offline-test1/
+  │       │   │       └── generic/
+  │       │   └── st/
+  │       │       └── offline-test1/
+  │       │           ├── README.txt
+  │       │           └── icon.png
+  │       └── windows_x86_64/
+  │           ├── bin/
+  │           │   ├── dkml-install-admin-runner.exe
+  │           │   ├── dkml-install-user-runner.exe
+  │           │   ├── dkml-package-entry.exe
+  │           │   └── dkml-package.bc
+  │           ├── sg/
+  │           │   └── offline-test1/
+  │           │       └── generic/
+  │           └── st/
+  │               └── offline-test1/
+  │                   ├── README.txt
+  │                   └── icon.png
   ├── setup.exe.manifest
   └── sfx/
       └── 7zr.exe
@@ -324,70 +375,112 @@ Sidenote:
 | tar (or RPM, etc.) inside of OCaml.
 
 [archiver_session]
-  $ diskuvbox tree --encoding UTF-8 -d 5 work
+  $ diskuvbox tree --encoding UTF-8 -d 6 work
   work
   ├── a/
-  │   ├── generic/
-  │   │   ├── sg/
-  │   │   │   └── offline-test1/
-  │   │   │       └── generic/
-  │   │   └── st/
-  │   │       └── offline-test1/
-  │   │           ├── README.txt
-  │   │           └── icon.png
-  │   ├── linux_x86_64/
-  │   │   ├── bin/
-  │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   ├── dkml-install-user-runner.exe
-  │   │   │   ├── dkml-package-entry.exe
-  │   │   │   ├── dkml-package-setup.bc
-  │   │   │   └── dkml-package-uninstaller.bc
-  │   │   ├── sg/
-  │   │   │   └── offline-test1/
-  │   │   │       └── generic/
-  │   │   └── st/
-  │   │       └── offline-test1/
-  │   │           ├── README.txt
-  │   │           └── icon.png
-  │   └── windows_x86_64/
-  │       ├── bin/
-  │       │   ├── dkml-install-admin-runner.exe
-  │       │   ├── dkml-install-user-runner.exe
-  │       │   ├── dkml-package-entry.exe
-  │       │   ├── dkml-package-setup.bc
-  │       │   └── dkml-package-uninstaller.bc
-  │       ├── sg/
-  │       │   ├── offline-test1/
-  │       │   │   └── generic/
-  │       │   └── staging-ocamlrun/
-  │       │       └── windows_x86_64/
-  │       └── st/
-  │           └── offline-test1/
-  │               ├── README.txt
-  │               └── icon.png
+  │   ├── i/
+  │   │   ├── generic/
+  │   │   │   ├── sg/
+  │   │   │   │   └── offline-test1/
+  │   │   │   │       └── generic/
+  │   │   │   └── st/
+  │   │   │       └── offline-test1/
+  │   │   │           ├── README.txt
+  │   │   │           └── icon.png
+  │   │   ├── linux_x86_64/
+  │   │   │   ├── bin/
+  │   │   │   │   ├── dkml-install-admin-runner.exe
+  │   │   │   │   ├── dkml-install-user-runner.exe
+  │   │   │   │   ├── dkml-package-entry.exe
+  │   │   │   │   └── dkml-package.bc
+  │   │   │   ├── sg/
+  │   │   │   │   └── offline-test1/
+  │   │   │   │       └── generic/
+  │   │   │   └── st/
+  │   │   │       └── offline-test1/
+  │   │   │           ├── README.txt
+  │   │   │           └── icon.png
+  │   │   └── windows_x86_64/
+  │   │       ├── bin/
+  │   │       │   ├── dkml-install-admin-runner.exe
+  │   │       │   ├── dkml-install-user-runner.exe
+  │   │       │   ├── dkml-package-entry.exe
+  │   │       │   └── dkml-package.bc
+  │   │       ├── sg/
+  │   │       │   ├── offline-test1/
+  │   │       │   │   └── generic/
+  │   │       │   └── staging-ocamlrun/
+  │   │       │       └── windows_x86_64/
+  │   │       └── st/
+  │   │           └── offline-test1/
+  │   │               ├── README.txt
+  │   │               └── icon.png
+  │   └── u/
+  │       ├── generic/
+  │       │   ├── sg/
+  │       │   │   └── offline-test1/
+  │       │   │       └── generic/
+  │       │   └── st/
+  │       │       └── offline-test1/
+  │       │           ├── README.txt
+  │       │           └── icon.png
+  │       ├── linux_x86_64/
+  │       │   ├── bin/
+  │       │   │   ├── dkml-install-admin-runner.exe
+  │       │   │   ├── dkml-install-user-runner.exe
+  │       │   │   ├── dkml-package-entry.exe
+  │       │   │   └── dkml-package.bc
+  │       │   ├── sg/
+  │       │   │   └── offline-test1/
+  │       │   │       └── generic/
+  │       │   └── st/
+  │       │       └── offline-test1/
+  │       │           ├── README.txt
+  │       │           └── icon.png
+  │       └── windows_x86_64/
+  │           ├── bin/
+  │           │   ├── dkml-install-admin-runner.exe
+  │           │   ├── dkml-install-user-runner.exe
+  │           │   ├── dkml-package-entry.exe
+  │           │   └── dkml-package.bc
+  │           ├── sg/
+  │           │   └── offline-test1/
+  │           │       └── generic/
+  │           └── st/
+  │               └── offline-test1/
+  │                   ├── README.txt
+  │                   └── icon.png
   ├── setup.exe.manifest
   └── sfx/
       └── 7zr.exe
 
-  $ diskuvbox tree --encoding UTF-8 -d 5 target
+  $ diskuvbox tree --encoding UTF-8 -d 2 target
   target
-  ├── bundle-full-name-generic.sh
-  ├── bundle-full-name-linux_x86_64.sh
-  ├── bundle-full-name-windows_x86_64.sh
-  ├── full-name-windows_x86_64-0.1.0.7z
-  ├── full-name-windows_x86_64-0.1.0.sfx
-  └── unsigned-full-name-windows_x86_64-0.1.0.exe
+  ├── i/
+  │   ├── bundle-full-name-generic.sh
+  │   ├── bundle-full-name-linux_x86_64.sh
+  │   ├── bundle-full-name-windows_x86_64.sh
+  │   ├── full-name-windows_x86_64-0.1.0.7z
+  │   ├── full-name-windows_x86_64-0.1.0.sfx
+  │   └── unsigned-full-name-windows_x86_64-0.1.0.exe
+  └── u/
+      ├── bundle-full-name-generic.sh
+      ├── bundle-full-name-linux_x86_64.sh
+      ├── bundle-full-name-windows_x86_64.sh
+      ├── full-name-windows_x86_64-0.1.0.7z
+      ├── full-name-windows_x86_64-0.1.0.sfx
+      └── unsigned-full-name-windows_x86_64-0.1.0.exe
 
-  $ target/bundle-full-name-linux_x86_64.sh -o target tar
-  $ tar tvf target/full-name-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
+  $ target/i/bundle-full-name-linux_x86_64.sh -o target/i tar
+  $ tar tvf target/i/full-name-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
   ./
   full-name-linux_x86_64-0.1.0/.archivetree
   full-name-linux_x86_64-0.1.0/bin/
   full-name-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
   full-name-linux_x86_64-0.1.0/bin/dkml-install-user-runner.exe
 
-  $ target/bundle-full-name-linux_x86_64.sh -o target -e .tar.gz tar --gzip
-  $ tar tvfz target/full-name-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
+  $ target/i/bundle-full-name-linux_x86_64.sh -o target/i -e .tar.gz tar --gzip
+  $ tar tvfz target/i/full-name-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
   full-name-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc
   full-name-linux_x86_64-0.1.0/st/
   full-name-linux_x86_64-0.1.0/st/offline-test1/
@@ -410,7 +503,7 @@ contents is exactly the same as the archive tree, except that
 `setup.exe`.
 
 [setup_exe_list_7z]
-  $ ../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
+  $ ../assets/lzma2107/bin/7zr.exe l target/i/full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
   bin
@@ -431,11 +524,33 @@ contents is exactly the same as the archive tree, except that
   sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll
   st\offline-test1\icon.png
   st\offline-test1\README.txt
-  bin\dkml-package-setup.bc
-  bin\dkml-package-uninstaller.bc
+  bin\dkml-package.bc
   bin\dkml-install-admin-runner.exe
   bin\dkml-install-user-runner.exe
   setup.exe
+  vcruntime140.dll
+  vcruntime140_1.dll
+  vc_redist.dkml-target-abi.exe
+  ------------------------
+  folders
+
+  $ ../assets/lzma2107/bin/7zr.exe l target/u/full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
+  Name
+  ------------------------
+  bin
+  sg
+  sg\offline-test1
+  sg\offline-test1\generic
+  st
+  st\offline-test1
+  .archivetree
+  sg\offline-test1\generic\install-offline-test1.bc
+  st\offline-test1\icon.png
+  st\offline-test1\README.txt
+  bin\dkml-package.bc
+  bin\dkml-install-admin-runner.exe
+  bin\dkml-install-user-runner.exe
+  uninstall.exe
   vcruntime140.dll
   vcruntime140_1.dll
   vc_redist.dkml-target-abi.exe
@@ -447,7 +562,7 @@ We would see the same thing if we looked inside the *installer*
 `unsigned-NAME-VER.exe` (which is just the SFX module and the .7z archive above):
 
 [setup_exe_list_exe]
-  $ ../assets/lzma2107/bin/7zr.exe l target/unsigned-full-name-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
+  $ ../assets/lzma2107/bin/7zr.exe l target/i/unsigned-full-name-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
   Name
   ------------------------
   bin
@@ -472,7 +587,7 @@ Since the *installer* `unsigned-NAME-VER.exe` will decompress the .7z archive an
 run the *packager entry* `setup.exe` it found in the .7z root directory, we expect to
 see "Salut" printed. Which is what we see:
 [setup_exe_run]
-  $ target/unsigned-full-name-windows_x86_64-0.1.0.exe
+  $ target/i/unsigned-full-name-windows_x86_64-0.1.0.exe
   Salut
 [setup_exe_run]
 
