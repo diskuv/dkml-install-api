@@ -91,28 +91,29 @@ CRAM test script is the source of code examples in this chapter.</p>
 <p>We’ll just mimic an Opam switch by creating a directory structure and some
 files.</p>
 <p>We want to model an Opam “installer” package that has two components:
-* dkml-component-staging-ocamlrun
-* dkml-component-offline-test1</p>
+* dkml-component-offline-test-a
+* dkml-component-offline-test-b</p>
 <p>The files will just be empty files except <code class="docutils literal notranslate"><span class="pre">dkml-package-entry.exe</span></code> is
 a real executable that prints “Yoda”.</p>
 <p>If this were not a demonstration, we would let the dkml-install-api framework
 generate those two files for us.</p>
 <div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>install -d _opam/bin
-<span class="gp">  $ </span>install -d _opam/lib/dkml-component-offline-test1
+<span class="gp">  $ </span>install -d _opam/lib/dkml-component-offline-test-a
+<span class="gp">  $ </span>install -d _opam/lib/dkml-component-offline-test-b
 <span class="gp">  $ </span>install -d _opam/lib/dkml-component-staging-ocamlrun
-<span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test1/staging-files/generic
-<span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test1/static-files
+<span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test-a/static-files
+<span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test-b/staging-files/generic
 <span class="gp">  $ </span>install -d _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin
 <span class="gp">  $ </span>install -d _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs
-<span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64
-<span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64
+<span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test-b/staging-files/darwin_arm64
+<span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test-b/staging-files/darwin_x86_64
 <span class="gp">  $ </span>diskuvbox touch _opam/bin/dkml-install-admin-runner.exe
 <span class="gp">  $ </span>diskuvbox touch _opam/bin/dkml-install-user-runner.exe
-<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/generic/install-offline-test1.bc
-<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64/libpng.dylib
-<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64/libpng.dylib
-<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/static-files/README.txt
-<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test1/static-files/icon.png
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test-a/static-files/README.txt
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test-a/static-files/icon.png
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test-b/staging-files/generic/somecode-offline-test-b.bc
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test-b/staging-files/darwin_arm64/libpng.dylib
+<span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test-b/staging-files/darwin_x86_64/libpng.dylib
 <span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin/ocamlrun.exe
 <span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs/dllthreads.dll
 <span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">5</span> _opam
@@ -121,20 +122,22 @@ generate those two files for us.</p>
 <span class="go">  │   ├── dkml-install-admin-runner.exe</span>
 <span class="go">  │   └── dkml-install-user-runner.exe</span>
 <span class="go">  ├── lib/</span>
-<span class="go">  │   ├── dkml-component-offline-test1/</span>
+<span class="go">  │   ├── dkml-component-offline-test-a/</span>
+<span class="go">  │   ├── dkml-component-offline-test-b/</span>
 <span class="go">  │   └── dkml-component-staging-ocamlrun/</span>
 <span class="go">  └── share/</span>
-<span class="go">      ├── dkml-component-offline-test1/</span>
-<span class="go">      │   ├── staging-files/</span>
-<span class="go">      │   │   ├── darwin_arm64/</span>
-<span class="go">      │   │   │   └── libpng.dylib</span>
-<span class="go">      │   │   ├── darwin_x86_64/</span>
-<span class="go">      │   │   │   └── libpng.dylib</span>
-<span class="go">      │   │   └── generic/</span>
-<span class="go">      │   │       └── install-offline-test1.bc</span>
+<span class="go">      ├── dkml-component-offline-test-a/</span>
 <span class="go">      │   └── static-files/</span>
 <span class="go">      │       ├── README.txt</span>
 <span class="go">      │       └── icon.png</span>
+<span class="go">      ├── dkml-component-offline-test-b/</span>
+<span class="go">      │   └── staging-files/</span>
+<span class="go">      │       ├── darwin_arm64/</span>
+<span class="go">      │       │   └── libpng.dylib</span>
+<span class="go">      │       ├── darwin_x86_64/</span>
+<span class="go">      │       │   └── libpng.dylib</span>
+<span class="go">      │       └── generic/</span>
+<span class="go">      │           └── somecode-offline-test-b.bc</span>
 <span class="go">      └── dkml-component-staging-ocamlrun/</span>
 <span class="go">          └── staging-files/</span>
 <span class="go">              └── windows_x86_64/</span>
@@ -149,9 +152,30 @@ generate those two files for us.</p>
 an application are installed on your machine. For example, a Git installer
 could ask whether you wanted to install the “Git LFS” extension for large
 file support. These pieces of an application are called components.</p>
-<p>For now, we’ll define two do-nothing test components:
-<code class="docutils literal notranslate"><span class="pre">staging-ocamlrun</span></code> and <code class="docutils literal notranslate"><span class="pre">offline-test1</span></code></p>
-<p>and we will also use a library to generate an executable
+<p>For now, we’ll define two do-nothing test components:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">offline-test-a</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offline-test-b</span></code></p></li>
+</ul>
+<p>Using the Console installers will automatically bring in two other components:
+* <code class="docutils literal notranslate"><span class="pre">staging-ocamlrun</span></code>
+* <code class="docutils literal notranslate"><span class="pre">xx-console</span></code></p>
+<p>The installation of <code class="docutils literal notranslate"><span class="pre">offline-test-b</span></code> depends on <code class="docutils literal notranslate"><span class="pre">offline-test-a</span></code>.
+That means during the installation of <code class="docutils literal notranslate"><span class="pre">offline-test-b</span></code>, <code class="docutils literal notranslate"><span class="pre">offline-test-a</span></code>
+will also be installed.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We chose to make the uninstallation of <code class="docutils literal notranslate"><span class="pre">offline-test-b</span></code> _not_ depend on
+<code class="docutils literal notranslate"><span class="pre">offline-test-a</span></code>.
+That means during the uninstallation of <code class="docutils literal notranslate"><span class="pre">offline-test-b</span></code>, no files from
+<code class="docutils literal notranslate"><span class="pre">offline-test-a</span></code> will be involved in the uninstallation. And it also
+means the uninstaller for <code class="docutils literal notranslate"><span class="pre">offline-test-b</span></code> is smaller because it does
+not include <code class="docutils literal notranslate"><span class="pre">offline-test-a</span></code> files.</p>
+<p>Often it is simpler to uninstall than install. In fact, uninstalling may
+simply be removing a directory, regardless of how many components were
+installed.</p>
+</div>
+<p>We will also use a library to generate an executable
 called <code class="docutils literal notranslate"><span class="pre">create_installers.exe</span></code>:</p>
 <div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span>  <span class="o">$</span> <span class="n">cat</span> <span class="n">test_windows_create_installers</span><span class="o">.</span><span class="n">ml</span>
   <span class="k">module</span> <span class="nc">Term</span> <span class="o">=</span> <span class="nn">Cmdliner</span><span class="p">.</span><span class="nc">Term</span>
@@ -165,23 +189,35 @@ called <code class="docutils literal notranslate"><span class="pre">create_insta
       <span class="o">(</span><span class="k">module</span> <span class="k">struct</span>
         <span class="k">include</span> <span class="nn">Dkml_install_api</span><span class="p">.</span><span class="nc">Default_component_config</span>
   
-        <span class="k">let</span> <span class="n">component_name</span> <span class="o">=</span> <span class="s2">&quot;offline-test1&quot;</span>
+        <span class="k">let</span> <span class="n">component_name</span> <span class="o">=</span> <span class="s2">&quot;offline-test-a&quot;</span>
   
-        <span class="c">(* During installation test1 needs ocamlrun.exe *)</span>
+        <span class="c">(* During installation test-a needs ocamlrun.exe. staging-ocamlrun</span>
+<span class="c">           is a pre-existing component that gives you ocamlrun.exe. *)</span>
         <span class="k">let</span> <span class="n">install_depends_on</span> <span class="o">=</span> <span class="o">[</span> <span class="s2">&quot;staging-ocamlrun&quot;</span> <span class="o">]</span>
   
-        <span class="c">(* But during uninstallation test1 doesn&#39;t need ocamlrun.exe.</span>
+        <span class="c">(* During uninstallation test-a doesn&#39;t need ocamlrun.exe.</span>
 <span class="c">  </span>
 <span class="c">           Often uninstallers just need to delete a directory and other</span>
 <span class="c">           small tasks that can be done directly using the install API</span>
-<span class="c">           and/or the install API&#39;s standard libraries (ex. Bos). *)</span>
+<span class="c">           and/or the install API&#39;s standard libraries (ex. Bos).</span>
+<span class="c">  </span>
+<span class="c">           Currently the console installer and console uninstaller always force a</span>
+<span class="c">           dependency on staging-ocamlrun; this may change and other types of</span>
+<span class="c">           uninstallers may not have the same behavior.</span>
+<span class="c">        *)</span>
         <span class="k">let</span> <span class="n">uninstall_depends_on</span> <span class="o">=</span> <span class="bp">[]</span>
       <span class="k">end</span><span class="o">);</span>
-    <span class="nn">Dkml_install_register</span><span class="p">.</span><span class="nn">Component_registry</span><span class="p">.</span><span class="n">add_component</span> <span class="n">reg</span>
+    <span class="nn">Dkml_install_register</span><span class="p">.</span><span class="nn">Component_registry</span><span class="p">.</span><span class="n">add_component</span> <span class="o">~</span><span class="n">raise_on_error</span><span class="o">:</span><span class="bp">true</span>
+      <span class="n">reg</span>
       <span class="o">(</span><span class="k">module</span> <span class="k">struct</span>
         <span class="k">include</span> <span class="nn">Dkml_install_api</span><span class="p">.</span><span class="nc">Default_component_config</span>
   
-        <span class="k">let</span> <span class="n">component_name</span> <span class="o">=</span> <span class="s2">&quot;staging-ocamlrun&quot;</span>
+        <span class="k">let</span> <span class="n">component_name</span> <span class="o">=</span> <span class="s2">&quot;offline-test-b&quot;</span>
+  
+        <span class="c">(* During installation test-b needs test-a *)</span>
+        <span class="k">let</span> <span class="n">install_depends_on</span> <span class="o">=</span> <span class="o">[</span> <span class="s2">&quot;staging-ocamlrun&quot;</span><span class="o">;</span> <span class="s2">&quot;offline-test-a&quot;</span> <span class="o">]</span>
+  
+        <span class="k">let</span> <span class="n">uninstall_depends_on</span> <span class="o">=</span> <span class="bp">[]</span>
       <span class="k">end</span><span class="o">)</span>
   
   <span class="c">(* Let&#39;s also create an entry point for `create_installers.exe` *)</span>
@@ -258,11 +294,13 @@ with something like:</p>
 </pre></div>
 </div>
 <p>Running the <code class="docutils literal notranslate"><span class="pre">create_installers.exe</span></code> gives:</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>./test_windows_create_installers.exe --program-version <span class="m">0</span>.1.0 --component<span class="o">=</span>offline-test1 --opam-context<span class="o">=</span>_opam/ --target-dir<span class="o">=</span>target/ --work-dir<span class="o">=</span>work/ --abi<span class="o">=</span>linux_x86_64 --abi<span class="o">=</span>windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>./test_windows_create_installers.exe --program-version <span class="m">0</span>.1.0 --component<span class="o">=</span>offline-test-b --opam-context<span class="o">=</span>_opam/ --target-dir<span class="o">=</span>target/ --work-dir<span class="o">=</span>work/ --abi<span class="o">=</span>linux_x86_64 --abi<span class="o">=</span>windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
 <span class="go">  test_windows_create_installers.exe: [INFO] Installers will be created that include the components:</span>
-<span class="go">                                             [staging-ocamlrun; offline-test1]</span>
+<span class="go">                                             [offline-test-a; offline-test-b;</span>
+<span class="go">                                              staging-ocamlrun; xx-console]</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Uninstallers will be created that include the components:</span>
-<span class="go">                                             [offline-test1]</span>
+<span class="go">                                             [offline-test-b; staging-ocamlrun;</span>
+<span class="go">                                              xx-console]</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Installers and uninstallers will be created for the ABIs:</span>
 <span class="go">                                             [generic; linux_x86_64;</span>
 <span class="go">                                              windows_x86_64]</span>
@@ -295,10 +333,10 @@ are files that are directly copied to the end-user’s installation directory.</
 <span class="go">  │   ├── i/</span>
 <span class="go">  │   │   ├── generic/</span>
 <span class="go">  │   │   │   ├── sg/</span>
-<span class="go">  │   │   │   │   └── offline-test1/</span>
+<span class="go">  │   │   │   │   └── offline-test-b/</span>
 <span class="go">  │   │   │   │       └── generic/</span>
 <span class="go">  │   │   │   └── st/</span>
-<span class="go">  │   │   │       └── offline-test1/</span>
+<span class="go">  │   │   │       └── offline-test-a/</span>
 <span class="go">  │   │   │           ├── README.txt</span>
 <span class="go">  │   │   │           └── icon.png</span>
 <span class="go">  │   │   ├── linux_x86_64/</span>
@@ -308,10 +346,10 @@ are files that are directly copied to the end-user’s installation directory.</
 <span class="go">  │   │   │   │   ├── dkml-package-entry.exe</span>
 <span class="go">  │   │   │   │   └── dkml-package.bc</span>
 <span class="go">  │   │   │   ├── sg/</span>
-<span class="go">  │   │   │   │   └── offline-test1/</span>
+<span class="go">  │   │   │   │   └── offline-test-b/</span>
 <span class="go">  │   │   │   │       └── generic/</span>
 <span class="go">  │   │   │   └── st/</span>
-<span class="go">  │   │   │       └── offline-test1/</span>
+<span class="go">  │   │   │       └── offline-test-a/</span>
 <span class="go">  │   │   │           ├── README.txt</span>
 <span class="go">  │   │   │           └── icon.png</span>
 <span class="go">  │   │   └── windows_x86_64/</span>
@@ -321,49 +359,39 @@ are files that are directly copied to the end-user’s installation directory.</
 <span class="go">  │   │       │   ├── dkml-package-entry.exe</span>
 <span class="go">  │   │       │   └── dkml-package.bc</span>
 <span class="go">  │   │       ├── sg/</span>
-<span class="go">  │   │       │   ├── offline-test1/</span>
+<span class="go">  │   │       │   ├── offline-test-b/</span>
 <span class="go">  │   │       │   │   └── generic/</span>
 <span class="go">  │   │       │   └── staging-ocamlrun/</span>
 <span class="go">  │   │       │       └── windows_x86_64/</span>
 <span class="go">  │   │       └── st/</span>
-<span class="go">  │   │           └── offline-test1/</span>
+<span class="go">  │   │           └── offline-test-a/</span>
 <span class="go">  │   │               ├── README.txt</span>
 <span class="go">  │   │               └── icon.png</span>
 <span class="go">  │   └── u/</span>
 <span class="go">  │       ├── generic/</span>
-<span class="go">  │       │   ├── sg/</span>
-<span class="go">  │       │   │   └── offline-test1/</span>
-<span class="go">  │       │   │       └── generic/</span>
-<span class="go">  │       │   └── st/</span>
-<span class="go">  │       │       └── offline-test1/</span>
-<span class="go">  │       │           ├── README.txt</span>
-<span class="go">  │       │           └── icon.png</span>
+<span class="go">  │       │   └── sg/</span>
+<span class="go">  │       │       └── offline-test-b/</span>
+<span class="go">  │       │           └── generic/</span>
 <span class="go">  │       ├── linux_x86_64/</span>
 <span class="go">  │       │   ├── bin/</span>
 <span class="go">  │       │   │   ├── dkml-install-admin-runner.exe</span>
 <span class="go">  │       │   │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │       │   │   ├── dkml-package-entry.exe</span>
 <span class="go">  │       │   │   └── dkml-package.bc</span>
-<span class="go">  │       │   ├── sg/</span>
-<span class="go">  │       │   │   └── offline-test1/</span>
-<span class="go">  │       │   │       └── generic/</span>
-<span class="go">  │       │   └── st/</span>
-<span class="go">  │       │       └── offline-test1/</span>
-<span class="go">  │       │           ├── README.txt</span>
-<span class="go">  │       │           └── icon.png</span>
+<span class="go">  │       │   └── sg/</span>
+<span class="go">  │       │       └── offline-test-b/</span>
+<span class="go">  │       │           └── generic/</span>
 <span class="go">  │       └── windows_x86_64/</span>
 <span class="go">  │           ├── bin/</span>
 <span class="go">  │           │   ├── dkml-install-admin-runner.exe</span>
 <span class="go">  │           │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │           │   ├── dkml-package-entry.exe</span>
 <span class="go">  │           │   └── dkml-package.bc</span>
-<span class="go">  │           ├── sg/</span>
-<span class="go">  │           │   └── offline-test1/</span>
-<span class="go">  │           │       └── generic/</span>
-<span class="go">  │           └── st/</span>
-<span class="go">  │               └── offline-test1/</span>
-<span class="go">  │                   ├── README.txt</span>
-<span class="go">  │                   └── icon.png</span>
+<span class="go">  │           └── sg/</span>
+<span class="go">  │               ├── offline-test-b/</span>
+<span class="go">  │               │   └── generic/</span>
+<span class="go">  │               └── staging-ocamlrun/</span>
+<span class="go">  │                   └── windows_x86_64/</span>
 <span class="go">  ├── setup.exe.manifest</span>
 <span class="go">  └── sfx/</span>
 <span class="go">      └── 7zr.exe</span>
@@ -399,10 +427,10 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  │   ├── i/</span>
 <span class="go">  │   │   ├── generic/</span>
 <span class="go">  │   │   │   ├── sg/</span>
-<span class="go">  │   │   │   │   └── offline-test1/</span>
+<span class="go">  │   │   │   │   └── offline-test-b/</span>
 <span class="go">  │   │   │   │       └── generic/</span>
 <span class="go">  │   │   │   └── st/</span>
-<span class="go">  │   │   │       └── offline-test1/</span>
+<span class="go">  │   │   │       └── offline-test-a/</span>
 <span class="go">  │   │   │           ├── README.txt</span>
 <span class="go">  │   │   │           └── icon.png</span>
 <span class="go">  │   │   ├── linux_x86_64/</span>
@@ -412,10 +440,10 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  │   │   │   │   ├── dkml-package-entry.exe</span>
 <span class="go">  │   │   │   │   └── dkml-package.bc</span>
 <span class="go">  │   │   │   ├── sg/</span>
-<span class="go">  │   │   │   │   └── offline-test1/</span>
+<span class="go">  │   │   │   │   └── offline-test-b/</span>
 <span class="go">  │   │   │   │       └── generic/</span>
 <span class="go">  │   │   │   └── st/</span>
-<span class="go">  │   │   │       └── offline-test1/</span>
+<span class="go">  │   │   │       └── offline-test-a/</span>
 <span class="go">  │   │   │           ├── README.txt</span>
 <span class="go">  │   │   │           └── icon.png</span>
 <span class="go">  │   │   └── windows_x86_64/</span>
@@ -425,49 +453,39 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  │   │       │   ├── dkml-package-entry.exe</span>
 <span class="go">  │   │       │   └── dkml-package.bc</span>
 <span class="go">  │   │       ├── sg/</span>
-<span class="go">  │   │       │   ├── offline-test1/</span>
+<span class="go">  │   │       │   ├── offline-test-b/</span>
 <span class="go">  │   │       │   │   └── generic/</span>
 <span class="go">  │   │       │   └── staging-ocamlrun/</span>
 <span class="go">  │   │       │       └── windows_x86_64/</span>
 <span class="go">  │   │       └── st/</span>
-<span class="go">  │   │           └── offline-test1/</span>
+<span class="go">  │   │           └── offline-test-a/</span>
 <span class="go">  │   │               ├── README.txt</span>
 <span class="go">  │   │               └── icon.png</span>
 <span class="go">  │   └── u/</span>
 <span class="go">  │       ├── generic/</span>
-<span class="go">  │       │   ├── sg/</span>
-<span class="go">  │       │   │   └── offline-test1/</span>
-<span class="go">  │       │   │       └── generic/</span>
-<span class="go">  │       │   └── st/</span>
-<span class="go">  │       │       └── offline-test1/</span>
-<span class="go">  │       │           ├── README.txt</span>
-<span class="go">  │       │           └── icon.png</span>
+<span class="go">  │       │   └── sg/</span>
+<span class="go">  │       │       └── offline-test-b/</span>
+<span class="go">  │       │           └── generic/</span>
 <span class="go">  │       ├── linux_x86_64/</span>
 <span class="go">  │       │   ├── bin/</span>
 <span class="go">  │       │   │   ├── dkml-install-admin-runner.exe</span>
 <span class="go">  │       │   │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │       │   │   ├── dkml-package-entry.exe</span>
 <span class="go">  │       │   │   └── dkml-package.bc</span>
-<span class="go">  │       │   ├── sg/</span>
-<span class="go">  │       │   │   └── offline-test1/</span>
-<span class="go">  │       │   │       └── generic/</span>
-<span class="go">  │       │   └── st/</span>
-<span class="go">  │       │       └── offline-test1/</span>
-<span class="go">  │       │           ├── README.txt</span>
-<span class="go">  │       │           └── icon.png</span>
+<span class="go">  │       │   └── sg/</span>
+<span class="go">  │       │       └── offline-test-b/</span>
+<span class="go">  │       │           └── generic/</span>
 <span class="go">  │       └── windows_x86_64/</span>
 <span class="go">  │           ├── bin/</span>
 <span class="go">  │           │   ├── dkml-install-admin-runner.exe</span>
 <span class="go">  │           │   ├── dkml-install-user-runner.exe</span>
 <span class="go">  │           │   ├── dkml-package-entry.exe</span>
 <span class="go">  │           │   └── dkml-package.bc</span>
-<span class="go">  │           ├── sg/</span>
-<span class="go">  │           │   └── offline-test1/</span>
-<span class="go">  │           │       └── generic/</span>
-<span class="go">  │           └── st/</span>
-<span class="go">  │               └── offline-test1/</span>
-<span class="go">  │                   ├── README.txt</span>
-<span class="go">  │                   └── icon.png</span>
+<span class="go">  │           └── sg/</span>
+<span class="go">  │               ├── offline-test-b/</span>
+<span class="go">  │               │   └── generic/</span>
+<span class="go">  │               └── staging-ocamlrun/</span>
+<span class="go">  │                   └── windows_x86_64/</span>
 <span class="go">  ├── setup.exe.manifest</span>
 <span class="go">  └── sfx/</span>
 <span class="go">      └── 7zr.exe</span>
@@ -497,11 +515,11 @@ tar (or RPM, etc.) inside of OCaml.</p>
 
 <span class="gp">  $ </span>target/i-bundle-full-name-linux_x86_64.sh -o target/i -e .tar.gz tar --gzip
 <span class="gp">  $ </span>tar tvfz target/i/full-name-linux_x86_64-0.1.0.tar.gz <span class="p">|</span> tail -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
-<span class="go">  full-name-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/sg/offline-test-b/generic/somecode-offline-test-b.bc</span>
 <span class="go">  full-name-linux_x86_64-0.1.0/st/</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test1/</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test1/README.txt</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test1/icon.png</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test-a/</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test-a/README.txt</span>
+<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test-a/icon.png</span>
 </pre></div>
 </div>
 </div>
@@ -519,8 +537,8 @@ contents is exactly the same as the archive tree, except that
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
 <span class="go">  sg</span>
-<span class="go">  sg\offline-test1</span>
-<span class="go">  sg\offline-test1\generic</span>
+<span class="go">  sg\offline-test-b</span>
+<span class="go">  sg\offline-test-b\generic</span>
 <span class="go">  sg\staging-ocamlrun</span>
 <span class="go">  sg\staging-ocamlrun\windows_x86_64</span>
 <span class="go">  sg\staging-ocamlrun\windows_x86_64\bin</span>
@@ -528,13 +546,13 @@ contents is exactly the same as the archive tree, except that
 <span class="go">  sg\staging-ocamlrun\windows_x86_64\lib\ocaml</span>
 <span class="go">  sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs</span>
 <span class="go">  st</span>
-<span class="go">  st\offline-test1</span>
+<span class="go">  st\offline-test-a</span>
 <span class="go">  .archivetree</span>
-<span class="go">  sg\offline-test1\generic\install-offline-test1.bc</span>
+<span class="go">  sg\offline-test-b\generic\somecode-offline-test-b.bc</span>
 <span class="go">  sg\staging-ocamlrun\windows_x86_64\bin\ocamlrun.exe</span>
 <span class="go">  sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll</span>
-<span class="go">  st\offline-test1\icon.png</span>
-<span class="go">  st\offline-test1\README.txt</span>
+<span class="go">  st\offline-test-a\icon.png</span>
+<span class="go">  st\offline-test-a\README.txt</span>
 <span class="go">  bin\dkml-package.bc</span>
 <span class="go">  bin\dkml-install-admin-runner.exe</span>
 <span class="go">  bin\dkml-install-user-runner.exe</span>
@@ -550,14 +568,18 @@ contents is exactly the same as the archive tree, except that
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
 <span class="go">  sg</span>
-<span class="go">  sg\offline-test1</span>
-<span class="go">  sg\offline-test1\generic</span>
-<span class="go">  st</span>
-<span class="go">  st\offline-test1</span>
+<span class="go">  sg\offline-test-b</span>
+<span class="go">  sg\offline-test-b\generic</span>
+<span class="go">  sg\staging-ocamlrun</span>
+<span class="go">  sg\staging-ocamlrun\windows_x86_64</span>
+<span class="go">  sg\staging-ocamlrun\windows_x86_64\bin</span>
+<span class="go">  sg\staging-ocamlrun\windows_x86_64\lib</span>
+<span class="go">  sg\staging-ocamlrun\windows_x86_64\lib\ocaml</span>
+<span class="go">  sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs</span>
 <span class="go">  .archivetree</span>
-<span class="go">  sg\offline-test1\generic\install-offline-test1.bc</span>
-<span class="go">  st\offline-test1\icon.png</span>
-<span class="go">  st\offline-test1\README.txt</span>
+<span class="go">  sg\offline-test-b\generic\somecode-offline-test-b.bc</span>
+<span class="go">  sg\staging-ocamlrun\windows_x86_64\bin\ocamlrun.exe</span>
+<span class="go">  sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll</span>
 <span class="go">  bin\dkml-package.bc</span>
 <span class="go">  bin\dkml-install-admin-runner.exe</span>
 <span class="go">  bin\dkml-install-user-runner.exe</span>
@@ -576,8 +598,8 @@ contents is exactly the same as the archive tree, except that
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
 <span class="go">  sg</span>
-<span class="go">  sg\offline-test1</span>
-<span class="go">  sg\offline-test1\generic</span>
+<span class="go">  sg\offline-test-b</span>
+<span class="go">  sg\offline-test-b\generic</span>
 <span class="go">  sg\staging-ocamlrun</span>
 <span class="go">  sg\staging-ocamlrun\windows_x86_64</span>
 <span class="go">  sg\staging-ocamlrun\windows_x86_64\bin</span>
