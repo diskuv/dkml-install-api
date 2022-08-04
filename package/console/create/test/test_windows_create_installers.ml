@@ -9,23 +9,35 @@ let () =
     (module struct
       include Dkml_install_api.Default_component_config
 
-      let component_name = "offline-test1"
+      let component_name = "offline-test-a"
 
-      (* During installation test1 needs ocamlrun.exe *)
+      (* During installation test-a needs ocamlrun.exe. staging-ocamlrun
+         is a pre-existing component that gives you ocamlrun.exe. *)
       let install_depends_on = [ "staging-ocamlrun" ]
 
-      (* But during uninstallation test1 doesn't need ocamlrun.exe.
+      (* During uninstallation test-a doesn't need ocamlrun.exe.
 
          Often uninstallers just need to delete a directory and other
          small tasks that can be done directly using the install API
-         and/or the install API's standard libraries (ex. Bos). *)
+         and/or the install API's standard libraries (ex. Bos).
+
+         Currently the console installer and console uninstaller always force a
+         dependency on staging-ocamlrun; this may change and other types of
+         uninstallers may not have the same behavior.
+      *)
       let uninstall_depends_on = []
     end);
-  Dkml_install_register.Component_registry.add_component reg
+  Dkml_install_register.Component_registry.add_component ~raise_on_error:true
+    reg
     (module struct
       include Dkml_install_api.Default_component_config
 
-      let component_name = "staging-ocamlrun"
+      let component_name = "offline-test-b"
+
+      (* During installation test-b needs test-a *)
+      let install_depends_on = [ "staging-ocamlrun"; "offline-test-a" ]
+
+      let uninstall_depends_on = []
     end)
 
 (* Let's also create an entry point for `create_installers.exe` *)

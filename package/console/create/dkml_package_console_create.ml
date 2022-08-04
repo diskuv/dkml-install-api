@@ -100,14 +100,13 @@ let create_forone_abi ~abi_selector ~install_component_names
           ~static_default:No_static_default ~opam_context_opt:None
           ~static_files_opt:(Some (Fpath.to_string archive_static_dir))
       in
-      (* Copy xx-console plus all components from Opam into archive *)
+      (* Copy all components from Opam into archive *)
       List.iter
         (fun component_name ->
           Populate_archive.populate_archive_component ~component_name
             ~abi_selector ~opam_staging_files_source ~opam_static_files_source
             ~archive_staging_files_dest ~archive_static_files_dest)
-        ([ Dkml_package_console_common.console_component_name ]
-        @ component_names);
+        component_names;
       (* Assemble for one ABI *)
       generate_installer_from_archive_dir ~install_direction ~archive_dir
         ~work_dir ~abi_selector ~organization ~program_name ~program_version
@@ -141,6 +140,20 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
       ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
         let module Cfg = (val cfg : Dkml_install_api.Component_config) in
         return Cfg.component_name)
+  in
+  (* IMPORTANT: We always add
+     {!Dkml_package_console_common.console_required_components} for both
+     installers and uninstallers
+  *)
+  let install_component_names =
+    List.sort_uniq String.compare
+      (Dkml_package_console_common.console_required_components
+     @ install_component_names)
+  in
+  let uninstall_component_names =
+    List.sort_uniq String.compare
+      (Dkml_package_console_common.console_required_components
+     @ uninstall_component_names)
   in
   Logs.info (fun l ->
       l "@[Installers will be created that include the components:@]@ @[<v>%a@]"

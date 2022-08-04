@@ -176,6 +176,8 @@ let spawn cmd =
 
 let console_component_name = "xx-console"
 
+let console_required_components = [ console_component_name; "staging-ocamlrun" ]
+
 let elevated_cmd ~target_abi ~staging_files_source cmd =
   if Context.Abi_v2.is_windows target_abi then
     (* dkml-install-admin.exe on Win32 has a UAC manifest injected
@@ -340,6 +342,7 @@ let package_args_t ~program_name ~target_abi ~install_direction =
   Cmdliner.Term.(
     const package_args $ Dkml_install_runner.Cmdliner_runner.setup_log_t
     $ prefix_opt_t ~program_name ~target_abi
-    $ Dkml_install_runner.Cmdliner_runner.component_selector_t ~install_direction
+    $ Dkml_install_runner.Cmdliner_runner.component_selector_t
+        ~install_direction
     $ Dkml_install_runner.Cmdliner_runner.static_files_source_for_package_t
     $ Dkml_install_runner.Cmdliner_runner.staging_files_source_for_package_t)

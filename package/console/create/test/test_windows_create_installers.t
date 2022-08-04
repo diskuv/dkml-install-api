@@ -40,28 +40,29 @@ We'll just mimic an Opam switch by creating a directory structure and some
 files.
 
 We want to model an Opam "installer" package that has two components:
-* dkml-component-staging-ocamlrun
-* dkml-component-offline-test1
+* dkml-component-offline-test-a
+* dkml-component-offline-test-b
 
 The files will just be empty files.
 
 [opam_switch_mimic]
   $ install -d _opam/bin
-  $ install -d _opam/lib/dkml-component-offline-test1
+  $ install -d _opam/lib/dkml-component-offline-test-a
+  $ install -d _opam/lib/dkml-component-offline-test-b
   $ install -d _opam/lib/dkml-component-staging-ocamlrun
-  $ install -d _opam/share/dkml-component-offline-test1/staging-files/generic
-  $ install -d _opam/share/dkml-component-offline-test1/static-files
+  $ install -d _opam/share/dkml-component-offline-test-a/static-files
+  $ install -d _opam/share/dkml-component-offline-test-b/staging-files/generic
   $ install -d _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin
   $ install -d _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs
-  $ install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64
-  $ install -d _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64
+  $ install -d _opam/share/dkml-component-offline-test-b/staging-files/darwin_arm64
+  $ install -d _opam/share/dkml-component-offline-test-b/staging-files/darwin_x86_64
   $ diskuvbox touch _opam/bin/dkml-install-admin-runner.exe
   $ diskuvbox touch _opam/bin/dkml-install-user-runner.exe
-  $ diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/generic/install-offline-test1.bc
-  $ diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_arm64/libpng.dylib
-  $ diskuvbox touch _opam/share/dkml-component-offline-test1/staging-files/darwin_x86_64/libpng.dylib
-  $ diskuvbox touch _opam/share/dkml-component-offline-test1/static-files/README.txt
-  $ diskuvbox touch _opam/share/dkml-component-offline-test1/static-files/icon.png
+  $ diskuvbox touch _opam/share/dkml-component-offline-test-a/static-files/README.txt
+  $ diskuvbox touch _opam/share/dkml-component-offline-test-a/static-files/icon.png
+  $ diskuvbox touch _opam/share/dkml-component-offline-test-b/staging-files/generic/somecode-offline-test-b.bc
+  $ diskuvbox touch _opam/share/dkml-component-offline-test-b/staging-files/darwin_arm64/libpng.dylib
+  $ diskuvbox touch _opam/share/dkml-component-offline-test-b/staging-files/darwin_x86_64/libpng.dylib
   $ diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin/ocamlrun.exe
   $ diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs/dllthreads.dll
   $ diskuvbox tree --encoding UTF-8 -d 5 _opam
@@ -70,20 +71,22 @@ The files will just be empty files.
   │   ├── dkml-install-admin-runner.exe
   │   └── dkml-install-user-runner.exe
   ├── lib/
-  │   ├── dkml-component-offline-test1/
+  │   ├── dkml-component-offline-test-a/
+  │   ├── dkml-component-offline-test-b/
   │   └── dkml-component-staging-ocamlrun/
   └── share/
-      ├── dkml-component-offline-test1/
-      │   ├── staging-files/
-      │   │   ├── darwin_arm64/
-      │   │   │   └── libpng.dylib
-      │   │   ├── darwin_x86_64/
-      │   │   │   └── libpng.dylib
-      │   │   └── generic/
-      │   │       └── install-offline-test1.bc
+      ├── dkml-component-offline-test-a/
       │   └── static-files/
       │       ├── README.txt
       │       └── icon.png
+      ├── dkml-component-offline-test-b/
+      │   └── staging-files/
+      │       ├── darwin_arm64/
+      │       │   └── libpng.dylib
+      │       ├── darwin_x86_64/
+      │       │   └── libpng.dylib
+      │       └── generic/
+      │           └── somecode-offline-test-b.bc
       └── dkml-component-staging-ocamlrun/
           └── staging-files/
               └── windows_x86_64/
@@ -101,7 +104,8 @@ could ask whether you wanted to install the "Git LFS" extension for large
 file support. These pieces of an application are called components.
 
 For now, we'll define two do-nothing test components:
-`staging-ocamlrun` and `offline-test1`
+* `offline-test-a`
+* `offline-test-b`
 
 and we will also use a library to generate an executable
 called `create_installers.exe`:
@@ -119,23 +123,35 @@ called `create_installers.exe`:
       (module struct
         include Dkml_install_api.Default_component_config
   
-        let component_name = "offline-test1"
+        let component_name = "offline-test-a"
   
-        (* During installation test1 needs ocamlrun.exe *)
+        (* During installation test-a needs ocamlrun.exe. staging-ocamlrun
+           is a pre-existing component that gives you ocamlrun.exe. *)
         let install_depends_on = [ "staging-ocamlrun" ]
   
-        (* But during uninstallation test1 doesn't need ocamlrun.exe.
+        (* During uninstallation test-a doesn't need ocamlrun.exe.
   
            Often uninstallers just need to delete a directory and other
            small tasks that can be done directly using the install API
-           and/or the install API's standard libraries (ex. Bos). *)
+           and/or the install API's standard libraries (ex. Bos).
+  
+           Currently the console installer and console uninstaller always force a
+           dependency on staging-ocamlrun; this may change and other types of
+           uninstallers may not have the same behavior.
+        *)
         let uninstall_depends_on = []
       end);
-    Dkml_install_register.Component_registry.add_component reg
+    Dkml_install_register.Component_registry.add_component ~raise_on_error:true
+      reg
       (module struct
         include Dkml_install_api.Default_component_config
   
-        let component_name = "staging-ocamlrun"
+        let component_name = "offline-test-b"
+  
+        (* During installation test-b needs test-a *)
+        let install_depends_on = [ "staging-ocamlrun"; "offline-test-a" ]
+  
+        let uninstall_depends_on = []
       end)
   
   (* Let's also create an entry point for `create_installers.exe` *)
@@ -211,7 +227,8 @@ Side note:
   Bye
 [create_installers_packagerinput]
 
-Run the create_installers.exe executable.
+Run the create_installers.exe executable that includes the offline-test-b
+component.
 
 Side note:
 | If this were not a demonstration, you would be doing the same steps in your
@@ -220,6 +237,8 @@ Side note:
 |     "%{bin}%/dkml-install-create-installers.exe"
 |     "--program-version"
 |     version
+|     "--component"
+|     "offline-test-b"
 |     "--work-dir"
 |     "%{_:share}%/w"
 |     "--target-dir"
@@ -231,11 +250,13 @@ Side note:
 |   ]
 
 [create_installers_run]
-  $ ./test_windows_create_installers.exe --program-version 0.1.0 --component=offline-test1 --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
+  $ ./test_windows_create_installers.exe --program-version 0.1.0 --component=offline-test-b --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
   test_windows_create_installers.exe: [INFO] Installers will be created that include the components:
-                                             [staging-ocamlrun; offline-test1]
+                                             [offline-test-a; offline-test-b;
+                                              staging-ocamlrun; xx-console]
   test_windows_create_installers.exe: [INFO] Uninstallers will be created that include the components:
-                                             [offline-test1]
+                                             [offline-test-b; staging-ocamlrun;
+                                              xx-console]
   test_windows_create_installers.exe: [INFO] Installers and uninstallers will be created for the ABIs:
                                              [generic; linux_x86_64;
                                               windows_x86_64]
@@ -274,10 +295,10 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   ├── i/
   │   │   ├── generic/
   │   │   │   ├── sg/
-  │   │   │   │   └── offline-test1/
+  │   │   │   │   └── offline-test-b/
   │   │   │   │       └── generic/
   │   │   │   └── st/
-  │   │   │       └── offline-test1/
+  │   │   │       └── offline-test-a/
   │   │   │           ├── README.txt
   │   │   │           └── icon.png
   │   │   ├── linux_x86_64/
@@ -287,10 +308,10 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │   │   │   ├── dkml-package-entry.exe
   │   │   │   │   └── dkml-package.bc
   │   │   │   ├── sg/
-  │   │   │   │   └── offline-test1/
+  │   │   │   │   └── offline-test-b/
   │   │   │   │       └── generic/
   │   │   │   └── st/
-  │   │   │       └── offline-test1/
+  │   │   │       └── offline-test-a/
   │   │   │           ├── README.txt
   │   │   │           └── icon.png
   │   │   └── windows_x86_64/
@@ -300,49 +321,39 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │       │   ├── dkml-package-entry.exe
   │   │       │   └── dkml-package.bc
   │   │       ├── sg/
-  │   │       │   ├── offline-test1/
+  │   │       │   ├── offline-test-b/
   │   │       │   │   └── generic/
   │   │       │   └── staging-ocamlrun/
   │   │       │       └── windows_x86_64/
   │   │       └── st/
-  │   │           └── offline-test1/
+  │   │           └── offline-test-a/
   │   │               ├── README.txt
   │   │               └── icon.png
   │   └── u/
   │       ├── generic/
-  │       │   ├── sg/
-  │       │   │   └── offline-test1/
-  │       │   │       └── generic/
-  │       │   └── st/
-  │       │       └── offline-test1/
-  │       │           ├── README.txt
-  │       │           └── icon.png
+  │       │   └── sg/
+  │       │       └── offline-test-b/
+  │       │           └── generic/
   │       ├── linux_x86_64/
   │       │   ├── bin/
   │       │   │   ├── dkml-install-admin-runner.exe
   │       │   │   ├── dkml-install-user-runner.exe
   │       │   │   ├── dkml-package-entry.exe
   │       │   │   └── dkml-package.bc
-  │       │   ├── sg/
-  │       │   │   └── offline-test1/
-  │       │   │       └── generic/
-  │       │   └── st/
-  │       │       └── offline-test1/
-  │       │           ├── README.txt
-  │       │           └── icon.png
+  │       │   └── sg/
+  │       │       └── offline-test-b/
+  │       │           └── generic/
   │       └── windows_x86_64/
   │           ├── bin/
   │           │   ├── dkml-install-admin-runner.exe
   │           │   ├── dkml-install-user-runner.exe
   │           │   ├── dkml-package-entry.exe
   │           │   └── dkml-package.bc
-  │           ├── sg/
-  │           │   └── offline-test1/
-  │           │       └── generic/
-  │           └── st/
-  │               └── offline-test1/
-  │                   ├── README.txt
-  │                   └── icon.png
+  │           └── sg/
+  │               ├── offline-test-b/
+  │               │   └── generic/
+  │               └── staging-ocamlrun/
+  │                   └── windows_x86_64/
   ├── setup.exe.manifest
   └── sfx/
       └── 7zr.exe
@@ -381,10 +392,10 @@ Sidenote:
   │   ├── i/
   │   │   ├── generic/
   │   │   │   ├── sg/
-  │   │   │   │   └── offline-test1/
+  │   │   │   │   └── offline-test-b/
   │   │   │   │       └── generic/
   │   │   │   └── st/
-  │   │   │       └── offline-test1/
+  │   │   │       └── offline-test-a/
   │   │   │           ├── README.txt
   │   │   │           └── icon.png
   │   │   ├── linux_x86_64/
@@ -394,10 +405,10 @@ Sidenote:
   │   │   │   │   ├── dkml-package-entry.exe
   │   │   │   │   └── dkml-package.bc
   │   │   │   ├── sg/
-  │   │   │   │   └── offline-test1/
+  │   │   │   │   └── offline-test-b/
   │   │   │   │       └── generic/
   │   │   │   └── st/
-  │   │   │       └── offline-test1/
+  │   │   │       └── offline-test-a/
   │   │   │           ├── README.txt
   │   │   │           └── icon.png
   │   │   └── windows_x86_64/
@@ -407,49 +418,39 @@ Sidenote:
   │   │       │   ├── dkml-package-entry.exe
   │   │       │   └── dkml-package.bc
   │   │       ├── sg/
-  │   │       │   ├── offline-test1/
+  │   │       │   ├── offline-test-b/
   │   │       │   │   └── generic/
   │   │       │   └── staging-ocamlrun/
   │   │       │       └── windows_x86_64/
   │   │       └── st/
-  │   │           └── offline-test1/
+  │   │           └── offline-test-a/
   │   │               ├── README.txt
   │   │               └── icon.png
   │   └── u/
   │       ├── generic/
-  │       │   ├── sg/
-  │       │   │   └── offline-test1/
-  │       │   │       └── generic/
-  │       │   └── st/
-  │       │       └── offline-test1/
-  │       │           ├── README.txt
-  │       │           └── icon.png
+  │       │   └── sg/
+  │       │       └── offline-test-b/
+  │       │           └── generic/
   │       ├── linux_x86_64/
   │       │   ├── bin/
   │       │   │   ├── dkml-install-admin-runner.exe
   │       │   │   ├── dkml-install-user-runner.exe
   │       │   │   ├── dkml-package-entry.exe
   │       │   │   └── dkml-package.bc
-  │       │   ├── sg/
-  │       │   │   └── offline-test1/
-  │       │   │       └── generic/
-  │       │   └── st/
-  │       │       └── offline-test1/
-  │       │           ├── README.txt
-  │       │           └── icon.png
+  │       │   └── sg/
+  │       │       └── offline-test-b/
+  │       │           └── generic/
   │       └── windows_x86_64/
   │           ├── bin/
   │           │   ├── dkml-install-admin-runner.exe
   │           │   ├── dkml-install-user-runner.exe
   │           │   ├── dkml-package-entry.exe
   │           │   └── dkml-package.bc
-  │           ├── sg/
-  │           │   └── offline-test1/
-  │           │       └── generic/
-  │           └── st/
-  │               └── offline-test1/
-  │                   ├── README.txt
-  │                   └── icon.png
+  │           └── sg/
+  │               ├── offline-test-b/
+  │               │   └── generic/
+  │               └── staging-ocamlrun/
+  │                   └── windows_x86_64/
   ├── setup.exe.manifest
   └── sfx/
       └── 7zr.exe
@@ -479,11 +480,11 @@ Sidenote:
 
   $ target/i-bundle-full-name-linux_x86_64.sh -o target/i -e .tar.gz tar --gzip
   $ tar tvfz target/i/full-name-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
-  full-name-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc
+  full-name-linux_x86_64-0.1.0/sg/offline-test-b/generic/somecode-offline-test-b.bc
   full-name-linux_x86_64-0.1.0/st/
-  full-name-linux_x86_64-0.1.0/st/offline-test1/
-  full-name-linux_x86_64-0.1.0/st/offline-test1/README.txt
-  full-name-linux_x86_64-0.1.0/st/offline-test1/icon.png
+  full-name-linux_x86_64-0.1.0/st/offline-test-a/
+  full-name-linux_x86_64-0.1.0/st/offline-test-a/README.txt
+  full-name-linux_x86_64-0.1.0/st/offline-test-a/icon.png
 [archiver_session]
 
 --------------------------------------------------------------------------------
@@ -506,8 +507,8 @@ contents is exactly the same as the archive tree, except that
   ------------------------
   bin
   sg
-  sg\offline-test1
-  sg\offline-test1\generic
+  sg\offline-test-b
+  sg\offline-test-b\generic
   sg\staging-ocamlrun
   sg\staging-ocamlrun\windows_x86_64
   sg\staging-ocamlrun\windows_x86_64\bin
@@ -515,13 +516,13 @@ contents is exactly the same as the archive tree, except that
   sg\staging-ocamlrun\windows_x86_64\lib\ocaml
   sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs
   st
-  st\offline-test1
+  st\offline-test-a
   .archivetree
-  sg\offline-test1\generic\install-offline-test1.bc
+  sg\offline-test-b\generic\somecode-offline-test-b.bc
   sg\staging-ocamlrun\windows_x86_64\bin\ocamlrun.exe
   sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll
-  st\offline-test1\icon.png
-  st\offline-test1\README.txt
+  st\offline-test-a\icon.png
+  st\offline-test-a\README.txt
   bin\dkml-package.bc
   bin\dkml-install-admin-runner.exe
   bin\dkml-install-user-runner.exe
@@ -537,14 +538,18 @@ contents is exactly the same as the archive tree, except that
   ------------------------
   bin
   sg
-  sg\offline-test1
-  sg\offline-test1\generic
-  st
-  st\offline-test1
+  sg\offline-test-b
+  sg\offline-test-b\generic
+  sg\staging-ocamlrun
+  sg\staging-ocamlrun\windows_x86_64
+  sg\staging-ocamlrun\windows_x86_64\bin
+  sg\staging-ocamlrun\windows_x86_64\lib
+  sg\staging-ocamlrun\windows_x86_64\lib\ocaml
+  sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs
   .archivetree
-  sg\offline-test1\generic\install-offline-test1.bc
-  st\offline-test1\icon.png
-  st\offline-test1\README.txt
+  sg\offline-test-b\generic\somecode-offline-test-b.bc
+  sg\staging-ocamlrun\windows_x86_64\bin\ocamlrun.exe
+  sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll
   bin\dkml-package.bc
   bin\dkml-install-admin-runner.exe
   bin\dkml-install-user-runner.exe
@@ -565,8 +570,8 @@ We would see the same thing if we looked inside the *installer*
   ------------------------
   bin
   sg
-  sg\offline-test1
-  sg\offline-test1\generic
+  sg\offline-test-b
+  sg\offline-test-b\generic
   sg\staging-ocamlrun
   sg\staging-ocamlrun\windows_x86_64
   sg\staging-ocamlrun\windows_x86_64\bin

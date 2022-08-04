@@ -3,6 +3,16 @@ val console_component_name : string
     that help run console installers (like gsudo.exe on Windows to elevate
     privileges). *)
 
+val console_required_components : string list
+(** [console_required_components] are the names of components that console
+    installers require to be present. It always includes
+    {!console_component_name} but may include other components. 
+    
+    At minimum, these other required components include:
+    
+    - ["staging-ocamlrun"] because {!Dkml_package_console_entry.entry} uses
+      ocamlrun to run the dkml-package.bc bytecode. *)
+
 val needs_install_admin :
   reg:Dkml_install_register.Component_registry.t ->
   selector:Dkml_install_register.Component_registry.component_selector ->

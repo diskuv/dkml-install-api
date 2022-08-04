@@ -184,7 +184,11 @@ let entry ~target_abi =
     helper { ci = false } (List.tl (Array.to_list Sys.argv))
   in
   let args = Cmd.of_list argl in
-  (* Find ocamlrun and ocaml lib *)
+  (* Since we use ocamlrun, assert that it is present *)
+  assert (
+    List.mem "staging-ocamlrun"
+      Dkml_package_console_common.console_required_components);
+  (* Find ocamlrun and ocaml lib. *)
   let archive_dir =
     Dkml_install_runner.Error_handling.continue_or_exit
     @@ Dkml_install_runner.Cmdliner_runner.enduser_archive_dir ()
@@ -196,7 +200,7 @@ let entry ~target_abi =
   in
   let ocamlrun_exe = Fpath.(ocamlrun_dir / "bin" / "ocamlrun.exe") in
   let lib_ocaml = Fpath.(ocamlrun_dir / "lib" / "ocaml") in
-  (* Run the packager setup.bc with any arguments it needs *)
+  (* Run the packager bytecode with any arguments it needs *)
   let setup_bc = Fpath.(archive_dir / "bin" / "dkml-package.bc") in
   spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts
     Cmd.(v (Fpath.to_string setup_bc) %% args)

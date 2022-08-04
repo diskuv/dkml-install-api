@@ -17,8 +17,8 @@ We'll just mimic an Opam switch by creating a directory structure and some
 files.
 
 We want to model an Opam "installer" package that has two components:
-* dkml-component-staging-ocamlrun
-* dkml-component-offline-test1
+* dkml-component-offline-test-a
+* dkml-component-offline-test-b
 
 The files will just be empty files except ``dkml-package-entry.exe`` is
 a real executable that prints "Yoda".
@@ -41,9 +41,32 @@ could ask whether you wanted to install the "Git LFS" extension for large
 file support. These pieces of an application are called components.
 
 For now, we'll define two do-nothing test components:
-``staging-ocamlrun`` and ``offline-test1``
 
-and we will also use a library to generate an executable
+* ``offline-test-a``
+* ``offline-test-b``
+
+Using the Console installers will automatically bring in two other components:
+* ``staging-ocamlrun``
+* ``xx-console``
+
+The installation of ``offline-test-b`` depends on ``offline-test-a``.
+That means during the installation of ``offline-test-b``, ``offline-test-a``
+will also be installed.
+
+.. note::
+
+   We chose to make the uninstallation of ``offline-test-b`` _not_ depend on
+   ``offline-test-a``.
+   That means during the uninstallation of ``offline-test-b``, no files from
+   ``offline-test-a`` will be involved in the uninstallation. And it also
+   means the uninstaller for ``offline-test-b`` is smaller because it does
+   not include ``offline-test-a`` files.
+
+   Often it is simpler to uninstall than install. In fact, uninstalling may
+   simply be removing a directory, regardless of how many components were
+   installed.
+
+We will also use a library to generate an executable
 called ``create_installers.exe``:
 
 .. literalinclude:: ../../../package/console/create/test/test_windows_create_installers.t
