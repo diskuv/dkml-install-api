@@ -20,16 +20,8 @@ let generate_installer_from_archive_dir ~install_direction ~archive_dir
          ~abi_selector ~organization ~program_name ~program_version ~work_dir
    | _ -> ());
   (* All operating systems can have an archive *)
-  Installer_archive.generate ~archive_dir ~target_dir ~abi_selector
-    ~program_name ~program_version
-
-let create_directory ~fl dir =
-  match OS.Dir.create dir with
-  | Ok _already_exists -> Dkml_install_api.Forward_progress.return ((), fl)
-  | Error e ->
-      Dkml_install_runner.Error_handling.runner_fatal_log ~id:"c36cb7aa"
-        (Fmt.str "@[Could not create directory:@]@ @[%a@]" Rresult.R.pp_msg e);
-      Dkml_install_api.Forward_progress.(Halted_progress Exit_transient_failure)
+  Installer_archive.generate ~install_direction ~archive_dir ~target_dir
+    ~abi_selector ~program_name ~program_version
 
 let create_forone_abi ~abi_selector ~install_component_names
     ~uninstall_component_names ~organization ~program_name ~program_version
@@ -50,8 +42,17 @@ let create_forone_abi ~abi_selector ~install_component_names
   in
   (* Separate install and uninstall components.
 
-     The install direction will be placed in work/a/i/ and target/i/.
-     The uninstall direction will be placed in work/a/u/ and target/u/.
+     The install direction will be placed in work/a/i/* and target/i-*.
+     The uninstall direction will be placed in work/a/u/* and target/u-*.
+
+     The target/ directory has by design no subdirectories (aka. it is _flat_)
+     so that a single release directory can be made.
+     A flat directory is necessary for GitHub Releases.
+
+     Only the i- and u- prefixes distinguish installers from uninstallers. We
+     didn't use "setup-" and "uninstall-" prefixes because those would conflict
+     with the probable names of signed Windows executables (which belong to the
+     same Releases namespace).
   *)
   let instructions =
     [
@@ -79,10 +80,6 @@ let create_forone_abi ~abi_selector ~install_component_names
         Dkml_install_runner.Cmdliner_runner.static_default_dir_for_package
           ~archive_dir
       in
-      let directioned_target_dir = Fpath.(target_dir / direction_dir) in
-      (* let* (), _fl = create_directory ~fl archive_staging_dir in
-      let* (), _fl = create_directory ~fl archive_static_dir in *)
-      let* (), _fl = create_directory ~fl directioned_target_dir in
       (* Copy non-component files into archive *)
       Populate_archive.populate_archive ~archive_dir ~abi_selector
         ~runner_admin_exe ~runner_user_exe ~packager_entry_exe
@@ -114,7 +111,7 @@ let create_forone_abi ~abi_selector ~install_component_names
       (* Assemble for one ABI *)
       generate_installer_from_archive_dir ~install_direction ~archive_dir
         ~work_dir ~abi_selector ~organization ~program_name ~program_version
-        ~target_dir:directioned_target_dir)
+        ~target_dir)
     instructions
 
 let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization

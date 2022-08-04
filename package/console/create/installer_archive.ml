@@ -7,13 +7,18 @@
 open Bos
 open Dkml_install_runner.Error_handling.Monad_syntax
 
-let generate ~archive_dir ~target_dir ~abi_selector ~program_name
-    ~program_version =
+let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
+    ~program_name ~program_version =
   let abi_name =
     Dkml_install_runner.Path_location.show_abi_selector abi_selector
   in
   let program_name_kebab_lower_case =
     program_name.Dkml_package_console_common.name_kebab_lower_case
+  in
+  let name_prefix =
+    match install_direction with
+    | Dkml_install_runner.Path_eval.Global_context.Install -> "i-"
+    | Uninstall -> "u-"
   in
   let installer_basename_without_ver =
     Fmt.str "%s-%s" program_name_kebab_lower_case abi_name
@@ -22,7 +27,8 @@ let generate ~archive_dir ~target_dir ~abi_selector ~program_name
     Fmt.str "%s-%s-%s" program_name_kebab_lower_case abi_name program_version
   in
   let installer_create_sh =
-    Fpath.(target_dir / ("bundle-" ^ installer_basename_without_ver ^ ".sh"))
+    Fpath.(
+      target_dir / (name_prefix ^ "bundle-" ^ installer_basename_without_ver ^ ".sh"))
   in
   let* buildhost_abi', _fl = Dkml_install_runner.Host_abi.create_v2 () in
   let buildhost_abi =

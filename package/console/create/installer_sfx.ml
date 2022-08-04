@@ -283,9 +283,14 @@ let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
   let program_name_kebab_lower_case =
     program_name.Dkml_package_console_common.name_kebab_lower_case
   in
+  let name_prefix =
+    match install_direction with
+    | Dkml_install_runner.Path_eval.Global_context.Install -> "i-"
+    | Uninstall -> "u-"
+  in
   let installer_basename =
-    Fmt.str "unsigned-%s-%s-%s.exe" program_name_kebab_lower_case abi_name
-      program_version
+    Fmt.str "%sunsigned-%s-%s-%s.exe" name_prefix program_name_kebab_lower_case
+      abi_name program_version
   in
   let installer_path = Fpath.(target_dir / installer_basename) in
   Logs.info (fun l -> l "Generating %a" Fpath.pp installer_path);
@@ -295,8 +300,8 @@ let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
      let archive_path =
        Fpath.(
          target_dir
-         / Fmt.str "%s-%s-%s.7z" program_name_kebab_lower_case abi_name
-             program_version)
+         / Fmt.str "%s%s-%s-%s.7z" name_prefix program_name_kebab_lower_case
+             abi_name program_version)
      in
      let sevenz_exe = Fpath.(sfx_dir / "7zr.exe") in
      let* (_was_created : bool) = OS.Dir.create sfx_dir in
@@ -323,8 +328,8 @@ let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
         sections; confer: http://download.microsoft.com/download/9/c/5/9c5b2167-8017-4bae-9fde-d599bac8184a/authenticode_pe.docx
      *)
      let sfx_basename =
-       Fmt.str "%s-%s-%s.sfx" program_name_kebab_lower_case abi_name
-         program_version
+       Fmt.str "%s%s-%s-%s.sfx" name_prefix program_name_kebab_lower_case
+         abi_name program_version
      in
      let sfx_path = Fpath.(target_dir / sfx_basename) in
      let* () = OS.File.write sfx_path sfx in

@@ -239,16 +239,16 @@ Side note:
   test_windows_create_installers.exe: [INFO] Installers and uninstallers will be created for the ABIs:
                                              [generic; linux_x86_64;
                                               windows_x86_64]
-  test_windows_create_installers.exe: [INFO] Generating script target\i\bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\u\bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\i\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\u\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating target\i\unsigned-full-name-windows_x86_64-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating target\i-unsigned-full-name-windows_x86_64-0.1.0.exe
   Parsing of manifest successful.
-  test_windows_create_installers.exe: [INFO] Generating script target\i\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating target\u\unsigned-full-name-windows_x86_64-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating target\u-unsigned-full-name-windows_x86_64-0.1.0.exe
   Parsing of manifest successful.
-  test_windows_create_installers.exe: [INFO] Generating script target\u\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
 
 The --work-dir will have ABI-specific archive trees in its "a" folder.
@@ -456,22 +456,20 @@ Sidenote:
 
   $ diskuvbox tree --encoding UTF-8 -d 2 target
   target
-  ├── i/
-  │   ├── bundle-full-name-generic.sh
-  │   ├── bundle-full-name-linux_x86_64.sh
-  │   ├── bundle-full-name-windows_x86_64.sh
-  │   ├── full-name-windows_x86_64-0.1.0.7z
-  │   ├── full-name-windows_x86_64-0.1.0.sfx
-  │   └── unsigned-full-name-windows_x86_64-0.1.0.exe
-  └── u/
-      ├── bundle-full-name-generic.sh
-      ├── bundle-full-name-linux_x86_64.sh
-      ├── bundle-full-name-windows_x86_64.sh
-      ├── full-name-windows_x86_64-0.1.0.7z
-      ├── full-name-windows_x86_64-0.1.0.sfx
-      └── unsigned-full-name-windows_x86_64-0.1.0.exe
+  ├── i-bundle-full-name-generic.sh
+  ├── i-bundle-full-name-linux_x86_64.sh
+  ├── i-bundle-full-name-windows_x86_64.sh
+  ├── i-full-name-windows_x86_64-0.1.0.7z
+  ├── i-full-name-windows_x86_64-0.1.0.sfx
+  ├── i-unsigned-full-name-windows_x86_64-0.1.0.exe
+  ├── u-bundle-full-name-generic.sh
+  ├── u-bundle-full-name-linux_x86_64.sh
+  ├── u-bundle-full-name-windows_x86_64.sh
+  ├── u-full-name-windows_x86_64-0.1.0.7z
+  ├── u-full-name-windows_x86_64-0.1.0.sfx
+  └── u-unsigned-full-name-windows_x86_64-0.1.0.exe
 
-  $ target/i/bundle-full-name-linux_x86_64.sh -o target/i tar
+  $ target/i-bundle-full-name-linux_x86_64.sh -o target/i tar
   $ tar tvf target/i/full-name-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
   ./
   full-name-linux_x86_64-0.1.0/.archivetree
@@ -479,7 +477,7 @@ Sidenote:
   full-name-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
   full-name-linux_x86_64-0.1.0/bin/dkml-install-user-runner.exe
 
-  $ target/i/bundle-full-name-linux_x86_64.sh -o target/i -e .tar.gz tar --gzip
+  $ target/i-bundle-full-name-linux_x86_64.sh -o target/i -e .tar.gz tar --gzip
   $ tar tvfz target/i/full-name-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
   full-name-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc
   full-name-linux_x86_64-0.1.0/st/
@@ -503,7 +501,7 @@ contents is exactly the same as the archive tree, except that
 `setup.exe`.
 
 [setup_exe_list_7z]
-  $ ../assets/lzma2107/bin/7zr.exe l target/i/full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
+  $ ../assets/lzma2107/bin/7zr.exe l target/i-full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
   bin
@@ -534,7 +532,7 @@ contents is exactly the same as the archive tree, except that
   ------------------------
   folders
 
-  $ ../assets/lzma2107/bin/7zr.exe l target/u/full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
+  $ ../assets/lzma2107/bin/7zr.exe l target/u-full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
   bin
@@ -562,7 +560,7 @@ We would see the same thing if we looked inside the *installer*
 `unsigned-NAME-VER.exe` (which is just the SFX module and the .7z archive above):
 
 [setup_exe_list_exe]
-  $ ../assets/lzma2107/bin/7zr.exe l target/i/unsigned-full-name-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
+  $ ../assets/lzma2107/bin/7zr.exe l target/i-unsigned-full-name-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
   Name
   ------------------------
   bin
@@ -587,7 +585,7 @@ Since the *installer* `unsigned-NAME-VER.exe` will decompress the .7z archive an
 run the *packager entry* `setup.exe` it found in the .7z root directory, we expect to
 see "Salut" printed. Which is what we see:
 [setup_exe_run]
-  $ target/i/unsigned-full-name-windows_x86_64-0.1.0.exe
+  $ target/i-unsigned-full-name-windows_x86_64-0.1.0.exe
   Salut
 [setup_exe_run]
 

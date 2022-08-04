@@ -56,6 +56,8 @@ if [ -z "$TAR_TYPE" ]; then
   esac
 fi
 
+install -d "$OUTPUT_DIR"
+
 case "$archivetype" in
   tar)
     if [ -z "$ARCHIVER_EXE" ]; then ARCHIVER_EXE=tar; fi
