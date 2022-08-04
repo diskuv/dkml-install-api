@@ -166,6 +166,16 @@ called <code class="docutils literal notranslate"><span class="pre">create_insta
         <span class="k">include</span> <span class="nn">Dkml_install_api</span><span class="p">.</span><span class="nc">Default_component_config</span>
   
         <span class="k">let</span> <span class="n">component_name</span> <span class="o">=</span> <span class="s2">&quot;offline-test1&quot;</span>
+  
+        <span class="c">(* During installation test1 needs ocamlrun.exe *)</span>
+        <span class="k">let</span> <span class="n">install_depends_on</span> <span class="o">=</span> <span class="o">[</span> <span class="s2">&quot;staging-ocamlrun&quot;</span> <span class="o">]</span>
+  
+        <span class="c">(* But during uninstallation test1 doesn&#39;t need ocamlrun.exe.</span>
+<span class="c">  </span>
+<span class="c">           Often uninstallers just need to delete a directory and other</span>
+<span class="c">           small tasks that can be done directly using the install API</span>
+<span class="c">           and/or the install API&#39;s standard libraries (ex. Bos). *)</span>
+        <span class="k">let</span> <span class="n">uninstall_depends_on</span> <span class="o">=</span> <span class="bp">[]</span>
       <span class="k">end</span><span class="o">);</span>
     <span class="nn">Dkml_install_register</span><span class="p">.</span><span class="nn">Component_registry</span><span class="p">.</span><span class="n">add_component</span> <span class="n">reg</span>
       <span class="o">(</span><span class="k">module</span> <span class="k">struct</span>
@@ -248,17 +258,24 @@ with something like:</p>
 </pre></div>
 </div>
 <p>Running the <code class="docutils literal notranslate"><span class="pre">create_installers.exe</span></code> gives:</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>./test_windows_create_installers.exe --program-version <span class="m">0</span>.1.0 --opam-context<span class="o">=</span>_opam/ --target-dir<span class="o">=</span>target/ --work-dir<span class="o">=</span>work/ --abi<span class="o">=</span>linux_x86_64 --abi<span class="o">=</span>windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
-<span class="go">  test_windows_create_installers.exe: [INFO] Installers will be created that include the components: </span>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>./test_windows_create_installers.exe --program-version <span class="m">0</span>.1.0 --component<span class="o">=</span>offline-test1 --opam-context<span class="o">=</span>_opam/ --target-dir<span class="o">=</span>target/ --work-dir<span class="o">=</span>work/ --abi<span class="o">=</span>linux_x86_64 --abi<span class="o">=</span>windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
+<span class="go">  test_windows_create_installers.exe: [INFO] Installers will be created that include the components:</span>
 <span class="go">                                             [staging-ocamlrun; offline-test1]</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Installers will be created for the ABIs: </span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Uninstallers will be created that include the components:</span>
+<span class="go">                                             [offline-test1]</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Installers and uninstallers will be created for the ABIs:</span>
 <span class="go">                                             [generic; linux_x86_64;</span>
 <span class="go">                                              windows_x86_64]</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating unsigned-full-name-windows_x86_64-0.1.0.exe</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating target\i-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
 <span class="go">  Parsing of manifest successful.</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating target\u-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
+<span class="go">  Parsing of manifest successful.</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">--work-dir</span></code> will have ABI-specific archive trees in its “a” folder.</p>
@@ -270,49 +287,83 @@ are files that are used during the installation but disappear when the
 installation is finished.</p>
 <p>Each archive tree also contains a “st” folder for the static files … these
 are files that are directly copied to the end-user’s installation directory.</p>
-<p>Each archive tree also contains the packager executables named as
-<code class="docutils literal notranslate"><span class="pre">bin/dkml-package-setup.bc</span></code> and <code class="docutils literal notranslate"><span class="pre">bin/dkml-package-uninstaller.bc</span></code>.</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">5</span> work
+<p>Each archive tree also contains the packager executables named
+<code class="docutils literal notranslate"><span class="pre">bin/dkml-package.bc</span></code>.</p>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">6</span> work
 <span class="go">  work</span>
 <span class="go">  ├── a/</span>
-<span class="go">  │   ├── generic/</span>
-<span class="go">  │   │   ├── sg/</span>
-<span class="go">  │   │   │   └── offline-test1/</span>
-<span class="go">  │   │   │       └── generic/</span>
-<span class="go">  │   │   └── st/</span>
-<span class="go">  │   │       └── offline-test1/</span>
-<span class="go">  │   │           ├── README.txt</span>
-<span class="go">  │   │           └── icon.png</span>
-<span class="go">  │   ├── linux_x86_64/</span>
-<span class="go">  │   │   ├── bin/</span>
-<span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │   │   │   ├── dkml-install-user-runner.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-entry.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
-<span class="go">  │   │   │   └── dkml-package-uninstaller.bc</span>
-<span class="go">  │   │   ├── sg/</span>
-<span class="go">  │   │   │   └── offline-test1/</span>
-<span class="go">  │   │   │       └── generic/</span>
-<span class="go">  │   │   └── st/</span>
-<span class="go">  │   │       └── offline-test1/</span>
-<span class="go">  │   │           ├── README.txt</span>
-<span class="go">  │   │           └── icon.png</span>
-<span class="go">  │   └── windows_x86_64/</span>
-<span class="go">  │       ├── bin/</span>
-<span class="go">  │       │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │       │   ├── dkml-install-user-runner.exe</span>
-<span class="go">  │       │   ├── dkml-package-entry.exe</span>
-<span class="go">  │       │   ├── dkml-package-setup.bc</span>
-<span class="go">  │       │   └── dkml-package-uninstaller.bc</span>
-<span class="go">  │       ├── sg/</span>
-<span class="go">  │       │   ├── offline-test1/</span>
-<span class="go">  │       │   │   └── generic/</span>
-<span class="go">  │       │   └── staging-ocamlrun/</span>
-<span class="go">  │       │       └── windows_x86_64/</span>
-<span class="go">  │       └── st/</span>
-<span class="go">  │           └── offline-test1/</span>
-<span class="go">  │               ├── README.txt</span>
-<span class="go">  │               └── icon.png</span>
+<span class="go">  │   ├── i/</span>
+<span class="go">  │   │   ├── generic/</span>
+<span class="go">  │   │   │   ├── sg/</span>
+<span class="go">  │   │   │   │   └── offline-test1/</span>
+<span class="go">  │   │   │   │       └── generic/</span>
+<span class="go">  │   │   │   └── st/</span>
+<span class="go">  │   │   │       └── offline-test1/</span>
+<span class="go">  │   │   │           ├── README.txt</span>
+<span class="go">  │   │   │           └── icon.png</span>
+<span class="go">  │   │   ├── linux_x86_64/</span>
+<span class="go">  │   │   │   ├── bin/</span>
+<span class="go">  │   │   │   │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │   │   │   │   ├── dkml-install-user-runner.exe</span>
+<span class="go">  │   │   │   │   ├── dkml-package-entry.exe</span>
+<span class="go">  │   │   │   │   └── dkml-package.bc</span>
+<span class="go">  │   │   │   ├── sg/</span>
+<span class="go">  │   │   │   │   └── offline-test1/</span>
+<span class="go">  │   │   │   │       └── generic/</span>
+<span class="go">  │   │   │   └── st/</span>
+<span class="go">  │   │   │       └── offline-test1/</span>
+<span class="go">  │   │   │           ├── README.txt</span>
+<span class="go">  │   │   │           └── icon.png</span>
+<span class="go">  │   │   └── windows_x86_64/</span>
+<span class="go">  │   │       ├── bin/</span>
+<span class="go">  │   │       │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │   │       │   ├── dkml-install-user-runner.exe</span>
+<span class="go">  │   │       │   ├── dkml-package-entry.exe</span>
+<span class="go">  │   │       │   └── dkml-package.bc</span>
+<span class="go">  │   │       ├── sg/</span>
+<span class="go">  │   │       │   ├── offline-test1/</span>
+<span class="go">  │   │       │   │   └── generic/</span>
+<span class="go">  │   │       │   └── staging-ocamlrun/</span>
+<span class="go">  │   │       │       └── windows_x86_64/</span>
+<span class="go">  │   │       └── st/</span>
+<span class="go">  │   │           └── offline-test1/</span>
+<span class="go">  │   │               ├── README.txt</span>
+<span class="go">  │   │               └── icon.png</span>
+<span class="go">  │   └── u/</span>
+<span class="go">  │       ├── generic/</span>
+<span class="go">  │       │   ├── sg/</span>
+<span class="go">  │       │   │   └── offline-test1/</span>
+<span class="go">  │       │   │       └── generic/</span>
+<span class="go">  │       │   └── st/</span>
+<span class="go">  │       │       └── offline-test1/</span>
+<span class="go">  │       │           ├── README.txt</span>
+<span class="go">  │       │           └── icon.png</span>
+<span class="go">  │       ├── linux_x86_64/</span>
+<span class="go">  │       │   ├── bin/</span>
+<span class="go">  │       │   │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │       │   │   ├── dkml-install-user-runner.exe</span>
+<span class="go">  │       │   │   ├── dkml-package-entry.exe</span>
+<span class="go">  │       │   │   └── dkml-package.bc</span>
+<span class="go">  │       │   ├── sg/</span>
+<span class="go">  │       │   │   └── offline-test1/</span>
+<span class="go">  │       │   │       └── generic/</span>
+<span class="go">  │       │   └── st/</span>
+<span class="go">  │       │       └── offline-test1/</span>
+<span class="go">  │       │           ├── README.txt</span>
+<span class="go">  │       │           └── icon.png</span>
+<span class="go">  │       └── windows_x86_64/</span>
+<span class="go">  │           ├── bin/</span>
+<span class="go">  │           │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │           │   ├── dkml-install-user-runner.exe</span>
+<span class="go">  │           │   ├── dkml-package-entry.exe</span>
+<span class="go">  │           │   └── dkml-package.bc</span>
+<span class="go">  │           ├── sg/</span>
+<span class="go">  │           │   └── offline-test1/</span>
+<span class="go">  │           │       └── generic/</span>
+<span class="go">  │           └── st/</span>
+<span class="go">  │               └── offline-test1/</span>
+<span class="go">  │                   ├── README.txt</span>
+<span class="go">  │                   └── icon.png</span>
 <span class="go">  ├── setup.exe.manifest</span>
 <span class="go">  └── sfx/</span>
 <span class="go">      └── 7zr.exe</span>
@@ -342,70 +393,110 @@ install or use an archiver (ex. tar.exe + gzip.exe) on a build system,
 which will be more performant, maintainable and customizable than doing
 tar (or RPM, etc.) inside of OCaml.</p>
 </div>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">5</span> work
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">6</span> work
 <span class="go">  work</span>
 <span class="go">  ├── a/</span>
-<span class="go">  │   ├── generic/</span>
-<span class="go">  │   │   ├── sg/</span>
-<span class="go">  │   │   │   └── offline-test1/</span>
-<span class="go">  │   │   │       └── generic/</span>
-<span class="go">  │   │   └── st/</span>
-<span class="go">  │   │       └── offline-test1/</span>
-<span class="go">  │   │           ├── README.txt</span>
-<span class="go">  │   │           └── icon.png</span>
-<span class="go">  │   ├── linux_x86_64/</span>
-<span class="go">  │   │   ├── bin/</span>
-<span class="go">  │   │   │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │   │   │   ├── dkml-install-user-runner.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-entry.exe</span>
-<span class="go">  │   │   │   ├── dkml-package-setup.bc</span>
-<span class="go">  │   │   │   └── dkml-package-uninstaller.bc</span>
-<span class="go">  │   │   ├── sg/</span>
-<span class="go">  │   │   │   └── offline-test1/</span>
-<span class="go">  │   │   │       └── generic/</span>
-<span class="go">  │   │   └── st/</span>
-<span class="go">  │   │       └── offline-test1/</span>
-<span class="go">  │   │           ├── README.txt</span>
-<span class="go">  │   │           └── icon.png</span>
-<span class="go">  │   └── windows_x86_64/</span>
-<span class="go">  │       ├── bin/</span>
-<span class="go">  │       │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │       │   ├── dkml-install-user-runner.exe</span>
-<span class="go">  │       │   ├── dkml-package-entry.exe</span>
-<span class="go">  │       │   ├── dkml-package-setup.bc</span>
-<span class="go">  │       │   └── dkml-package-uninstaller.bc</span>
-<span class="go">  │       ├── sg/</span>
-<span class="go">  │       │   ├── offline-test1/</span>
-<span class="go">  │       │   │   └── generic/</span>
-<span class="go">  │       │   └── staging-ocamlrun/</span>
-<span class="go">  │       │       └── windows_x86_64/</span>
-<span class="go">  │       └── st/</span>
-<span class="go">  │           └── offline-test1/</span>
-<span class="go">  │               ├── README.txt</span>
-<span class="go">  │               └── icon.png</span>
+<span class="go">  │   ├── i/</span>
+<span class="go">  │   │   ├── generic/</span>
+<span class="go">  │   │   │   ├── sg/</span>
+<span class="go">  │   │   │   │   └── offline-test1/</span>
+<span class="go">  │   │   │   │       └── generic/</span>
+<span class="go">  │   │   │   └── st/</span>
+<span class="go">  │   │   │       └── offline-test1/</span>
+<span class="go">  │   │   │           ├── README.txt</span>
+<span class="go">  │   │   │           └── icon.png</span>
+<span class="go">  │   │   ├── linux_x86_64/</span>
+<span class="go">  │   │   │   ├── bin/</span>
+<span class="go">  │   │   │   │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │   │   │   │   ├── dkml-install-user-runner.exe</span>
+<span class="go">  │   │   │   │   ├── dkml-package-entry.exe</span>
+<span class="go">  │   │   │   │   └── dkml-package.bc</span>
+<span class="go">  │   │   │   ├── sg/</span>
+<span class="go">  │   │   │   │   └── offline-test1/</span>
+<span class="go">  │   │   │   │       └── generic/</span>
+<span class="go">  │   │   │   └── st/</span>
+<span class="go">  │   │   │       └── offline-test1/</span>
+<span class="go">  │   │   │           ├── README.txt</span>
+<span class="go">  │   │   │           └── icon.png</span>
+<span class="go">  │   │   └── windows_x86_64/</span>
+<span class="go">  │   │       ├── bin/</span>
+<span class="go">  │   │       │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │   │       │   ├── dkml-install-user-runner.exe</span>
+<span class="go">  │   │       │   ├── dkml-package-entry.exe</span>
+<span class="go">  │   │       │   └── dkml-package.bc</span>
+<span class="go">  │   │       ├── sg/</span>
+<span class="go">  │   │       │   ├── offline-test1/</span>
+<span class="go">  │   │       │   │   └── generic/</span>
+<span class="go">  │   │       │   └── staging-ocamlrun/</span>
+<span class="go">  │   │       │       └── windows_x86_64/</span>
+<span class="go">  │   │       └── st/</span>
+<span class="go">  │   │           └── offline-test1/</span>
+<span class="go">  │   │               ├── README.txt</span>
+<span class="go">  │   │               └── icon.png</span>
+<span class="go">  │   └── u/</span>
+<span class="go">  │       ├── generic/</span>
+<span class="go">  │       │   ├── sg/</span>
+<span class="go">  │       │   │   └── offline-test1/</span>
+<span class="go">  │       │   │       └── generic/</span>
+<span class="go">  │       │   └── st/</span>
+<span class="go">  │       │       └── offline-test1/</span>
+<span class="go">  │       │           ├── README.txt</span>
+<span class="go">  │       │           └── icon.png</span>
+<span class="go">  │       ├── linux_x86_64/</span>
+<span class="go">  │       │   ├── bin/</span>
+<span class="go">  │       │   │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │       │   │   ├── dkml-install-user-runner.exe</span>
+<span class="go">  │       │   │   ├── dkml-package-entry.exe</span>
+<span class="go">  │       │   │   └── dkml-package.bc</span>
+<span class="go">  │       │   ├── sg/</span>
+<span class="go">  │       │   │   └── offline-test1/</span>
+<span class="go">  │       │   │       └── generic/</span>
+<span class="go">  │       │   └── st/</span>
+<span class="go">  │       │       └── offline-test1/</span>
+<span class="go">  │       │           ├── README.txt</span>
+<span class="go">  │       │           └── icon.png</span>
+<span class="go">  │       └── windows_x86_64/</span>
+<span class="go">  │           ├── bin/</span>
+<span class="go">  │           │   ├── dkml-install-admin-runner.exe</span>
+<span class="go">  │           │   ├── dkml-install-user-runner.exe</span>
+<span class="go">  │           │   ├── dkml-package-entry.exe</span>
+<span class="go">  │           │   └── dkml-package.bc</span>
+<span class="go">  │           ├── sg/</span>
+<span class="go">  │           │   └── offline-test1/</span>
+<span class="go">  │           │       └── generic/</span>
+<span class="go">  │           └── st/</span>
+<span class="go">  │               └── offline-test1/</span>
+<span class="go">  │                   ├── README.txt</span>
+<span class="go">  │                   └── icon.png</span>
 <span class="go">  ├── setup.exe.manifest</span>
 <span class="go">  └── sfx/</span>
 <span class="go">      └── 7zr.exe</span>
 
-<span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">5</span> target
+<span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">2</span> target
 <span class="go">  target</span>
-<span class="go">  ├── bundle-full-name-generic.sh</span>
-<span class="go">  ├── bundle-full-name-linux_x86_64.sh</span>
-<span class="go">  ├── bundle-full-name-windows_x86_64.sh</span>
-<span class="go">  ├── full-name-windows_x86_64-0.1.0.7z</span>
-<span class="go">  ├── full-name-windows_x86_64-0.1.0.sfx</span>
-<span class="go">  └── unsigned-full-name-windows_x86_64-0.1.0.exe</span>
+<span class="go">  ├── i-bundle-full-name-generic.sh</span>
+<span class="go">  ├── i-bundle-full-name-linux_x86_64.sh</span>
+<span class="go">  ├── i-bundle-full-name-windows_x86_64.sh</span>
+<span class="go">  ├── i-full-name-windows_x86_64-0.1.0.7z</span>
+<span class="go">  ├── i-full-name-windows_x86_64-0.1.0.sfx</span>
+<span class="go">  ├── i-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
+<span class="go">  ├── u-bundle-full-name-generic.sh</span>
+<span class="go">  ├── u-bundle-full-name-linux_x86_64.sh</span>
+<span class="go">  ├── u-bundle-full-name-windows_x86_64.sh</span>
+<span class="go">  ├── u-full-name-windows_x86_64-0.1.0.7z</span>
+<span class="go">  ├── u-full-name-windows_x86_64-0.1.0.sfx</span>
+<span class="go">  └── u-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
 
-<span class="gp">  $ </span>target/bundle-full-name-linux_x86_64.sh -o target tar
-<span class="gp">  $ </span>tar tvf target/full-name-linux_x86_64-0.1.0.tar <span class="p">|</span> head -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
+<span class="gp">  $ </span>target/i-bundle-full-name-linux_x86_64.sh -o target/i tar
+<span class="gp">  $ </span>tar tvf target/i/full-name-linux_x86_64-0.1.0.tar <span class="p">|</span> head -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
 <span class="go">  ./</span>
 <span class="go">  full-name-linux_x86_64-0.1.0/.archivetree</span>
 <span class="go">  full-name-linux_x86_64-0.1.0/bin/</span>
 <span class="go">  full-name-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe</span>
 <span class="go">  full-name-linux_x86_64-0.1.0/bin/dkml-install-user-runner.exe</span>
 
-<span class="gp">  $ </span>target/bundle-full-name-linux_x86_64.sh -o target -e .tar.gz tar --gzip
-<span class="gp">  $ </span>tar tvfz target/full-name-linux_x86_64-0.1.0.tar.gz <span class="p">|</span> tail -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
+<span class="gp">  $ </span>target/i-bundle-full-name-linux_x86_64.sh -o target/i -e .tar.gz tar --gzip
+<span class="gp">  $ </span>tar tvfz target/i/full-name-linux_x86_64-0.1.0.tar.gz <span class="p">|</span> tail -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
 <span class="go">  full-name-linux_x86_64-0.1.0/sg/offline-test1/generic/install-offline-test1.bc</span>
 <span class="go">  full-name-linux_x86_64-0.1.0/st/</span>
 <span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test1/</span>
@@ -423,7 +514,7 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 contents is exactly the same as the archive tree, except that
 <code class="docutils literal notranslate"><span class="pre">bin/dkml-package-entry.exe</span></code> (the <em>packager proxy</em> setup) has been renamed to
 <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code>.</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/i-full-name-windows_x86_64-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
 <span class="go">  Name</span>
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
@@ -444,11 +535,33 @@ contents is exactly the same as the archive tree, except that
 <span class="go">  sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll</span>
 <span class="go">  st\offline-test1\icon.png</span>
 <span class="go">  st\offline-test1\README.txt</span>
-<span class="go">  bin\dkml-package-setup.bc</span>
-<span class="go">  bin\dkml-package-uninstaller.bc</span>
+<span class="go">  bin\dkml-package.bc</span>
 <span class="go">  bin\dkml-install-admin-runner.exe</span>
 <span class="go">  bin\dkml-install-user-runner.exe</span>
 <span class="go">  setup.exe</span>
+<span class="go">  vcruntime140.dll</span>
+<span class="go">  vcruntime140_1.dll</span>
+<span class="go">  vc_redist.dkml-target-abi.exe</span>
+<span class="go">  ------------------------</span>
+<span class="go">  folders</span>
+
+<span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/u-full-name-windows_x86_64-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
+<span class="go">  Name</span>
+<span class="go">  ------------------------</span>
+<span class="go">  bin</span>
+<span class="go">  sg</span>
+<span class="go">  sg\offline-test1</span>
+<span class="go">  sg\offline-test1\generic</span>
+<span class="go">  st</span>
+<span class="go">  st\offline-test1</span>
+<span class="go">  .archivetree</span>
+<span class="go">  sg\offline-test1\generic\install-offline-test1.bc</span>
+<span class="go">  st\offline-test1\icon.png</span>
+<span class="go">  st\offline-test1\README.txt</span>
+<span class="go">  bin\dkml-package.bc</span>
+<span class="go">  bin\dkml-install-admin-runner.exe</span>
+<span class="go">  bin\dkml-install-user-runner.exe</span>
+<span class="go">  uninstall.exe</span>
 <span class="go">  vcruntime140.dll</span>
 <span class="go">  vcruntime140_1.dll</span>
 <span class="go">  vc_redist.dkml-target-abi.exe</span>
@@ -458,7 +571,7 @@ contents is exactly the same as the archive tree, except that
 </div>
 <p>We would see the same thing if we looked inside the <em>installer</em>
 <code class="docutils literal notranslate"><span class="pre">unsigned-NAME-VER.exe</span></code> (which is just the SFX module and the .7z archive above):</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/unsigned-full-name-windows_x86_64-0.1.0.exe <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span> <span class="p">|</span> head -n10
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/i-unsigned-full-name-windows_x86_64-0.1.0.exe <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span> <span class="p">|</span> head -n10
 <span class="go">  Name</span>
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
@@ -481,7 +594,7 @@ directory.</p>
 <p>Since the <em>installer</em> <code class="docutils literal notranslate"><span class="pre">unsigned-NAME-VER.exe</span></code> will decompress the .7z archive and
 run the <em>packager proxy</em> <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code> it found in the .7z root directory, we expect to
 see “Hello” printed. Which is what we see:</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>target/unsigned-full-name-windows_x86_64-0.1.0.exe
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>target/i-unsigned-full-name-windows_x86_64-0.1.0.exe
 <span class="go">  Salut</span>
 </pre></div>
 </div>
