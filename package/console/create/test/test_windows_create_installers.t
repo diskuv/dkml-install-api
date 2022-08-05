@@ -260,16 +260,16 @@ Side note:
   test_windows_create_installers.exe: [INFO] Installers and uninstallers will be created for the ABIs:
                                              [generic; linux_x86_64;
                                               windows_x86_64]
-  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic-i.sh that can produce full-name-generic-i-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic-u.sh that can produce full-name-generic-u-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-i.sh that can produce full-name-linux_x86_64-i-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-u.sh that can produce full-name-linux_x86_64-u-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating target\i-unsigned-full-name-windows_x86_64-0.1.0.exe
   Parsing of manifest successful.
-  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-i.sh that can produce full-name-windows_x86_64-i-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating target\u-unsigned-full-name-windows_x86_64-0.1.0.exe
   Parsing of manifest successful.
-  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-u.sh that can produce full-name-windows_x86_64-u-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
 
 The --work-dir will have ABI-specific archive trees in its "a" folder.
@@ -457,34 +457,34 @@ Sidenote:
 
   $ diskuvbox tree --encoding UTF-8 -d 2 target
   target
-  ├── i-bundle-full-name-generic.sh
-  ├── i-bundle-full-name-linux_x86_64.sh
-  ├── i-bundle-full-name-windows_x86_64.sh
+  ├── bundle-full-name-generic-i.sh
+  ├── bundle-full-name-generic-u.sh
+  ├── bundle-full-name-linux_x86_64-i.sh
+  ├── bundle-full-name-linux_x86_64-u.sh
+  ├── bundle-full-name-windows_x86_64-i.sh
+  ├── bundle-full-name-windows_x86_64-u.sh
   ├── i-full-name-windows_x86_64-0.1.0.7z
   ├── i-full-name-windows_x86_64-0.1.0.sfx
   ├── i-unsigned-full-name-windows_x86_64-0.1.0.exe
-  ├── u-bundle-full-name-generic.sh
-  ├── u-bundle-full-name-linux_x86_64.sh
-  ├── u-bundle-full-name-windows_x86_64.sh
   ├── u-full-name-windows_x86_64-0.1.0.7z
   ├── u-full-name-windows_x86_64-0.1.0.sfx
   └── u-unsigned-full-name-windows_x86_64-0.1.0.exe
 
-  $ target/i-bundle-full-name-linux_x86_64.sh -o target/i tar
-  $ tar tvf target/i/full-name-linux_x86_64-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
+  $ target/bundle-full-name-linux_x86_64-i.sh -o target/i tar
+  $ tar tvf target/i/full-name-linux_x86_64-i-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
   ./
-  full-name-linux_x86_64-0.1.0/.archivetree
-  full-name-linux_x86_64-0.1.0/bin/
-  full-name-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe
-  full-name-linux_x86_64-0.1.0/bin/dkml-install-user-runner.exe
+  full-name-linux_x86_64-i-0.1.0/.archivetree
+  full-name-linux_x86_64-i-0.1.0/bin/
+  full-name-linux_x86_64-i-0.1.0/bin/dkml-install-admin-runner.exe
+  full-name-linux_x86_64-i-0.1.0/bin/dkml-install-user-runner.exe
 
-  $ target/i-bundle-full-name-linux_x86_64.sh -o target/i -e .tar.gz tar --gzip
-  $ tar tvfz target/i/full-name-linux_x86_64-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
-  full-name-linux_x86_64-0.1.0/sg/offline-test-b/generic/somecode-offline-test-b.bc
-  full-name-linux_x86_64-0.1.0/st/
-  full-name-linux_x86_64-0.1.0/st/offline-test-a/
-  full-name-linux_x86_64-0.1.0/st/offline-test-a/README.txt
-  full-name-linux_x86_64-0.1.0/st/offline-test-a/icon.png
+  $ target/bundle-full-name-linux_x86_64-i.sh -o target/i -e .tar.gz tar --gzip
+  $ tar tvfz target/i/full-name-linux_x86_64-i-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
+  full-name-linux_x86_64-i-0.1.0/sg/offline-test-b/generic/somecode-offline-test-b.bc
+  full-name-linux_x86_64-i-0.1.0/st/
+  full-name-linux_x86_64-i-0.1.0/st/offline-test-a/
+  full-name-linux_x86_64-i-0.1.0/st/offline-test-a/README.txt
+  full-name-linux_x86_64-i-0.1.0/st/offline-test-a/icon.png
 [archiver_session]
 
 --------------------------------------------------------------------------------

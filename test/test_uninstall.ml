@@ -38,7 +38,7 @@ let test_directory_with_running_process () =
       let elapsed_secs = finish_secs -. start_secs in
       if elapsed_secs < 5.0 then
         Alcotest.fail
-          (Format.sprintf
+          (Printf.sprintf
              "Expected uninstall would block for about 15 seconds. It only \
               blocked for %f seconds"
              elapsed_secs)

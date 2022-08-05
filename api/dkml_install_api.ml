@@ -248,7 +248,7 @@ let uninstall_directory_onerror_exit ~id ~dir ~wait_seconds_if_stuck =
           So any output on the error console indicates a problem.
           *)
           let cmd =
-            Format.sprintf "@rd /s /q %s" (Filename.quote (Fpath.to_string dir))
+            Printf.sprintf "@rd /s /q %s" (Filename.quote (Fpath.to_string dir))
           in
           let* batchfile = Bos.OS.File.tmp "rd_%s.bat" in
           let* () = Bos.OS.File.write batchfile cmd in
