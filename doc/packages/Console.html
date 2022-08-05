@@ -304,16 +304,16 @@ with something like:</p>
 <span class="go">  test_windows_create_installers.exe: [INFO] Installers and uninstallers will be created for the ABIs:</span>
 <span class="go">                                             [generic; linux_x86_64;</span>
 <span class="go">                                              windows_x86_64]</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-generic.sh that can produce full-name-generic-0.1.0.tar.gz (etc.) archives</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-linux_x86_64.sh that can produce full-name-linux_x86_64-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic-i.sh that can produce full-name-generic-i-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic-u.sh that can produce full-name-generic-u-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-i.sh that can produce full-name-linux_x86_64-i-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-u.sh that can produce full-name-linux_x86_64-u-0.1.0.tar.gz (etc.) archives</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Generating target\i-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
 <span class="go">  Parsing of manifest successful.</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\i-bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-i.sh that can produce full-name-windows_x86_64-i-0.1.0.tar.gz (etc.) archives</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Generating target\u-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
 <span class="go">  Parsing of manifest successful.</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\u-bundle-full-name-windows_x86_64.sh that can produce full-name-windows_x86_64-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-u.sh that can produce full-name-windows_x86_64-u-0.1.0.tar.gz (etc.) archives</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">--work-dir</span></code> will have ABI-specific archive trees in its “a” folder.</p>
@@ -492,34 +492,34 @@ tar (or RPM, etc.) inside of OCaml.</p>
 
 <span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">2</span> target
 <span class="go">  target</span>
-<span class="go">  ├── i-bundle-full-name-generic.sh</span>
-<span class="go">  ├── i-bundle-full-name-linux_x86_64.sh</span>
-<span class="go">  ├── i-bundle-full-name-windows_x86_64.sh</span>
+<span class="go">  ├── bundle-full-name-generic-i.sh</span>
+<span class="go">  ├── bundle-full-name-generic-u.sh</span>
+<span class="go">  ├── bundle-full-name-linux_x86_64-i.sh</span>
+<span class="go">  ├── bundle-full-name-linux_x86_64-u.sh</span>
+<span class="go">  ├── bundle-full-name-windows_x86_64-i.sh</span>
+<span class="go">  ├── bundle-full-name-windows_x86_64-u.sh</span>
 <span class="go">  ├── i-full-name-windows_x86_64-0.1.0.7z</span>
 <span class="go">  ├── i-full-name-windows_x86_64-0.1.0.sfx</span>
 <span class="go">  ├── i-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
-<span class="go">  ├── u-bundle-full-name-generic.sh</span>
-<span class="go">  ├── u-bundle-full-name-linux_x86_64.sh</span>
-<span class="go">  ├── u-bundle-full-name-windows_x86_64.sh</span>
 <span class="go">  ├── u-full-name-windows_x86_64-0.1.0.7z</span>
 <span class="go">  ├── u-full-name-windows_x86_64-0.1.0.sfx</span>
 <span class="go">  └── u-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
 
-<span class="gp">  $ </span>target/i-bundle-full-name-linux_x86_64.sh -o target/i tar
-<span class="gp">  $ </span>tar tvf target/i/full-name-linux_x86_64-0.1.0.tar <span class="p">|</span> head -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
+<span class="gp">  $ </span>target/bundle-full-name-linux_x86_64-i.sh -o target/i tar
+<span class="gp">  $ </span>tar tvf target/i/full-name-linux_x86_64-i-0.1.0.tar <span class="p">|</span> head -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
 <span class="go">  ./</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/.archivetree</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/bin/</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/bin/dkml-install-admin-runner.exe</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/bin/dkml-install-user-runner.exe</span>
+<span class="go">  full-name-linux_x86_64-i-0.1.0/.archivetree</span>
+<span class="go">  full-name-linux_x86_64-i-0.1.0/bin/</span>
+<span class="go">  full-name-linux_x86_64-i-0.1.0/bin/dkml-install-admin-runner.exe</span>
+<span class="go">  full-name-linux_x86_64-i-0.1.0/bin/dkml-install-user-runner.exe</span>
 
-<span class="gp">  $ </span>target/i-bundle-full-name-linux_x86_64.sh -o target/i -e .tar.gz tar --gzip
-<span class="gp">  $ </span>tar tvfz target/i/full-name-linux_x86_64-0.1.0.tar.gz <span class="p">|</span> tail -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
-<span class="go">  full-name-linux_x86_64-0.1.0/sg/offline-test-b/generic/somecode-offline-test-b.bc</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/st/</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test-a/</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test-a/README.txt</span>
-<span class="go">  full-name-linux_x86_64-0.1.0/st/offline-test-a/icon.png</span>
+<span class="gp">  $ </span>target/bundle-full-name-linux_x86_64-i.sh -o target/i -e .tar.gz tar --gzip
+<span class="gp">  $ </span>tar tvfz target/i/full-name-linux_x86_64-i-0.1.0.tar.gz <span class="p">|</span> tail -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
+<span class="go">  full-name-linux_x86_64-i-0.1.0/sg/offline-test-b/generic/somecode-offline-test-b.bc</span>
+<span class="go">  full-name-linux_x86_64-i-0.1.0/st/</span>
+<span class="go">  full-name-linux_x86_64-i-0.1.0/st/offline-test-a/</span>
+<span class="go">  full-name-linux_x86_64-i-0.1.0/st/offline-test-a/README.txt</span>
+<span class="go">  full-name-linux_x86_64-i-0.1.0/st/offline-test-a/icon.png</span>
 </pre></div>
 </div>
 </div>
