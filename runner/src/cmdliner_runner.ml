@@ -59,7 +59,7 @@ let create_context ~install_direction ~staging_default ~target_abi
   let* global_context, _fl = Global_context.create ~install_direction reg in
   let* interpreter, _fl =
     Interpreter.create global_context ~install_direction ~self_component_name
-      ~abi:target_abi ~staging_files_source ~prefix:(Fpath.v prefix)
+      ~abi:target_abi ~staging_files_source ~prefix
   in
   return
     {
@@ -94,10 +94,19 @@ let raw_dir =
 
 let prefix_t =
   let doc = "$(docv) is the installation directory" in
-  Arg.(
-    required
-    & opt (some string) None
-    & info [ Cmdliner_common.prefix_arg ] ~docv:"PREFIX" ~doc)
+  let t =
+    Arg.(
+      required
+      & opt (some string) None
+      & info [ Cmdliner_common.prefix_arg ] ~docv:"PREFIX" ~doc)
+  in
+  let to_abs_dir prefix =
+    let fp = Fpath.v prefix in
+    match Fpath.is_rel fp with
+    | true -> Fpath.(v (Sys.getcwd ()) // fp)
+    | false -> fp
+  in
+  Term.(const to_abs_dir $ t)
 
 (** Directory containing dkml-package.bc or whatever executable
    (perhaps a renamed setup.exe in a non-bin folder) is currently running. *)
@@ -152,28 +161,29 @@ let static_files_opt_t =
 let opam_context_opt_t =
   let doc =
     Fmt.str
-      "Obtain staging files from an Opam switch. Ignored if $(b,--%s) \
-       specified. The Opam switch prefix can be unspecified which indicates to \
-       use the Opam default switch (if any) or the Opam switch prefix can be \
-       specified as an option argument. 1) A switch prefix is either the \
-       $(b,_opam) subdirectory of a local Opam switch or $(b,%s/<switchname>) \
-       for a global Opam switch. 2) The default Opam switch is the currently \
-       activated Opam switch defined by the OPAM_SWITCH_PREFIX environment \
+      "Obtain staging and static files from an Opam switch. The Opam switch \
+       will not be used for staging files if $(b,--%s) specified, and the Opam \
+       switch will not be used for static files if $(b,--%s) specified. A \
+       switch prefix is either the $(b,_opam) subdirectory of a local Opam \
+       switch or $(b,%s/<switchname>) for a global Opam switch. The typical \
+       use of $(b,--%s) is to set it to the OPAM_SWITCH_PREFIX environment \
        variable; the OPAM_SWITCH_PREFIX environment variable is set \
        automatically by commands like `%s`."
-      Cmdliner_common.staging_files_arg
+      Cmdliner_common.staging_files_arg Cmdliner_common.static_files_arg
       (Cmdliner.Manpage.escape "$OPAMROOT")
-      (Cmdliner.Manpage.escape
+      Cmdliner_common.opam_context_args
+      (if Sys.win32 then
+       Cmdliner.Manpage.escape
          "(& opam env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression \
-          $_ }` for Windows PowerShell or `eval $(opam env)")
+          $_ }` for Windows PowerShell or `eval $(opam env)"
+      else "eval $(opam env)")
   in
-  let opt_escaped = function
-    | None -> None
-    | Some s -> Some (Cmdliner.Manpage.escape s)
-  in
+  (* IMPORTANT: Do not get cute and try to default this to the environment
+     variable OPAM_SWITCH_PREFIX. That would make self-contained installers
+     be dependent on prior environment variables, which is very bad. *)
   Arg.(
     value
-    & opt ~vopt:(opt_escaped (OS.Env.var "OPAM_SWITCH_PREFIX")) (some dir) None
+    & opt (some dir) None
     & info [ Cmdliner_common.opam_context_args ] ~docv:"OPAM_SWITCH_PREFIX" ~doc)
 
 (** [staging_files_source_for_package_t] is the

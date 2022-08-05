@@ -4,13 +4,13 @@ open Dkml_install_runner.Cmdliner_runner
 open Dkml_install_runner.Error_handling.Monad_syntax
 module Term = Cmdliner.Term
 
-let default_cmd =
+let default_cmd ~program_version =
   let doc = "the OCaml CLI administrator installer" in
   let sdocs = Cmdliner.Manpage.s_common_options in
   let exits = Term.default_exits in
   let man = help_secs in
   ( Term.(ret (const (fun _log_config -> `Help (`Pager, None)) $ setup_log_t)),
-    Term.info "dkml-install-admin-runner" ~version:"%%VERSION%%" ~doc ~sdocs
+    Term.info "dkml-install-admin-runner" ~version:program_version ~doc ~sdocs
       ~exits ~man )
 
 (** {1 Setup}
@@ -75,7 +75,7 @@ let run_terms_with_common_runner_args ~log_config ~prefix ~staging_files_source
       | `Help -> `Help (`Pager, None))
   | _ as a -> a
 
-let helper_all_cmd ~doc ~name ~install_direction f =
+let helper_all_cmd ~doc ~name ~install_direction ~program_version f =
   let runall log_config selector prefix staging_files_opt opam_context_opt =
     let* staging_files_source, _fl =
       Dkml_install_runner.Path_location.staging_files_source
@@ -83,7 +83,7 @@ let helper_all_cmd ~doc ~name ~install_direction f =
     in
     return
       (List.fold_left
-         (run_terms_with_common_runner_args ~log_config ~prefix:(Fpath.v prefix)
+         (run_terms_with_common_runner_args ~log_config ~prefix
             ~staging_files_source)
          (`Ok ())
          (f ~selector:(to_selector selector)))
@@ -94,7 +94,7 @@ let helper_all_cmd ~doc ~name ~install_direction f =
            (const runall $ setup_log_t
            $ component_selector_t ~install_direction
            $ prefix_t $ staging_files_opt_t $ opam_context_opt_t))),
-    Term.info name ~version:"%%VERSION%%" ~doc )
+    Term.info name ~version:program_version ~doc )
 
 let install_all_cmd ~reg ~target_abi =
   let doc = "install all components" in
@@ -108,7 +108,7 @@ let uninstall_all_cmd ~reg ~target_abi =
     ~install_direction:Dkml_install_runner.Path_eval.Global_context.Uninstall
     (uninstall_admin_cmds ~reg ~target_abi)
 
-let main ~target_abi =
+let main ~target_abi ~program_version =
   (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
      reset the logger to what was given on the command line. *)
   let (_ : Log_config.t) =
@@ -129,9 +129,10 @@ let main ~target_abi =
               [uninstall_admin_cmds] will use _all_ components, which means
               any individual component can be installed and uninstalled
               by invoking the individual subcommand. *)
-           eval_choice ~catch:false default_cmd
+           eval_choice ~catch:false
+             (default_cmd ~program_version)
              (help_cmd
-              :: install_all_cmd ~reg ~target_abi
-              :: uninstall_all_cmd ~reg ~target_abi
+              :: install_all_cmd ~reg ~target_abi ~program_version
+              :: uninstall_all_cmd ~reg ~target_abi ~program_version
               :: install_admin_cmds ~reg ~target_abi ~selector:All_components
              @ uninstall_admin_cmds ~reg ~target_abi ~selector:All_components)))

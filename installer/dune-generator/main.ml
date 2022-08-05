@@ -31,6 +31,7 @@ let write_dune_inc fmt ~output_rel dune_inc =
   Fmt.pf fmt
     "; When regenerating, erase **all** content from this file, save the file, \
      and then run:@\n";
+  Fmt.pf fmt ";   dune clean@\n";
   Fmt.pf fmt ";   dune build %a --auto-promote@\n" fpath_pp_mixed output_rel;
   Fmt.pf fmt "%a@\n" Fmt.(list ~sep:(any "@\n@\n") Sexp.pp_hum) dune_inc;
   Format.pp_print_flush fmt ()
@@ -81,7 +82,9 @@ let main () project_root corrected =
                   (loglevel_flags
                   @ [ Atom ":include"; Atom "user-link-flags.sexp" ]);
               ];
-            libraries ([ "dkml-install-runner.user" ] @ dkml_components);
+            libraries
+              ([ "dkml-install-runner.user"; "dune-build-info" ]
+              @ dkml_components);
           ];
         executable
           [
@@ -94,7 +97,9 @@ let main () project_root corrected =
                   (loglevel_flags
                   @ [ Atom ":include"; Atom "admin-link-flags.sexp" ]);
               ];
-            libraries ([ "dkml-install-runner.admin" ] @ dkml_components);
+            libraries
+              ([ "dkml-install-runner.admin"; "dune-build-info" ]
+              @ dkml_components);
           ];
         executable
           [
@@ -123,7 +128,8 @@ let main () project_root corrected =
         executable
           [
             name "entry_assembly_manifest";
-            libraries [ "dkml-package-console.common"; "fmt" ];
+            libraries
+              [ "dkml-package-console.common"; "dune-build-info"; "fmt" ];
             modules [ "entry_assembly_manifest" ];
           ];
         rule
@@ -140,7 +146,12 @@ let main () project_root corrected =
             name "package_setup";
             modes_byte_exe;
             libraries
-              ([ "dkml-package-console.setup"; "cmdliner"; "private_common" ]
+              ([
+                 "dkml-package-console.setup";
+                 "dune-build-info";
+                 "cmdliner";
+                 "private_common";
+               ]
               @ dkml_components);
             modules [ "package_setup" ];
           ];
@@ -151,6 +162,7 @@ let main () project_root corrected =
             libraries
               ([
                  "dkml-package-console.uninstaller";
+                 "dune-build-info";
                  "cmdliner";
                  "private_common";
                ]

@@ -4,13 +4,13 @@ open Dkml_install_runner.Cmdliner_runner
 open Dkml_install_runner.Error_handling.Monad_syntax
 module Term = Cmdliner.Term
 
-let default_cmd =
+let default_cmd ~program_version =
   let doc = "the OCaml CLI user installer" in
   let sdocs = Cmdliner.Manpage.s_common_options in
   let exits = Term.default_exits in
   let man = help_secs in
   ( Term.(ret (const (fun _log_config -> `Help (`Pager, None)) $ setup_log_t)),
-    Term.info "dkml-install-user-runner" ~version:"%%VERSION%%" ~doc ~sdocs
+    Term.info "dkml-install-user-runner" ~version:program_version ~doc ~sdocs
       ~exits ~man )
 
 (** Install all non-administrative CLI subcommands for all the components.
@@ -43,7 +43,7 @@ let component_cmds ~reg ~target_abi =
      in
      return (install_user_cmds @ uninstall_user_cmds))
 
-let main ~target_abi =
+let main ~target_abi ~program_version =
   (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
      reset the logger to what was given on the command line. *)
   let (_ : Log_config.t) =
@@ -59,5 +59,6 @@ let main ~target_abi =
   Term.(
     exit
     @@ catch_and_exit_on_error ~id:"f59b4702" (fun () ->
-           eval_choice ~catch:false default_cmd
+           eval_choice ~catch:false
+             (default_cmd ~program_version)
              (help_cmd :: component_cmds ~reg ~target_abi)))

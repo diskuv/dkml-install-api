@@ -222,7 +222,7 @@ let create_sfx_exe ~sfx_path ~archive_path ~installer_path =
 
          (* EOF *)
          output None;
-         Ok ())
+         Ok installer_path)
        ()
 
 let modify_manifest ~pe_file ~work_dir ~organization ~program_name
@@ -342,6 +342,5 @@ let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
        create_7z_archive ~sevenz_exe ~install_direction ~abi_selector
          ~archive_path ~archive_dir
      in
-     (* Step 3. Create SFX || ARCHIVE *)
-     let* () = create_sfx_exe ~sfx_path ~archive_path ~installer_path in
-     Ok ())
+     (* Step 3. Create SFX || ARCHIVE. Return sfx.exe *)
+     create_sfx_exe ~sfx_path ~archive_path ~installer_path)

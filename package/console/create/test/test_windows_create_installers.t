@@ -260,16 +260,16 @@ Side note:
   test_windows_create_installers.exe: [INFO] Installers and uninstallers will be created for the ABIs:
                                              [generic; linux_x86_64;
                                               windows_x86_64]
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic-i.sh that can produce full-name-generic-i-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic-u.sh that can produce full-name-generic-u-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-i.sh that can produce full-name-linux_x86_64-i-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic-i.sh that can produce full-name-generic-i-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-u.sh that can produce full-name-linux_x86_64-u-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating target\i-unsigned-full-name-windows_x86_64-0.1.0.exe
-  Parsing of manifest successful.
-  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-i.sh that can produce full-name-windows_x86_64-i-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-i.sh that can produce full-name-linux_x86_64-i-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating target\u-unsigned-full-name-windows_x86_64-0.1.0.exe
   Parsing of manifest successful.
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-u.sh that can produce full-name-windows_x86_64-u-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Generating target\i-unsigned-full-name-windows_x86_64-0.1.0.exe
+  Parsing of manifest successful.
+  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-i.sh that can produce full-name-windows_x86_64-i-0.1.0.tar.gz (etc.) archives
 [create_installers_run]
 
 The --work-dir will have ABI-specific archive trees in its "a" folder.
@@ -285,8 +285,17 @@ installation is finished.
 Each archive tree also contains a "st" folder for the static files ... these
 are files that are directly copied to the end-user's installation directory.
 
-Each archive tree also contains the packager executables named as
-bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
+Each archive tree also contains the packager executable (the setup and
+uninstall bytecode) named "bin/dkml-package.bc".
+
+The "bin/dkml-package-entry.exe" is the launcher for the installation or
+uninstallation. The "bin/dkml-package-entry.exe" is not self-contained; it
+requires an archive tree which we'll describe later.
+
+The "bin/dkml-package-uninstall.exe" is a fully self-contained uninstaller.
+For Windows it is the self-extracting, self-executing archive that will
+delegate to "bin/dkml-package-entry.exe" after the archive is extracted
+into a temporary archive tree.
 
 [create_installers_work]
   $ diskuvbox tree --encoding UTF-8 -d 6 work
@@ -319,6 +328,7 @@ bin/dkml-package-setup.bc and bin/dkml-package-uninstaller.bc
   │   │       │   ├── dkml-install-admin-runner.exe
   │   │       │   ├── dkml-install-user-runner.exe
   │   │       │   ├── dkml-package-entry.exe
+  │   │       │   ├── dkml-package-uninstall.exe
   │   │       │   └── dkml-package.bc
   │   │       ├── sg/
   │   │       │   ├── offline-test-b/
@@ -416,6 +426,7 @@ Sidenote:
   │   │       │   ├── dkml-install-admin-runner.exe
   │   │       │   ├── dkml-install-user-runner.exe
   │   │       │   ├── dkml-package-entry.exe
+  │   │       │   ├── dkml-package-uninstall.exe
   │   │       │   └── dkml-package.bc
   │   │       ├── sg/
   │   │       │   ├── offline-test-b/
@@ -527,6 +538,7 @@ contents is exactly the same as the archive tree, except that
   bin\dkml-install-admin-runner.exe
   bin\dkml-install-user-runner.exe
   setup.exe
+  bin\dkml-package-uninstall.exe
   vcruntime140.dll
   vcruntime140_1.dll
   vc_redist.dkml-target-abi.exe

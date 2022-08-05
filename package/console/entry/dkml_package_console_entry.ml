@@ -184,10 +184,6 @@ let entry ~target_abi =
     helper { ci = false } (List.tl (Array.to_list Sys.argv))
   in
   let args = Cmd.of_list argl in
-  (* Since we use ocamlrun, assert that it is present *)
-  assert (
-    List.mem "staging-ocamlrun"
-      Dkml_package_console_common.console_required_components);
   (* Find ocamlrun and ocaml lib. *)
   let archive_dir =
     Dkml_install_runner.Error_handling.continue_or_exit

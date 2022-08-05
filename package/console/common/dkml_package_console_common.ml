@@ -19,6 +19,16 @@ type organization = {
   common_name_kebab_lower_case : string;
 }
 
+type program_assets = { logo_icon_32x32_opt : string option }
+
+type program_info = {
+  url_info_about_opt: string option;
+  url_update_info_opt: string option;
+  help_link_opt: string  option;
+  estimated_byte_size_opt: int64 option;
+  windows_language_code_id_opt: int option;
+}
+
 (** [parse_version] parses ["[v|V]major.minor[.patch][(+|-)info]"].
     Verbatim from https://erratique.ch/software/astring/doc/Astring/index.html
 
@@ -67,12 +77,6 @@ let version_m_n_o_p version =
   match parse_version version with
   | Some (major, minor, patch, _info) -> Fmt.str "%d.%d.%d.0" major minor patch
   | None -> "0.0.0.0"
-
-(* let target_abi_v2 () =
-   match Dkml_install_runner.Host_abi.create_v2 () with
-   | Ok abi -> abi
-   | Error s ->
-       raise (Installation_error (Fmt.str "Could not detect the host ABI. %s" s)) *)
 
 let create_minimal_context ~self_component_name ~log_config ~target_abi ~prefix
     ~staging_files_source =

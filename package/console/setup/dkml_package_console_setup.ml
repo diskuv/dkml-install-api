@@ -17,7 +17,8 @@ let (_ : string list) = Default_component_config.install_depends_on
    Logging is configured just before this function is called through Cmdliner
    Term evaluation of `log_config`. If you don't see log statement, make
    sure the log statements are created inside (or after) `setup ...`. *)
-let setup target_abi program_name package_args : unit =
+let setup target_abi program_version organization program_name program_assets
+    program_info package_args : unit =
   let open Dkml_install_runner.Error_handling.Monad_syntax in
   (* deconstruct *)
   let ( prefix_opt,
@@ -34,7 +35,6 @@ let setup target_abi program_name package_args : unit =
 
   Logs.debug (fun l -> l "Starting setup");
 
-  (* Dkml_install_runner.Error_handling.continue_or_exit  *)
   (* Get all the available components. Logging has already been setup. *)
   let reg = Component_registry.get () in
 
@@ -85,6 +85,19 @@ let setup target_abi program_name package_args : unit =
           let module Cfg = (val cfg : Component_config) in
           Logs.debug (fun m -> m "Will install component %s" Cfg.component_name);
           return ())
+    in
+    (* Copy uninstaller into <prefix> *)
+    let* (), _fl =
+      map_string_error_to_progress
+        (Diskuvbox.copy_file ~err:box_err
+           ~src:Fpath.(archivedir / "bin" / "dkml-package-uninstall.exe")
+           ~dst:Fpath.(prefix / "uninstall.exe")
+           ())
+    in
+    (* Write uninstaller into Windows registry *)
+    let* (), _fl =
+      Windows_uninstall_registry.write ~installation_prefix:prefix ~organization
+        ~program_name ~program_assets ~program_version ~program_info
     in
     (* Run admin-runner.exe commands *)
     let* (), _fl = spawn_admin_if_needed () in

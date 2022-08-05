@@ -4,6 +4,11 @@ module Term = Cmdliner.Term
 (* TEMPLATE: register () *)
 
 let uninstall_cmd =
+  let program_version =
+    match Build_info.V1.version () with
+    | None -> "dev"
+    | Some v -> Build_info.V1.Version.to_string v
+  in
   let doc = "the DKML OCaml uninstaller" in
   ( Term.(
       const uninstall
@@ -12,8 +17,9 @@ let uninstall_cmd =
       $ Dkml_package_console_common.package_args_t
           ~program_name:Private_common.program_name
           ~target_abi:(failwith "TEMPLATE: target_abi")
-          ~install_direction:Dkml_install_runner.Path_eval.Global_context.Uninstall),
-    Term.info "dkml-package-uninstaller" ~version:"%%VERSION%%" ~doc )
+          ~install_direction:
+            Dkml_install_runner.Path_eval.Global_context.Uninstall),
+    Term.info "dkml-package-uninstaller" ~version:program_version ~doc )
 
 let () =
   Term.(

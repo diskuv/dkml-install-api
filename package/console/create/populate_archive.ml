@@ -10,6 +10,9 @@ let copy_dir_if_exists ~src ~dst =
       Logs.err (fun l -> l "FATAL: %a" Rresult.R.pp_msg msg);
       failwith (Fmt.str "%a" Rresult.R.pp_msg msg)
 
+let copy_file ~src ~dst =
+  get_ok_or_failwith_string (Diskuvbox.copy_file ~err:box_err ~src ~dst ())
+
 let populate_archive ~archive_dir ~abi_selector ~runner_admin_exe
     ~runner_user_exe ~packager_entry_exe ~packager_bytecode =
   (* Make a `.archivetree` empty file so executables like

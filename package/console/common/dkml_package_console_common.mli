@@ -88,6 +88,43 @@ type organization = {
 
   *)
 
+type program_assets = { logo_icon_32x32_opt : string option }
+(** Logos and other assets used during installation.
+
+    [logo_icon_32x32_opt] - [None] or the [Some icon_data] where [icon_data] is
+      the contents of the 32x32 icon file. Do not use a filename or a URL;
+      instead read the file into a string. Using the
+      {{:https://github.com/mirage/ocaml-crunch#readme} ocaml-crunch} package
+      will automate this for you.
+*)
+
+type program_info = {
+  url_info_about_opt: string option;
+  url_update_info_opt: string option;
+  help_link_opt: string  option;
+  estimated_byte_size_opt: int64 option;
+  windows_language_code_id_opt: int option;
+}
+(** Information about the program.
+
+    [url_info_about_opt] - A URL to a webpage describing the program.
+
+    [url_update_info_opt] - A URL to a webpage describing updates to the
+      program.
+
+    [help_link_opt] - A URL to a help webpage.
+
+    [estimated_byte_size_opt] - How much disk space, in bytes, is estimated to
+      be taken away after the installation is complete.
+
+    [windows_language_code_id_opt] - The Language ID for a Windows installation from
+      https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/70feba9f-294e-491e-b6eb-56532684c37f.
+      Defaults to 0x0409 (en-US).
+
+      A simpler non-exhaustive list is at
+      https://docs.microsoft.com/en-us/openspecs/office_standards/ms-oe376/6c085406-a698-4e12-9d4d-c3b0ee3dbc4a
+*)
+
 val version_m_n_o_p : string -> string
 (** [ver_m_n_o_p ver] converts the version [ver] into the
 ["mmmmm.nnnnn.ooooo.ppppp"] format required by an Application Manifest.

@@ -1,5 +1,4 @@
 open Bos
-open Dkml_install_api
 open Dkml_install_runner.Error_handling.Monad_syntax
 module Arg = Cmdliner.Arg
 module Term = Cmdliner.Term
@@ -37,7 +36,7 @@ let main () =
     (let* target_abi, _fl = Dkml_install_runner.Ocaml_abi.create_v2 () in
      copy_as_is "discover.ml";
      copy_as_is "entry-application.manifest";
-     copy_as_is "entry_assembly_manifest.ml";
+     copy ~target_abi ~components "entry_assembly_manifest.ml";
      copy ~target_abi ~components "entry_main.ml";
      copy ~target_abi ~components "create_installers.ml";
      copy ~target_abi ~components "runner_admin.ml";
@@ -45,13 +44,6 @@ let main () =
      copy ~target_abi ~components "package_setup.ml";
      copy ~target_abi ~components "package_uninstaller.ml";
      return ())
-
-let target_abi_t =
-  let open Context.Abi_v2 in
-  let l =
-    List.map (fun v -> (to_canonical_string v, v)) Context.Abi_v2.values
-  in
-  Arg.(required & opt (some (enum l)) None & info [ "abi" ])
 
 let main_t = Term.(const main $ const ())
 

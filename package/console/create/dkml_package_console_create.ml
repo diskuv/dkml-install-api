@@ -12,16 +12,26 @@ let generate_installer_from_archive_dir ~install_direction ~archive_dir
      Windows today.
 
      See CROSSPLATFORM-TODO.md *)
+  let uninstallers = ref None in
   (if Sys.win32 then
    match abi_selector with
    | Dkml_install_runner.Path_location.Abi abi
      when Dkml_install_api.Context.Abi_v2.is_windows abi ->
-       Installer_sfx.generate ~install_direction ~archive_dir ~target_dir
-         ~abi_selector ~organization ~program_name ~program_version ~work_dir
+       let installer_path =
+         Installer_sfx.generate ~install_direction ~archive_dir ~target_dir
+           ~abi_selector ~organization ~program_name ~program_version ~work_dir
+       in
+       if
+         install_direction
+         = Dkml_install_runner.Path_eval.Global_context.Uninstall
+       then uninstallers := Some installer_path
    | _ -> ());
   (* All operating systems can have an archive *)
-  Installer_archive.generate ~install_direction ~archive_dir ~target_dir
-    ~abi_selector ~program_name ~program_version
+  let* (), _fl =
+    Installer_archive.generate ~install_direction ~archive_dir ~target_dir
+      ~abi_selector ~program_name ~program_version
+  in
+  return !uninstallers
 
 let create_forone_abi ~abi_selector ~install_component_names
     ~uninstall_component_names ~organization ~program_name ~program_version
@@ -40,6 +50,49 @@ let create_forone_abi ~abi_selector ~install_component_names
       ~static_default:No_static_default ~opam_context_opt:(Some opam_context)
       ~static_files_opt:None
   in
+  let create_installer install_direction archive_dir component_names
+      packager_bytecode =
+    (* Create a temporary archive directory where we'll build the installer.contents
+       For the benefit of Windows and macOS we keep the directory name ("a") small. *)
+    let archive_staging_dir =
+      Dkml_install_runner.Cmdliner_runner.staging_default_dir_for_package
+        ~archive_dir
+    in
+    let archive_static_dir =
+      Dkml_install_runner.Cmdliner_runner.static_default_dir_for_package
+        ~archive_dir
+    in
+    (* Copy non-component files into archive *)
+    Populate_archive.populate_archive ~archive_dir ~abi_selector
+      ~runner_admin_exe ~runner_user_exe ~packager_entry_exe ~packager_bytecode;
+    (* Get archive destinations.
+
+       The destinations are nothing more than a *_files_source which
+       allows us to use the same code and context paths that the end-user
+       machine will use.
+    *)
+    let* archive_staging_files_dest, _fl =
+      Dkml_install_runner.Path_location.staging_files_source
+        ~staging_default:No_staging_default ~opam_context_opt:None
+        ~staging_files_opt:(Some (Fpath.to_string archive_staging_dir))
+    in
+    let* archive_static_files_dest, _fl =
+      Dkml_install_runner.Path_location.static_files_source
+        ~static_default:No_static_default ~opam_context_opt:None
+        ~static_files_opt:(Some (Fpath.to_string archive_static_dir))
+    in
+    (* Copy all components from Opam into archive *)
+    List.iter
+      (fun component_name ->
+        Populate_archive.populate_archive_component ~component_name
+          ~abi_selector ~opam_staging_files_source ~opam_static_files_source
+          ~archive_staging_files_dest ~archive_static_files_dest)
+      component_names;
+    (* Assemble for one ABI. Return uninstaller, if any *)
+    generate_installer_from_archive_dir ~install_direction ~archive_dir
+      ~work_dir ~abi_selector ~organization ~program_name ~program_version
+      ~target_dir
+  in
   (* Separate install and uninstall components.
 
      The install direction will be placed in work/a/i/* and target/i-*.
@@ -53,65 +106,30 @@ let create_forone_abi ~abi_selector ~install_component_names
      didn't use "setup-" and "uninstall-" prefixes because those would conflict
      with the probable names of signed Windows executables (which belong to the
      same Releases namespace).
-  *)
-  let instructions =
-    [
-      ( Dkml_install_runner.Path_eval.Global_context.Install,
-        "i",
-        install_component_names,
-        packager_setup_bytecode );
-      ( Dkml_install_runner.Path_eval.Global_context.Uninstall,
-        "u",
-        uninstall_component_names,
-        packager_uninstaller_bytecode );
-    ]
-  in
-  let fl = Dkml_install_runner.Error_handling.runner_fatal_log in
-  Dkml_install_api.Forward_progress.iter ~fl
-    (fun (install_direction, direction_dir, component_names, packager_bytecode) ->
-      (* Create a temporary archive directory where we'll build the installer.contents
-         For the benefit of Windows and macOS we keep the directory name ("a") small. *)
-      let archive_dir = Fpath.(work_dir / "a" / direction_dir / abi) in
-      let archive_staging_dir =
-        Dkml_install_runner.Cmdliner_runner.staging_default_dir_for_package
-          ~archive_dir
-      in
-      let archive_static_dir =
-        Dkml_install_runner.Cmdliner_runner.static_default_dir_for_package
-          ~archive_dir
-      in
-      (* Copy non-component files into archive *)
-      Populate_archive.populate_archive ~archive_dir ~abi_selector
-        ~runner_admin_exe ~runner_user_exe ~packager_entry_exe
-        ~packager_bytecode;
-      (* Get archive destinations.
 
-         The destinations are nothing more than a *_files_source which
-         allows us to use the same code and context paths that the end-user
-         machine will use.
-      *)
-      let* archive_staging_files_dest, _fl =
-        Dkml_install_runner.Path_location.staging_files_source
-          ~staging_default:No_staging_default ~opam_context_opt:None
-          ~staging_files_opt:(Some (Fpath.to_string archive_staging_dir))
-      in
-      let* archive_static_files_dest, _fl =
-        Dkml_install_runner.Path_location.static_files_source
-          ~static_default:No_static_default ~opam_context_opt:None
-          ~static_files_opt:(Some (Fpath.to_string archive_static_dir))
-      in
-      (* Copy all components from Opam into archive *)
-      List.iter
-        (fun component_name ->
-          Populate_archive.populate_archive_component ~component_name
-            ~abi_selector ~opam_staging_files_source ~opam_static_files_source
-            ~archive_staging_files_dest ~archive_static_files_dest)
-        component_names;
-      (* Assemble for one ABI *)
-      generate_installer_from_archive_dir ~install_direction ~archive_dir
-        ~work_dir ~abi_selector ~organization ~program_name ~program_version
-        ~target_dir)
-    instructions
+     The uninstaller is done first because it has to be bundled into
+     the installer.
+  *)
+  let get_archive_dir direction_dir =
+    Fpath.(work_dir / "a" / direction_dir / abi)
+  in
+  let install_archive_dir = get_archive_dir "i" in
+  let uninstall_archive_dir = get_archive_dir "u" in
+  let* uninstaller_opt, _fl =
+    create_installer Dkml_install_runner.Path_eval.Global_context.Uninstall
+      uninstall_archive_dir uninstall_component_names
+      packager_uninstaller_bytecode
+  in
+  (match uninstaller_opt with
+  | Some uninstaller ->
+      Populate_archive.copy_file ~src:uninstaller
+        ~dst:Fpath.(install_archive_dir / "bin" / "dkml-package-uninstall.exe")
+  | None -> ());
+  let* _uninstallers, _fl =
+    create_installer Dkml_install_runner.Path_eval.Global_context.Install
+      install_archive_dir install_component_names packager_setup_bytecode
+  in
+  return ()
 
 let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
     program_name program_version component_list work_dir target_dir opam_context
