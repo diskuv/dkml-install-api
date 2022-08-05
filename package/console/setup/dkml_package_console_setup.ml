@@ -96,8 +96,9 @@ let setup target_abi program_version organization program_name program_assets
     in
     (* Write uninstaller into Windows registry *)
     let* (), _fl =
-      Windows_uninstall_registry.write ~installation_prefix:prefix ~organization
-        ~program_name ~program_assets ~program_version ~program_info
+      Windows_registry.write_program_entry ~installation_prefix:prefix
+        ~organization ~program_name ~program_assets ~program_version
+        ~program_info
     in
     (* Run admin-runner.exe commands *)
     let* (), _fl = spawn_admin_if_needed () in

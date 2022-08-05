@@ -41,14 +41,15 @@ val box_err : string -> 'a
 
 (** {1 Author Supplied Types} *)
 
-type program_name = {
-  name_full : string;
-  name_camel_case_nospaces : string;
-  name_kebab_lower_case : string;
-  installation_prefix_camel_case_nospaces_opt : string option;
-  installation_prefix_kebab_lower_case_opt : string option;
-}
-(** The type of program names.
+module Author_types : sig
+  type program_name = {
+    name_full : string;
+    name_camel_case_nospaces : string;
+    name_kebab_lower_case : string;
+    installation_prefix_camel_case_nospaces_opt : string option;
+    installation_prefix_kebab_lower_case_opt : string option;
+  }
+  (** The type of program names.
 
     [name_full] - Examples include "Diskuv OCaml"
 
@@ -66,15 +67,15 @@ type program_name = {
     [installation_prefix_kebab_lower_case_opt] - The name used when
       constructing an installation prefix that takes a kebab-lower-case.
       If not specified, then [name_kebab_lower_case] is used.
-*)
+  *)
 
-type organization = {
-  legal_name : string;
-  common_name_full : string;
-  common_name_camel_case_nospaces : string;
-  common_name_kebab_lower_case : string;
-}
-(** Details about the organization for signing binaries.
+  type organization = {
+    legal_name : string;
+    common_name_full : string;
+    common_name_camel_case_nospaces : string;
+    common_name_kebab_lower_case : string;
+  }
+  (** Details about the organization for signing binaries.
 
     [legal_name] - Examples include "Diskuv, Inc."
 
@@ -88,24 +89,24 @@ type organization = {
 
   *)
 
-type program_assets = { logo_icon_32x32_opt : string option }
-(** Logos and other assets used during installation.
+  type program_assets = { logo_icon_32x32_opt : string option }
+  (** Logos and other assets used during installation.
 
     [logo_icon_32x32_opt] - [None] or the [Some icon_data] where [icon_data] is
       the contents of the 32x32 icon file. Do not use a filename or a URL;
       instead read the file into a string. Using the
       {{:https://github.com/mirage/ocaml-crunch#readme} ocaml-crunch} package
       will automate this for you.
-*)
+  *)
 
-type program_info = {
-  url_info_about_opt: string option;
-  url_update_info_opt: string option;
-  help_link_opt: string  option;
-  estimated_byte_size_opt: int64 option;
-  windows_language_code_id_opt: int option;
-}
-(** Information about the program.
+  type program_info = {
+    url_info_about_opt : string option;
+    url_update_info_opt : string option;
+    help_link_opt : string option;
+    estimated_byte_size_opt : int64 option;
+    windows_language_code_id_opt : int option;
+  }
+  (** Information about the program.
 
     [url_info_about_opt] - A URL to a webpage describing the program.
 
@@ -123,7 +124,8 @@ type program_info = {
 
       A simpler non-exhaustive list is at
       https://docs.microsoft.com/en-us/openspecs/office_standards/ms-oe376/6c085406-a698-4e12-9d4d-c3b0ee3dbc4a
-*)
+  *)
+end
 
 val version_m_n_o_p : string -> string
 (** [ver_m_n_o_p ver] converts the version [ver] into the
@@ -149,7 +151,7 @@ val elevated_cmd :
 (** {1 Installation Paths} *)
 
 val get_user_installation_prefix :
-  program_name:program_name ->
+  program_name:Author_types.program_name ->
   target_abi:Dkml_install_api__Types.Context.Abi_v2.t ->
   prefix_opt:string option ->
   Fpath.t Dkml_install_api.Forward_progress.t
@@ -189,10 +191,29 @@ type package_args = {
 (** Common options between setup.exe and uninstaller.exe *)
 
 val package_args_t :
-  program_name:program_name ->
+  program_name:Author_types.program_name ->
   target_abi:Dkml_install_api__Types.Context.Abi_v2.t ->
   install_direction:
     Dkml_install_runner.Path_eval.Global_context.install_direction ->
   package_args Cmdliner.Term.t
 (** {!Cmdliner.Term.t} for the common options between setup.exe and
     uninstaller.exe *)
+
+module Windows_registry : sig
+  val delete_program_entry :
+    program_name:Author_types.program_name ->
+    unit Dkml_install_api.Forward_progress.t
+  (** Delete from the Windows registry so that the program will not appear in
+      Add/Remove Programs *)
+
+  val write_program_entry :
+    installation_prefix:Fpath.t ->
+    organization:Author_types.organization ->
+    program_name:Author_types.program_name ->
+    program_assets:Author_types.program_assets ->
+    program_version:string ->
+    program_info:Author_types.program_info ->
+    unit Dkml_install_api.Forward_progress.t
+  (** Write into the Windows registry so that the program will appear Add/Remove
+      Programs *)
+end

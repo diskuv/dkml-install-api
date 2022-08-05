@@ -13,7 +13,7 @@ let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
     Dkml_install_runner.Path_location.show_abi_selector abi_selector
   in
   let program_name_kebab_lower_case =
-    program_name.Dkml_package_console_common.name_kebab_lower_case
+    program_name.Dkml_package_console_common.Author_types.name_kebab_lower_case
   in
   let direction =
     match install_direction with

@@ -4,30 +4,15 @@ open Dkml_install_api
 open Dkml_install_runner.Error_handling.Monad_syntax
 include Error_utils
 
-type program_name = {
-  name_full : string;
-  name_camel_case_nospaces : string;
-  name_kebab_lower_case : string;
-  installation_prefix_camel_case_nospaces_opt : string option;
-  installation_prefix_kebab_lower_case_opt : string option;
-}
+(* Pull in other modules and functions to fill out .mli *)
+(* BEGIN *)
+module Author_types = Author_types
+module Windows_registry = Windows_registry
 
-type organization = {
-  legal_name : string;
-  common_name_full : string;
-  common_name_camel_case_nospaces : string;
-  common_name_kebab_lower_case : string;
-}
+let spawn = Spawn.spawn
+(* END *)
 
-type program_assets = { logo_icon_32x32_opt : string option }
-
-type program_info = {
-  url_info_about_opt: string option;
-  url_update_info_opt: string option;
-  help_link_opt: string  option;
-  estimated_byte_size_opt: int64 option;
-  windows_language_code_id_opt: int option;
-}
+open Author_types
 
 (** [parse_version] parses ["[v|V]major.minor[.patch][(+|-)info]"].
     Verbatim from https://erratique.ch/software/astring/doc/Astring/index.html
@@ -137,46 +122,6 @@ let needs_uninstall_admin ~reg ~selector ~log_config ~target_abi ~prefix
         return ret)
   in
   List.exists Fun.id bools
-
-let spawn cmd =
-  Logs.info (fun m -> m "Running: %a" Cmd.pp cmd);
-  let handle_err exitcode msg =
-    Dkml_install_runner.Error_handling.runner_fatal_log ~id:"5f927a8b" msg;
-    Forward_progress.(Halted_progress exitcode)
-  in
-  match OS.Cmd.(run_status cmd) with
-  | Error e ->
-      let msg =
-        Fmt.str "@[Failed to run:@,@[%s@]@]@,@[%a@]" (Cmd.to_string cmd)
-          Rresult.R.pp_msg e
-      in
-      handle_err Forward_progress.Exit_code.Exit_transient_failure msg
-  | Ok (`Exited 0) ->
-      Forward_progress.(
-        return ((), Dkml_install_runner.Error_handling.runner_fatal_log))
-  | Ok (`Exited spawned_exitcode) ->
-      (* Use exit code of spawned process, but if and only if it matches
-         one of the pre-defined exit codes. *)
-      let exitcode =
-        List.fold_left
-          (fun acc ec ->
-            if spawned_exitcode = Forward_progress.Exit_code.to_int_exitcode ec
-            then ec
-            else acc)
-          Forward_progress.Exit_code.Exit_transient_failure
-          Forward_progress.Exit_code.values
-      in
-      handle_err exitcode
-        (Fmt.str
-           "%s\n\n\
-            Root cause: @[The command had exit code %d:@ %a@]\n\n\
-            >>> %s <<<"
-           (Forward_progress.Exit_code.to_short_sentence exitcode)
-           spawned_exitcode Cmd.pp cmd
-           (Forward_progress.Exit_code.to_short_sentence exitcode))
-  | Ok (`Signaled v) ->
-      handle_err Forward_progress.Exit_code.Exit_transient_failure
-        (Fmt.str "Subprocess signaled with signal %d:@ %a" v Cmd.pp cmd)
 
 let console_component_name = "xx-console"
 

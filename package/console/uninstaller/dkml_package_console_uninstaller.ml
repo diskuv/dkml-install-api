@@ -87,7 +87,10 @@ let uninstall target_abi program_name package_args : unit =
               %% args))
     in
     (* Run admin-runner.exe commands *)
-    spawn_admin_if_needed ()
+    let* (), _fl = spawn_admin_if_needed () in
+    (* Delete the Add/Remove Programs entry *)
+    Dkml_package_console_common.Windows_registry.delete_program_entry
+      ~program_name
   in
   match
     Forward_progress.catch_exceptions ~id:"b8738356"

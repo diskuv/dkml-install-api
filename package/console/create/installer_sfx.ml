@@ -234,10 +234,12 @@ let modify_manifest ~pe_file ~work_dir ~organization ~program_name
       |> global_replace
            (regexp_string "__PLACEHOLDER_ORG_NOSPACE__")
            organization
-             .Dkml_package_console_common.common_name_camel_case_nospaces
+             .Dkml_package_console_common.Author_types
+              .common_name_camel_case_nospaces
       |> global_replace
            (regexp_string "__PLACEHOLDER_PROGRAM_NOSPACE__")
-           program_name.Dkml_package_console_common.name_camel_case_nospaces
+           program_name
+             .Dkml_package_console_common.Author_types.name_camel_case_nospaces
       |> global_replace
            (regexp_string "__PLACEHOLDER_VERSION_MNOP__")
            (Dkml_package_console_common.version_m_n_o_p program_version))
@@ -281,7 +283,7 @@ let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
     Dkml_install_runner.Path_location.show_abi_selector abi_selector
   in
   let program_name_kebab_lower_case =
-    program_name.Dkml_package_console_common.name_kebab_lower_case
+    program_name.Dkml_package_console_common.Author_types.name_kebab_lower_case
   in
   let name_prefix =
     match install_direction with
