@@ -17,6 +17,7 @@ let generate_installer_from_archive_dir ~install_direction ~archive_dir
    match abi_selector with
    | Dkml_install_runner.Path_location.Abi abi
      when Dkml_install_api.Context.Abi_v2.is_windows abi ->
+       Logs.debug (fun l -> l "Generating self-extracting executable (SFX)");
        let installer_path =
          Installer_sfx.generate ~install_direction ~archive_dir ~target_dir
            ~abi_selector ~organization ~program_name ~program_version ~work_dir
@@ -27,6 +28,7 @@ let generate_installer_from_archive_dir ~install_direction ~archive_dir
        then uninstallers := Some installer_path
    | _ -> ());
   (* All operating systems can have an archive *)
+  Logs.debug (fun l -> l "Generating tar.gz capable archive");
   let* (), _fl =
     Installer_archive.generate ~install_direction ~archive_dir ~target_dir
       ~abi_selector ~program_name ~program_version
@@ -63,6 +65,7 @@ let create_forone_abi ~abi_selector ~install_component_names
         ~archive_dir
     in
     (* Copy non-component files into archive *)
+    Logs.debug (fun l -> l "Copying non-component files into archive tree");
     Populate_archive.populate_archive ~archive_dir ~abi_selector
       ~runner_admin_exe ~runner_user_exe ~packager_entry_exe ~packager_bytecode;
     (* Get archive destinations.
@@ -82,6 +85,7 @@ let create_forone_abi ~abi_selector ~install_component_names
         ~static_files_opt:(Some (Fpath.to_string archive_static_dir))
     in
     (* Copy all components from Opam into archive *)
+    Logs.debug (fun l -> l "Copying all components from Opam into archive tree");
     List.iter
       (fun component_name ->
         Populate_archive.populate_archive_component ~component_name
@@ -115,6 +119,7 @@ let create_forone_abi ~abi_selector ~install_component_names
   in
   let install_archive_dir = get_archive_dir "i" in
   let uninstall_archive_dir = get_archive_dir "u" in
+  Logs.debug (fun l -> l "Creating uninstaller");
   let* uninstaller_opt, _fl =
     create_installer Dkml_install_runner.Path_eval.Global_context.Uninstall
       uninstall_archive_dir uninstall_component_names packager_uninstall_exe
@@ -130,9 +135,12 @@ let create_forone_abi ~abi_selector ~install_component_names
    with
   | Some uninstaller, Abi Windows_x86, true, _
   | Some uninstaller, Abi Windows_x86_64, _, true ->
+      Logs.debug (fun l ->
+          l "Embedding uninstaller into installer archive tree");
       Populate_archive.copy_file ~src:uninstaller
         ~dst:Fpath.(install_archive_dir / "bin" / "dkml-package-uninstall.exe")
   | Some _, _, _, _ | None, _, _, _ -> ());
+  Logs.debug (fun l -> l "Creating installer");
   let* _uninstallers, _fl =
     create_installer Dkml_install_runner.Path_eval.Global_context.Install
       install_archive_dir install_component_names packager_install_exe
@@ -202,20 +210,24 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
       l "Installers and uninstallers will be created for the ABIs:@ %a"
         Fmt.(Dump.list Dkml_install_runner.Path_location.pp_abi_selector)
         abi_selectors);
-  Dkml_install_api.Forward_progress.iter
-    ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
-    (fun abi_selector ->
-      create_forone_abi ~abi_selector ~install_component_names
-        ~uninstall_component_names ~organization ~program_name ~program_version
-        ~program_info ~opam_context ~work_dir:(Fpath.v work_dir)
-        ~target_dir:(Fpath.v target_dir)
-        ~runner_admin_exe:(Fpath.v runner_admin_exe)
-        ~runner_user_exe:(Fpath.v runner_user_exe)
-        ~packager_install_exe:(Fpath.v packager_install_exe)
-        ~packager_uninstall_exe:(Fpath.v packager_uninstall_exe)
-        ~packager_setup_bytecode:(Fpath.v packager_setup_bytecode)
-        ~packager_uninstaller_bytecode:(Fpath.v packager_uninstaller_bytecode))
-    abi_selectors
+  let* (), _fl =
+    Dkml_install_api.Forward_progress.iter
+      ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
+      (fun abi_selector ->
+        create_forone_abi ~abi_selector ~install_component_names
+          ~uninstall_component_names ~organization ~program_name
+          ~program_version ~program_info ~opam_context
+          ~work_dir:(Fpath.v work_dir) ~target_dir:(Fpath.v target_dir)
+          ~runner_admin_exe:(Fpath.v runner_admin_exe)
+          ~runner_user_exe:(Fpath.v runner_user_exe)
+          ~packager_install_exe:(Fpath.v packager_install_exe)
+          ~packager_uninstall_exe:(Fpath.v packager_uninstall_exe)
+          ~packager_setup_bytecode:(Fpath.v packager_setup_bytecode)
+          ~packager_uninstaller_bytecode:(Fpath.v packager_uninstaller_bytecode))
+      abi_selectors
+  in
+  Logs.info (fun l -> l "Installers and uninstallers created successfully.");
+  return ()
 
 let program_version_t =
   let doc = "The version of the program that will be installed" in
