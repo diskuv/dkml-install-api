@@ -112,12 +112,27 @@ let main () project_root corrected =
           ];
         executable
           [
-            public_name "dkml-install-package-entry";
-            name "entry_main";
+            public_name "dkml-install-package-install";
+            name "entry_install";
             libraries
               ([ "dkml-package-console.entry"; "cmdliner"; "private_common" ]
               @ dkml_components);
-            modules [ "entry_main" ];
+            modules [ "entry_install" ];
+            ocamlopt_flags
+              [
+                List
+                  (loglevel_flags
+                  @ [ Atom ":include"; Atom "console-link-flags.sexp" ]);
+              ];
+          ];
+        executable
+          [
+            public_name "dkml-install-package-uninstall";
+            name "entry_uninstall";
+            libraries
+              ([ "dkml-package-console.entry"; "cmdliner"; "private_common" ]
+              @ dkml_components);
+            modules [ "entry_uninstall" ];
             ocamlopt_flags
               [
                 List

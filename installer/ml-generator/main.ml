@@ -37,7 +37,8 @@ let main () =
      copy_as_is "discover.ml";
      copy_as_is "entry-application.manifest";
      copy ~target_abi ~components "entry_assembly_manifest.ml";
-     copy ~target_abi ~components "entry_main.ml";
+     copy ~target_abi ~components "entry_install.ml";
+     copy ~target_abi ~components "entry_uninstall.ml";
      copy ~target_abi ~components "create_installers.ml";
      copy ~target_abi ~components "runner_admin.ml";
      copy ~target_abi ~components "runner_user.ml";

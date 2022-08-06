@@ -250,7 +250,7 @@ Side note:
 |   ]
 
 [create_installers_run]
-  $ ./test_windows_create_installers.exe --program-version 0.1.0 --component=offline-test-b --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-entry-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
+  $ ./test_windows_create_installers.exe --program-version 0.1.0 --component=offline-test-b --opam-context=_opam/ --target-dir=target/ --work-dir=work/ --abi=linux_x86_64 --abi=windows_x86_64 --packager-install-exe ./entry_print_salut.exe --packager-uninstall-exe ./entry_print_salut.exe --packager-setup-bytecode ./setup_print_hello.exe --packager-uninstaller-bytecode ./uninstaller_print_bye.exe --runner-admin-exe ./runner_admin_print_hi.exe --runner-user-exe ./runner_user_print_zoo.exe --verbose
   test_windows_create_installers.exe: [INFO] Installers will be created that include the components:
                                              [offline-test-a; offline-test-b;
                                               staging-ocamlrun; xx-console]

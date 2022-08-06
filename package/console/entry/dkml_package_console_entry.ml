@@ -24,15 +24,18 @@ let abi_will_popup_terminal host_abi =
     Typically this should be used before exiting the program so that the user
     has a chance to see the final messages, especially success or failure.
   *)
-let wait_for_user_confirmation_if_popup_terminal ?info_ci { ci } host_abi =
+let wait_for_user_confirmation_if_popup_terminal ?info_ci { ci }
+    install_direction host_abi =
   match (ci, abi_will_popup_terminal host_abi, Unix.isatty Unix.stdin) with
   | false, true, true ->
-      prerr_newline ();
-      if info_ci = None || info_ci = Some true then
+      if
+        install_direction = Dkml_install_runner.Path_eval.Global_context.Install
+        && (info_ci = None || info_ci = Some true)
+      then (
+        prerr_newline ();
         prerr_endline
-          (Fmt.str
-             "[INFO] Use --ci at beginning of command line arguments to skip \
-              the confirmation question in future installations.");
+          "[INFO] Use --ci at beginning of command line arguments to skip the \
+           confirmation question in future installations.");
       (* Sigh. Would just like to wait for a single character "y" rather
           than "y" + ENTER. However no easy OCaml interface to that, and more
           importantly we don't have any discard-prior-keyboard-events API
@@ -42,8 +45,14 @@ let wait_for_user_confirmation_if_popup_terminal ?info_ci { ci } host_abi =
           keystroke be interpreted at the end of the installer as confirmation
           that they have read the final messages). *)
       let rec helper () =
+        let installer_what =
+          match install_direction with
+          | Dkml_install_runner.Path_eval.Global_context.Install -> "installer"
+          | Uninstall -> "uninstaller"
+        in
         prerr_newline ();
-        prerr_endline {|Press "y" and ENTER to exit the installer.|};
+        prerr_endline
+          (Fmt.str {|Press "y" and ENTER to exit the %s.|} installer_what);
         match read_line () with
         | "y" ->
             (* 7zip sfx needs to delete the possibly large temporary
@@ -77,7 +86,8 @@ let get_and_remove_path env =
 
 (** [spawn_ocamlrun] sets the environment variables needed for
     ocamlrun.exe. *)
-let spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts cmd =
+let spawn_ocamlrun ~ocamlrun_exe ~install_direction ~target_abi ~lib_ocaml
+    ~cli_opts cmd =
   (*
 
        TODO: STOP DUPLICATING THIS CODE! The canonical source is
@@ -129,7 +139,8 @@ let spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts cmd =
     OS.Cmd.run_status ~env:new_env new_cmd
   in
   let wait ?info_ci () =
-    wait_for_user_confirmation_if_popup_terminal ?info_ci cli_opts target_abi
+    wait_for_user_confirmation_if_popup_terminal ?info_ci cli_opts
+      install_direction target_abi
   in
   match sequence with
   | Ok (`Exited 0) ->
@@ -162,7 +173,7 @@ let spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts cmd =
       wait ~info_ci:false ();
       exit 3
 
-let entry ~target_abi =
+let entry ~install_direction ~target_abi =
   (* Default logging *)
   let (_ : Dkml_install_api.Log_config.t) =
     Dkml_install_runner.Cmdliner_runner.setup_log None None
@@ -198,5 +209,6 @@ let entry ~target_abi =
   let lib_ocaml = Fpath.(ocamlrun_dir / "lib" / "ocaml") in
   (* Run the packager bytecode with any arguments it needs *)
   let setup_bc = Fpath.(archive_dir / "bin" / "dkml-package.bc") in
-  spawn_ocamlrun ~ocamlrun_exe ~target_abi ~lib_ocaml ~cli_opts
+  spawn_ocamlrun ~ocamlrun_exe ~install_direction ~target_abi ~lib_ocaml
+    ~cli_opts
     Cmd.(v (Fpath.to_string setup_bc) %% args)
