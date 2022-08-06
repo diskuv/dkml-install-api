@@ -35,9 +35,9 @@ let generate_installer_from_archive_dir ~install_direction ~archive_dir
 
 let create_forone_abi ~abi_selector ~install_component_names
     ~uninstall_component_names ~organization ~program_name ~program_version
-    ~opam_context ~work_dir ~target_dir ~runner_admin_exe ~runner_user_exe
-    ~packager_install_exe ~packager_uninstall_exe ~packager_setup_bytecode
-    ~packager_uninstaller_bytecode =
+    ~program_info ~opam_context ~work_dir ~target_dir ~runner_admin_exe
+    ~runner_user_exe ~packager_install_exe ~packager_uninstall_exe
+    ~packager_setup_bytecode ~packager_uninstaller_bytecode =
   let abi = Dkml_install_runner.Path_location.show_abi_selector abi_selector in
   (* Get Opam sources *)
   let* opam_staging_files_source, _fl =
@@ -120,11 +120,19 @@ let create_forone_abi ~abi_selector ~install_component_names
       uninstall_archive_dir uninstall_component_names packager_uninstall_exe
       packager_uninstaller_bytecode
   in
-  (match uninstaller_opt with
-  | Some uninstaller ->
+  (match
+     ( uninstaller_opt,
+       abi_selector,
+       program_info
+         .Dkml_package_console_common.Author_types.embeds_32bit_uninstaller,
+       program_info
+         .Dkml_package_console_common.Author_types.embeds_64bit_uninstaller )
+   with
+  | Some uninstaller, Abi Windows_x86, true, _
+  | Some uninstaller, Abi Windows_x86_64, _, true ->
       Populate_archive.copy_file ~src:uninstaller
         ~dst:Fpath.(install_archive_dir / "bin" / "dkml-package-uninstall.exe")
-  | None -> ());
+  | Some _, _, _, _ | None, _, _, _ -> ());
   let* _uninstallers, _fl =
     create_installer Dkml_install_runner.Path_eval.Global_context.Install
       install_archive_dir install_component_names packager_install_exe
@@ -133,8 +141,8 @@ let create_forone_abi ~abi_selector ~install_component_names
   return ()
 
 let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
-    program_name program_version component_list work_dir target_dir opam_context
-    abis runner_admin_exe runner_user_exe packager_install_exe
+    program_name program_info program_version component_list work_dir target_dir
+    opam_context abis runner_admin_exe runner_user_exe packager_install_exe
     packager_uninstall_exe packager_setup_bytecode packager_uninstaller_bytecode
     =
   (* Get component plugins; logging already setup *)
@@ -199,7 +207,7 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
     (fun abi_selector ->
       create_forone_abi ~abi_selector ~install_component_names
         ~uninstall_component_names ~organization ~program_name ~program_version
-        ~opam_context ~work_dir:(Fpath.v work_dir)
+        ~program_info ~opam_context ~work_dir:(Fpath.v work_dir)
         ~target_dir:(Fpath.v target_dir)
         ~runner_admin_exe:(Fpath.v runner_admin_exe)
         ~runner_user_exe:(Fpath.v runner_user_exe)
@@ -349,14 +357,15 @@ let component_list_t =
     The generic .tar.gz "installer" is likely unusable since it will not have
     any ABI specific files.
 *)
-let create_installers organization program_name =
+let create_installers organization program_name program_info =
   let t =
     Term.(
       const create_forall_abi $ Dkml_install_runner.Cmdliner_runner.setup_log_t
-      $ const organization $ const program_name $ program_version_t
-      $ component_list_t $ work_dir_t $ target_dir_t $ opam_context_t $ abis_t
-      $ runner_admin_exe_t $ runner_user_exe_t $ entry_install_exe_t
-      $ entry_uninstall_exe_t $ setup_bytecode_t $ uninstaller_bytecode_t)
+      $ const organization $ const program_name $ const program_info
+      $ program_version_t $ component_list_t $ work_dir_t $ target_dir_t
+      $ opam_context_t $ abis_t $ runner_admin_exe_t $ runner_user_exe_t
+      $ entry_install_exe_t $ entry_uninstall_exe_t $ setup_bytecode_t
+      $ uninstaller_bytecode_t)
   in
   Dkml_install_runner.Cmdliner_runner.eval_progress
     (t, Term.info ~version:"%%VERSION%%" "dkml-install-create-installers")

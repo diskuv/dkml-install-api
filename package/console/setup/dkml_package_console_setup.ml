@@ -45,8 +45,9 @@ let setup target_abi program_version organization program_name program_assets
 
   let install_sequence _fl : unit Forward_progress.t =
     let open Dkml_package_console_common in
-    let map_string_error_to_progress =
-      Dkml_install_runner.Error_handling.map_string_error_to_progress
+    let map_string_error_to_progress, map_rresult_error_to_progress =
+      ( Dkml_install_runner.Error_handling.map_string_error_to_progress,
+        Dkml_install_runner.Error_handling.map_rresult_error_to_progress )
     in
     let* prefix, _fl =
       Dkml_package_console_common.get_user_installation_prefix ~program_name
@@ -86,19 +87,30 @@ let setup target_abi program_version organization program_name program_assets
           Logs.debug (fun m -> m "Will install component %s" Cfg.component_name);
           return ())
     in
-    (* Copy uninstaller into <prefix> *)
-    let* (), _fl =
-      map_string_error_to_progress
-        (Diskuvbox.copy_file ~err:box_err
-           ~src:Fpath.(archivedir / "bin" / "dkml-package-uninstall.exe")
-           ~dst:Fpath.(prefix / "uninstall.exe")
-           ())
+    (* The uninstaller may or may not be embedded. *)
+    let uninstall_exe =
+      Fpath.(archivedir / "bin" / "dkml-package-uninstall.exe")
     in
-    (* Write uninstaller into Windows registry *)
+    let* is_uninstall_embedded, _fl =
+      map_rresult_error_to_progress (Bos.OS.File.exists uninstall_exe)
+    in
     let* (), _fl =
-      Windows_registry.write_program_entry ~installation_prefix:prefix
-        ~organization ~program_name ~program_assets ~program_version
-        ~program_info
+      if is_uninstall_embedded then
+        (* Copy uninstaller into <prefix> *)
+        let* (), _fl =
+          map_string_error_to_progress
+            (Diskuvbox.copy_file ~err:box_err ~src:uninstall_exe
+               ~dst:Fpath.(prefix / "uninstall.exe")
+               ())
+        in
+        (* Write uninstaller into Windows registry *)
+        let* (), _fl =
+          Windows_registry.write_program_entry ~installation_prefix:prefix
+            ~organization ~program_name ~program_assets ~program_version
+            ~program_info
+        in
+        return ()
+      else return ()
     in
     (* Run admin-runner.exe commands *)
     let* (), _fl = spawn_admin_if_needed () in

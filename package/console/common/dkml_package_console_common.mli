@@ -6,10 +6,10 @@ val console_component_name : string
 val console_required_components : string list
 (** [console_required_components] are the names of components that console
     installers require to be present. It always includes
-    {!console_component_name} but may include other components. 
-    
+    {!console_component_name} but may include other components.
+
     At minimum, these other required components include:
-    
+
     - ["staging-ocamlrun"] because {!Dkml_package_console_entry.entry} uses
       ocamlrun to run the dkml-package.bc bytecode. *)
 
@@ -105,6 +105,9 @@ module Author_types : sig
     help_link_opt : string option;
     estimated_byte_size_opt : int64 option;
     windows_language_code_id_opt : int option;
+
+    embeds_32bit_uninstaller : bool;
+    embeds_64bit_uninstaller : bool;
   }
   (** Information about the program.
 

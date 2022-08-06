@@ -21,4 +21,7 @@ type program_info = {
   help_link_opt : string option;
   estimated_byte_size_opt : int64 option;
   windows_language_code_id_opt : int option;
+
+  embeds_32bit_uninstaller : bool;
+  embeds_64bit_uninstaller : bool;
 }
