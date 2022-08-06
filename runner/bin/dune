@@ -2,19 +2,13 @@
  (public_name dkml-install-runner.user)
  (name dkml_install_runner_user)
  (modules dkml_install_runner_user)
- (libraries
-  dkml-install.register
-  dkml-install-runner
-  cmdliner))
+ (libraries dkml-install.register dkml-install-runner cmdliner))
 
 (library
  (public_name dkml-install-runner.admin)
  (name dkml_install_runner_admin)
  (modules dkml_install_runner_admin)
- (libraries
-  dkml-install.register
-  dkml-install-runner
-  cmdliner))
+ (libraries dkml-install.register dkml-install-runner cmdliner))
 
 ; ------------------------------------------------------
 
@@ -25,35 +19,47 @@
 (executable
  (name validate_user)
  (modules validate_user)
- (modes (byte exe))
+ (modes
+  (byte exe))
  (libraries dkml-install-runner.user))
 
 (executable
  (name validate_admin)
  (modules validate_admin)
- (modes (byte exe))
+ (modes
+  (byte exe))
  (libraries dkml-install-runner.admin))
 
 (rule
-  (alias runtest)
-  (package dkml-install-runner)
-  (target validate_user.dlls.txt.corrected)
-  (deps (:bc validate_user.bc))
-  ; (enabled_if (<> %{os_type} Win32))
-  (action
-    (progn
-      (with-stdout-to %{target}.info (run ocamlobjinfo %{bc}))
-      (with-stdout-to %{target} (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
-      (diff validate_user.dlls.txt %{target}))))
+ (alias runtest)
+ (package dkml-install-runner)
+ (target validate_user.dlls.txt.corrected)
+ (deps
+  (:bc validate_user.bc))
+ ; (enabled_if (<> %{os_type} Win32))
+ (action
+  (progn
+   (with-stdout-to
+    %{target}.info
+    (run ocamlobjinfo %{bc}))
+   (with-stdout-to
+    %{target}
+    (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
+   (diff validate_user.dlls.txt %{target}))))
 
 (rule
-  (alias runtest)
-  (package dkml-install-runner)
-  (target validate_admin.dlls.txt.corrected)
-  (deps (:bc validate_admin.bc))
-  ; (enabled_if (<> %{os_type} Win32))
-  (action
-    (progn
-      (with-stdout-to %{target}.info (run ocamlobjinfo %{bc}))
-      (with-stdout-to %{target} (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
-      (diff validate_admin.dlls.txt %{target}))))
+ (alias runtest)
+ (package dkml-install-runner)
+ (target validate_admin.dlls.txt.corrected)
+ (deps
+  (:bc validate_admin.bc))
+ ; (enabled_if (<> %{os_type} Win32))
+ (action
+  (progn
+   (with-stdout-to
+    %{target}.info
+    (run ocamlobjinfo %{bc}))
+   (with-stdout-to
+    %{target}
+    (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
+   (diff validate_admin.dlls.txt %{target}))))

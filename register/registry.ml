@@ -155,17 +155,25 @@ let eval_each ~f ~fl lst =
     lst
 
 let install_eval reg ~selector ~f ~fl =
-  let dependency_getter cfg = let module Cfg = (val cfg : Component_config) in Cfg.install_depends_on in
+  let dependency_getter cfg =
+    let module Cfg = (val cfg : Component_config) in
+    Cfg.install_depends_on
+  in
   let* res, _fl =
-    Forward_progress.map (eval_each ~f ~fl) (toposort ~dependency_getter ~selector ~fl reg)
+    Forward_progress.map (eval_each ~f ~fl)
+      (toposort ~dependency_getter ~selector ~fl reg)
   in
   Forward_progress.map List.rev res
 
 let uninstall_eval reg ~selector ~f ~fl =
-  let dependency_getter cfg = let module Cfg = (val cfg : Component_config) in Cfg.uninstall_depends_on in
+  let dependency_getter cfg =
+    let module Cfg = (val cfg : Component_config) in
+    Cfg.uninstall_depends_on
+  in
   let* res, _fl =
     Forward_progress.map (eval_each ~f ~fl)
-      (Forward_progress.map List.rev (toposort ~dependency_getter ~selector ~fl reg))
+      (Forward_progress.map List.rev
+         (toposort ~dependency_getter ~selector ~fl reg))
   in
   Forward_progress.map List.rev res
 

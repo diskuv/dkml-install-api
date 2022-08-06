@@ -3,8 +3,7 @@ open More_testables
 
 let test_uppercase () =
   Alcotest.(check (result unit string_starts_with))
-    "result starts with"
-    (Error "[19c415af]")
+    "result starts with" (Error "[19c415af]")
     (Private.validate
        (module struct
          include Dkml_install_api.Default_component_config
@@ -24,8 +23,7 @@ let test_lowercase () =
 
 let test_underscore () =
   Alcotest.(check (result unit string_starts_with))
-    "result starts with"
-    (Error "[19c415af]")
+    "result starts with" (Error "[19c415af]")
     (Private.validate
        (module struct
          include Dkml_install_api.Default_component_config

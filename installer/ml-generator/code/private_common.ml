@@ -26,7 +26,6 @@ let program_info =
     help_link_opt = None;
     estimated_byte_size_opt = None;
     windows_language_code_id_opt = None;
-
     embeds_32bit_uninstaller = false;
     embeds_64bit_uninstaller = false;
   }
