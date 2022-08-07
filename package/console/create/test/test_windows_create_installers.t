@@ -273,12 +273,13 @@ Side note:
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic-i.sh that can produce full-name-generic-i-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-u.sh that can produce full-name-linux_x86_64-u-0.1.0.tar.gz (etc.) archives
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-i.sh that can produce full-name-linux_x86_64-i-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating target\u-unsigned-full-name-windows_x86_64-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating target\unsigned-full-name-windows_x86_64-u-0.1.0.exe
   Parsing of manifest successful.
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-u.sh that can produce full-name-windows_x86_64-u-0.1.0.tar.gz (etc.) archives
-  test_windows_create_installers.exe: [INFO] Generating target\i-unsigned-full-name-windows_x86_64-0.1.0.exe
+  test_windows_create_installers.exe: [INFO] Generating target\unsigned-full-name-windows_x86_64-i-0.1.0.exe
   Parsing of manifest successful.
   test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-i.sh that can produce full-name-windows_x86_64-i-0.1.0.tar.gz (etc.) archives
+  test_windows_create_installers.exe: [INFO] Installers and uninstallers created successfully.
 [create_installers_run]
 
 The --work-dir will have ABI-specific archive trees in its "a" folder.
@@ -483,12 +484,12 @@ Sidenote:
   ├── bundle-full-name-linux_x86_64-u.sh
   ├── bundle-full-name-windows_x86_64-i.sh
   ├── bundle-full-name-windows_x86_64-u.sh
-  ├── i-full-name-windows_x86_64-0.1.0.7z
-  ├── i-full-name-windows_x86_64-0.1.0.sfx
-  ├── i-unsigned-full-name-windows_x86_64-0.1.0.exe
-  ├── u-full-name-windows_x86_64-0.1.0.7z
-  ├── u-full-name-windows_x86_64-0.1.0.sfx
-  └── u-unsigned-full-name-windows_x86_64-0.1.0.exe
+  ├── full-name-windows_x86_64-i-0.1.0.7z
+  ├── full-name-windows_x86_64-i-0.1.0.sfx
+  ├── full-name-windows_x86_64-u-0.1.0.7z
+  ├── full-name-windows_x86_64-u-0.1.0.sfx
+  ├── unsigned-full-name-windows_x86_64-i-0.1.0.exe
+  └── unsigned-full-name-windows_x86_64-u-0.1.0.exe
 
   $ target/bundle-full-name-linux_x86_64-i.sh -o target/i tar
   $ tar tvf target/i/full-name-linux_x86_64-i-0.1.0.tar | head -n5 | awk '{print $NF}' | sort
@@ -522,7 +523,7 @@ contents is exactly the same as the archive tree, except that
 `setup.exe`.
 
 [setup_exe_list_7z]
-  $ ../assets/lzma2107/bin/7zr.exe l target/i-full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
+  $ ../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-i-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
   bin
@@ -554,7 +555,7 @@ contents is exactly the same as the archive tree, except that
   ------------------------
   folders
 
-  $ ../assets/lzma2107/bin/7zr.exe l target/u-full-name-windows_x86_64-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
+  $ ../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-u-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
   bin
@@ -586,7 +587,7 @@ We would see the same thing if we looked inside the *installer*
 `unsigned-NAME-VER.exe` (which is just the SFX module and the .7z archive above):
 
 [setup_exe_list_exe]
-  $ ../assets/lzma2107/bin/7zr.exe l target/i-unsigned-full-name-windows_x86_64-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
+  $ ../assets/lzma2107/bin/7zr.exe l target/unsigned-full-name-windows_x86_64-i-0.1.0.exe | awk '$1=="Date"{mode=1} mode==1{print $NF}' | head -n10
   Name
   ------------------------
   bin
@@ -611,7 +612,7 @@ Since the *installer* `unsigned-NAME-VER.exe` will decompress the .7z archive an
 run the *packager entry* `setup.exe` it found in the .7z root directory, we expect to
 see "Salut" printed. Which is what we see:
 [setup_exe_run]
-  $ target/i-unsigned-full-name-windows_x86_64-0.1.0.exe
+  $ target/unsigned-full-name-windows_x86_64-i-0.1.0.exe
   Salut
 [setup_exe_run]
 
