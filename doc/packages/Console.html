@@ -317,12 +317,13 @@ with something like:</p>
 <span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-generic-i.sh that can produce full-name-generic-i-0.1.0.tar.gz (etc.) archives</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-u.sh that can produce full-name-linux_x86_64-u-0.1.0.tar.gz (etc.) archives</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-linux_x86_64-i.sh that can produce full-name-linux_x86_64-i-0.1.0.tar.gz (etc.) archives</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating target\u-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating target\unsigned-full-name-windows_x86_64-u-0.1.0.exe</span>
 <span class="go">  Parsing of manifest successful.</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-u.sh that can produce full-name-windows_x86_64-u-0.1.0.tar.gz (etc.) archives</span>
-<span class="go">  test_windows_create_installers.exe: [INFO] Generating target\i-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Generating target\unsigned-full-name-windows_x86_64-i-0.1.0.exe</span>
 <span class="go">  Parsing of manifest successful.</span>
 <span class="go">  test_windows_create_installers.exe: [INFO] Generating script target\bundle-full-name-windows_x86_64-i.sh that can produce full-name-windows_x86_64-i-0.1.0.tar.gz (etc.) archives</span>
+<span class="go">  test_windows_create_installers.exe: [INFO] Installers and uninstallers created successfully.</span>
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">--work-dir</span></code> will have ABI-specific archive trees in its “a” folder.</p>
@@ -509,12 +510,12 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  ├── bundle-full-name-linux_x86_64-u.sh</span>
 <span class="go">  ├── bundle-full-name-windows_x86_64-i.sh</span>
 <span class="go">  ├── bundle-full-name-windows_x86_64-u.sh</span>
-<span class="go">  ├── i-full-name-windows_x86_64-0.1.0.7z</span>
-<span class="go">  ├── i-full-name-windows_x86_64-0.1.0.sfx</span>
-<span class="go">  ├── i-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
-<span class="go">  ├── u-full-name-windows_x86_64-0.1.0.7z</span>
-<span class="go">  ├── u-full-name-windows_x86_64-0.1.0.sfx</span>
-<span class="go">  └── u-unsigned-full-name-windows_x86_64-0.1.0.exe</span>
+<span class="go">  ├── full-name-windows_x86_64-i-0.1.0.7z</span>
+<span class="go">  ├── full-name-windows_x86_64-i-0.1.0.sfx</span>
+<span class="go">  ├── full-name-windows_x86_64-u-0.1.0.7z</span>
+<span class="go">  ├── full-name-windows_x86_64-u-0.1.0.sfx</span>
+<span class="go">  ├── unsigned-full-name-windows_x86_64-i-0.1.0.exe</span>
+<span class="go">  └── unsigned-full-name-windows_x86_64-u-0.1.0.exe</span>
 
 <span class="gp">  $ </span>target/bundle-full-name-linux_x86_64-i.sh -o target/i tar
 <span class="gp">  $ </span>tar tvf target/i/full-name-linux_x86_64-i-0.1.0.tar <span class="p">|</span> head -n5 <span class="p">|</span> awk <span class="s1">&#39;{print $NF}&#39;</span> <span class="p">|</span> sort
@@ -543,7 +544,7 @@ The setup.exe is just a special version of the decompressor 7z.exe called an
 contents is exactly the same as the archive tree, except that
 <code class="docutils literal notranslate"><span class="pre">bin/dkml-package-entry.exe</span></code> (the <em>packager proxy</em> setup) has been renamed to
 <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code>.</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/i-full-name-windows_x86_64-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-i-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
 <span class="go">  Name</span>
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
@@ -575,7 +576,7 @@ contents is exactly the same as the archive tree, except that
 <span class="go">  ------------------------</span>
 <span class="go">  folders</span>
 
-<span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/u-full-name-windows_x86_64-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
+<span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-u-0.1.0.7z <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span>
 <span class="go">  Name</span>
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
@@ -605,7 +606,7 @@ contents is exactly the same as the archive tree, except that
 </div>
 <p>We would see the same thing if we looked inside the <em>installer</em>
 <code class="docutils literal notranslate"><span class="pre">unsigned-NAME-VER.exe</span></code> (which is just the SFX module and the .7z archive above):</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/i-unsigned-full-name-windows_x86_64-0.1.0.exe <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span> <span class="p">|</span> head -n10
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>../assets/lzma2107/bin/7zr.exe l target/unsigned-full-name-windows_x86_64-i-0.1.0.exe <span class="p">|</span> awk <span class="s1">&#39;$1==&quot;Date&quot;{mode=1} mode==1{print $NF}&#39;</span> <span class="p">|</span> head -n10
 <span class="go">  Name</span>
 <span class="go">  ------------------------</span>
 <span class="go">  bin</span>
@@ -628,7 +629,7 @@ directory.</p>
 <p>Since the <em>installer</em> <code class="docutils literal notranslate"><span class="pre">unsigned-NAME-VER.exe</span></code> will decompress the .7z archive and
 run the <em>packager proxy</em> <code class="docutils literal notranslate"><span class="pre">setup.exe</span></code> it found in the .7z root directory, we expect to
 see “Hello” printed. Which is what we see:</p>
-<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>target/i-unsigned-full-name-windows_x86_64-0.1.0.exe
+<div class="highlight-shell-session notranslate"><div class="highlight"><pre><span></span><span class="gp">  $ </span>target/unsigned-full-name-windows_x86_64-i-0.1.0.exe
 <span class="go">  Salut</span>
 </pre></div>
 </div>
