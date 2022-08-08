@@ -137,8 +137,10 @@ Confer https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifest
 
 (** {1 Running Programs} *)
 
-val spawn : Bos.Cmd.t -> unit Dkml_install_api.Forward_progress.t
-(** [spawn cmd] launches the command [cmd] and waits for its response. *)
+val spawn : ?err_ok:bool -> Bos.Cmd.t -> unit Dkml_install_api.Forward_progress.t
+(** [spawn ?err_ok cmd] launches the command [cmd] and waits for its response.
+
+    Use [err_ok = true] if you want to log errors but continue. *)
 
 val elevated_cmd :
   target_abi:Dkml_install_api.Context.Abi_v2.t ->

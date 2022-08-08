@@ -124,7 +124,7 @@ let delete_program_entry ~program_name =
       v (Fpath.to_string reg_exe) % "delete" % registry_key ~program_name % "/f")
   in
   Logs.debug (fun l -> l "Running:@ %a" Bos.Cmd.pp cmd);
-  Spawn.spawn cmd
+  Spawn.spawn ~err_ok:true cmd
 
 let write_program_entry ~installation_prefix ~organization ~program_name
     ~program_assets ~program_version ~program_info =

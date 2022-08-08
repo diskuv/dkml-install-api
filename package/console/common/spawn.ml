@@ -1,11 +1,17 @@
 open Bos
 open Dkml_install_api
 
-let spawn cmd =
+let spawn ?err_ok cmd =
   Logs.info (fun m -> m "Running: %a" Cmd.pp cmd);
+  let fl = Dkml_install_runner.Error_handling.runner_fatal_log in
   let handle_err exitcode msg =
-    Dkml_install_runner.Error_handling.runner_fatal_log ~id:"5f927a8b" msg;
-    Forward_progress.(Halted_progress exitcode)
+    match err_ok with
+    | Some true ->
+        Logs.warn (fun l -> l "A non-critical error occurred. %s" msg);
+        Forward_progress.return ((), fl)
+    | Some false | None ->
+        fl ~id:"5f927a8b" msg;
+        Forward_progress.(Halted_progress exitcode)
   in
   match OS.Cmd.(run_status cmd) with
   | Error e ->
@@ -14,9 +20,7 @@ let spawn cmd =
           Rresult.R.pp_msg e
       in
       handle_err Forward_progress.Exit_code.Exit_transient_failure msg
-  | Ok (`Exited 0) ->
-      Forward_progress.(
-        return ((), Dkml_install_runner.Error_handling.runner_fatal_log))
+  | Ok (`Exited 0) -> Forward_progress.(return ((), fl))
   | Ok (`Exited spawned_exitcode) ->
       (* Use exit code of spawned process, but if and only if it matches
          one of the pre-defined exit codes. *)
