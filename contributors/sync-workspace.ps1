@@ -45,7 +45,7 @@ with-dkml opam pin -k version curly 0.2.1-windows-env_r2 --no-action --yes
 with-dkml opam pin -k version dune-action-plugin    2.9.3 --no-action --yes
 with-dkml opam pin -k version dune-glob             2.9.3 --no-action --yes
 with-dkml opam pin -k version dune-private-libs     2.9.3 --no-action --yes
-#   dune.2.9.3+shim is installed by DKML. Conflicts with other dune-* packages
+#   dune.2.9.3+shim.1.0.1 is installed by DKML. Conflicts with other dune-* packages
 with-dkml opam pin -k version dune                  2.9.3 --no-action --yes
 Write-Output "not in 2.9.3 - with-dkml opam pin -k version dune-rpc-lwt          2.9.3 --no-action --yes"
 Write-Output "not in 2.9.3 - with-dkml opam pin -k version dune-rpc              2.9.3 --no-action --yes"
