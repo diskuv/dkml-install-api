@@ -1,9 +1,6 @@
 let () =
   let version_m_n_o_p =
-    Dkml_package_console_common.version_m_n_o_p
-      (match Build_info.V1.version () with
-      | None -> (* default m.n.o.p *) ""
-      | Some v -> Build_info.V1.Version.to_string v)
+    Dkml_package_console_common.version_m_n_o_p Private_common.program_version
   in
   print_endline
     (Fmt.str

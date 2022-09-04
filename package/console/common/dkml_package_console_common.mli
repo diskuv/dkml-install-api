@@ -137,7 +137,8 @@ Confer https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifest
 
 (** {1 Running Programs} *)
 
-val spawn : ?err_ok:bool -> Bos.Cmd.t -> unit Dkml_install_api.Forward_progress.t
+val spawn :
+  ?err_ok:bool -> Bos.Cmd.t -> unit Dkml_install_api.Forward_progress.t
 (** [spawn ?err_ok cmd] launches the command [cmd] and waits for its response.
 
     Use [err_ok = true] if you want to log errors but continue. *)

@@ -83,7 +83,7 @@ let main () project_root corrected =
                   @ [ Atom ":include"; Atom "user-link-flags.sexp" ]);
               ];
             libraries
-              ([ "dkml-install-runner.user"; "dune-build-info" ]
+              ([ "dkml-install-runner.user"; "private_common" ]
               @ dkml_components);
           ];
         executable
@@ -98,7 +98,7 @@ let main () project_root corrected =
                   @ [ Atom ":include"; Atom "admin-link-flags.sexp" ]);
               ];
             libraries
-              ([ "dkml-install-runner.admin"; "dune-build-info" ]
+              ([ "dkml-install-runner.admin"; "private_common" ]
               @ dkml_components);
           ];
         executable
@@ -143,8 +143,7 @@ let main () project_root corrected =
         executable
           [
             name "entry_assembly_manifest";
-            libraries
-              [ "dkml-package-console.common"; "dune-build-info"; "fmt" ];
+            libraries [ "dkml-package-console.common"; "private_common"; "fmt" ];
             modules [ "entry_assembly_manifest" ];
           ];
         rule
@@ -161,12 +160,7 @@ let main () project_root corrected =
             name "package_setup";
             modes_byte_exe;
             libraries
-              ([
-                 "dkml-package-console.setup";
-                 "dune-build-info";
-                 "cmdliner";
-                 "private_common";
-               ]
+              ([ "dkml-package-console.setup"; "cmdliner"; "private_common" ]
               @ dkml_components);
             modules [ "package_setup" ];
           ];
@@ -177,7 +171,6 @@ let main () project_root corrected =
             libraries
               ([
                  "dkml-package-console.uninstaller";
-                 "dune-build-info";
                  "cmdliner";
                  "private_common";
                ]
