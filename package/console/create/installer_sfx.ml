@@ -58,6 +58,10 @@ let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~archive_path
         failwith msg
   in
 
+  (* Step 0: Erase existing archive, if any, so that subsequent '7z a'
+     does not "add" duplicates. *)
+  let* () = OS.File.delete ~must_exist:false archive_path in
+
   (* Step 1: Bundle up everything in the archive directory *)
   let cmd_create =
     Cmd.(
