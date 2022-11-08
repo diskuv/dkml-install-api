@@ -1,3 +1,13 @@
+## 0.3.0
+
+Breaking change:
+
+* Program version is set in `Private_common`
+
+Bug fixes:
+* Delete 7z archive at the start of each `opam install` so adding to archive
+  does not duplicate entries.
+
 ## 0.2.0
 
 * Breaking change: The `depends_on` component value has been split into
