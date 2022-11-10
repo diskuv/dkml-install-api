@@ -1,7 +1,7 @@
 (lang dune 2.9)
 (cram enable)
 
-(name dkml-install-api)
+(name dkml-install)
 (version 0.3.0)
 
 (package
