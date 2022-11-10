@@ -1,10 +1,15 @@
+(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
+   is in common use in Opam packages we should provide backwards compatibility.
+   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
+[@@@alert "-deprecated"]
+
 open Dkml_package_console_setup
 module Term = Cmdliner.Term
 
 (* TEMPLATE: register () *)
 
 let setup_cmd =
-  let doc = "the DKML OCaml installer" in
+  let doc = "the installer" in
   ( Term.(
       const setup
       $ const (failwith "TEMPLATE: target_abi")

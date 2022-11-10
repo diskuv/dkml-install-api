@@ -10,3 +10,6 @@ _opam/
 # Dune
 _build/
 /*.install
+
+#   direnv (https://direnv.net/)
+.envrc
