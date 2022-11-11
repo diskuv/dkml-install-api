@@ -109,7 +109,11 @@ let log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd =
   in
   match sequence with
   | Ok (`Exited 0) ->
-      Logs.info (fun m ->
+      if Logs.level () = Some Logs.Debug then
+        Logs.info (fun m ->
+            m "%a ran successfully" Cmd.pp cmd)
+      else
+        Logs.info (fun m ->
           m "%a ran successfully" Fmt.(option string) (Cmd.line_tool cmd));
       ()
   | Ok (`Exited spawned_exitcode) ->

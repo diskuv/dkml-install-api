@@ -144,7 +144,12 @@ let spawn_ocamlrun ~ocamlrun_exe ~install_direction ~target_abi ~lib_ocaml
   in
   match sequence with
   | Ok (`Exited 0) ->
-      Logs.info (fun l -> l "The command %a ran successfully" Cmd.pp cmd);
+      if Logs.level () = Some Logs.Debug then
+        Logs.info (fun l ->
+            l "The command %a ran successfully" Cmd.pp cmd)
+      else
+        Logs.info (fun l ->
+          l "The command %a ran successfully" Fmt.(option string) (Cmd.line_tool cmd));
       wait ()
   | Ok (`Exited c) ->
       (* An exit code from one of the predefined exit codes already has
