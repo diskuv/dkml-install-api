@@ -1,3 +1,6 @@
+## Pending
+
+* Add `Context.Abi_v2.word_size`
 ## 0.3.0
 
 Breaking change:

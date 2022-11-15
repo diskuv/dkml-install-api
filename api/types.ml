@@ -96,6 +96,26 @@ module Context = struct
           true
       | _ -> false
 
+    (** [word_size] is the number of bits in a word for the machine's CPU architecture.
+        The number of bits will be [32] or [64], but may be something else for
+        more exotic future architectures. *)
+    let word_size = function
+    | Android_arm64v8a -> 64
+    | Android_arm32v7a -> 32
+    | Android_x86 -> 32
+    | Android_x86_64 -> 64
+    | Darwin_arm64 -> 64
+    | Darwin_x86_64 -> 64
+    | Linux_arm64 -> 64
+    | Linux_arm32v6 -> 32
+    | Linux_arm32v7 -> 32
+    | Linux_x86_64 -> 64
+    | Linux_x86 -> 32
+    | Windows_x86_64 -> 64
+    | Windows_x86 -> 32
+    | Windows_arm64 -> 64
+    | Windows_arm32 -> 32
+
     let values =
       List.init
         (max - min + 1)
