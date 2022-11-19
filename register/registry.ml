@@ -64,10 +64,7 @@ let validate ?raise_on_error reg =
                     Check the following in order: 1) Has `dkml-component-%s` \
                     been added as an Opam (or findlib) dependency? 2) Does \
                     `dkml-component-%s` call [Registry.add_component] using \
-                    [component_name=%a]? 3) Is the PLUGIN_NAME in dune's \
-                    `(plugin (name PLUGIN_NAME) ...)` unique across all plugin \
-                    name and across all library names in the Opam switch (or \
-                    findlib path)?"
+                    [component_name=%a]?"
                    Cfg.component_name dependency dependency dependency
                    Fmt.Dump.string dependency
                in
