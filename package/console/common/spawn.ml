@@ -35,9 +35,8 @@ let spawn ?err_ok cmd =
       in
       handle_err exitcode
         (Fmt.str
-           "%s\n\n\
-            Root cause: @[The command had exit code %d:@ %a@]\n\n\
-            >>> %s <<<"
+           "%s@.@.Root cause: @[<v 2>@[The command had exit code %d:@]@ \
+            @[%a@]@]@.@.>>> %s <<<"
            (Forward_progress.Exit_code.to_short_sentence exitcode)
            spawned_exitcode Cmd.pp cmd
            (Forward_progress.Exit_code.to_short_sentence exitcode))
