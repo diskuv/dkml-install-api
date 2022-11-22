@@ -1,6 +1,8 @@
-## Pending
+## 0.3.1
 
 * Add `Context.Abi_v2.word_size`
+* Reduce logs for info level and narrow width on errors
+
 ## 0.3.0
 
 Breaking change:
