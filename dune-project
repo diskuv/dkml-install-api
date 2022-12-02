@@ -72,4 +72,4 @@
 ;   (dkml-install-runner (= :version))
 ;   (dune (>= 2.9))
 ;   (diskuvbox (>= 0.1.0))
-;   (crunch (>= 3.2.0))))
+;   (crunch (>= 3.3.1))))

@@ -21,7 +21,7 @@ depends: [
   "dkml-install-runner" {= version}
   "dune" {>= "2.9"}
   "diskuvbox" {>= "0.1.1"}
-  "crunch" {>= "3.2.0"}
+  "crunch" {>= "3.3.1"}
   "dkml-component-xx-console" {>= "0.1.1"}
 ]
 build: [
