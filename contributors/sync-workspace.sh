@@ -63,6 +63,7 @@ opam pin dkml-package-console                 git+file://"$SOURCEMIXED"/dkml-ins
 opam pin dkml-installer-network-ocaml         git+file://"$SOURCEMIXED"/dkml-installer-ocaml#main --no-action --yes
 opam pin dkml-option-vcpkg                    git+file://"$SOURCEMIXED"/dkml-option-vcpkg#main --no-action --yes
 opam pin dkml-component-common-unixutils      git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
+opam pin dkml-component-offline-unixutils     git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
 opam pin dkml-component-network-ocamlcompiler git+file://"$SOURCEMIXED"/dkml-component-ocamlcompiler#main --no-action --yes
 opam pin dkml-component-network-unixutils     git+file://"$SOURCEMIXED"/dkml-component-unixutils#main --no-action --yes
 opam pin dkml-component-staging-curl          git+file://"$SOURCEMIXED"/dkml-component-curl#main --no-action --yes
@@ -99,7 +100,8 @@ if [ "$SKIP_UPGRADE" = 0 ]; then
         dkml-install dkml-install-installer dkml-install-runner dkml-package-console
         dkml-component-network-ocamlcompiler dkml-component-staging-ocamlrun
         dkml-component-staging-curl
-        dkml-component-common-unixutils dkml-component-staging-unixutils dkml-component-network-unixutils
+        dkml-component-common-unixutils dkml-component-staging-unixutils
+        dkml-component-network-unixutils dkml-component-offline-unixutils
         dkml-installer-network-ocaml
         ocaml-lsp-server ocamlformat-rpc
         alcotest
