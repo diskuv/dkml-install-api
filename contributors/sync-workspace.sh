@@ -35,7 +35,7 @@ fi
 
 if [ ! -e "$PROJROOT/_opam/.opam-switch/switch-state" ]; then
     if [ -n "${COMSPEC:-}" ]; then
-        opam dkml init --dir "$PROJROOT_NATIVE"
+        dkml init --dir "$PROJROOT_NATIVE"
     else
         opam switch create "$PROJROOT_NATIVE" 4.12.1 --yes
     fi
