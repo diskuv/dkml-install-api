@@ -1,4 +1,4 @@
-# DKML Install API 0.1.0
+# DKML Install API 0.4.0
 
 The DKML Install API lets you take the tools you know (OCaml and Opam) and
 well-known¹ installer generators, to generate a installer for your OCaml

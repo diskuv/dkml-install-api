@@ -2,7 +2,7 @@
 (cram enable)
 
 (name dkml-install)
-(version 0.3.1)
+(version 0.4.0)
 
 (package
  (name dkml-install))
