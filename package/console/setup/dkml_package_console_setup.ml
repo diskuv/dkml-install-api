@@ -72,7 +72,9 @@ let setup target_abi program_version organization program_name program_assets
       let* ec, fl =
         elevated_cmd ~target_abi ~staging_files_source
           Cmd.(
-            exe_cmd "dkml-install-admin-runner.exe" % "install-adminall" %% args)
+            exe_cmd "dkml-install-admin-runner.exe"
+            % "install-adminall"
+            %% of_list (Array.to_list args))
       in
       if needs then spawn ec else Forward_progress.return ((), fl)
     in
@@ -146,7 +148,7 @@ let setup target_abi program_version organization program_name program_assets
             Cmd.(
               exe_cmd "dkml-install-user-runner.exe"
               % ("install-user-" ^ Cfg.component_name)
-              %% args))
+              %% of_list (Array.to_list args)))
     in
     Forward_progress.return ((), fl)
   in

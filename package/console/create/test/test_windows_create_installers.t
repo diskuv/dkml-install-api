@@ -27,7 +27,6 @@ Check what is present in this directory
   setup_print_hello.ml
   test_windows_create_installers.exe
   test_windows_create_installers.ml
-  test_windows_create_installers.t
   uninstaller_print_bye.exe
   uninstaller_print_bye.ml
 [initial_conditions_checkdir]
@@ -150,37 +149,35 @@ called `create_installers.exe`:
   
         (* During installation test-b needs test-a *)
         let install_depends_on = [ "staging-ocamlrun"; "offline-test-a" ]
-  
         let uninstall_depends_on = []
       end)
   
   (* Let's also create an entry point for `create_installers.exe` *)
   let () =
-    Term.(
-      exit
-      @@ Dkml_package_console_create.create_installers
-           {
-             legal_name = "Legal Name";
-             common_name_full = "Common Name";
-             common_name_camel_case_nospaces = "CommonName";
-             common_name_kebab_lower_case = "common-name";
-           }
-           {
-             name_full = "Full Name";
-             name_camel_case_nospaces = "FullName";
-             name_kebab_lower_case = "full-name";
-             installation_prefix_camel_case_nospaces_opt = None;
-             installation_prefix_kebab_lower_case_opt = None;
-           }
-           {
-             url_info_about_opt = None;
-             url_update_info_opt = None;
-             help_link_opt = None;
-             estimated_byte_size_opt = None;
-             windows_language_code_id_opt = None;
-             embeds_32bit_uninstaller = true;
-             embeds_64bit_uninstaller = true;
-           })
+    exit
+      (Dkml_package_console_create.create_installers
+         {
+           legal_name = "Legal Name";
+           common_name_full = "Common Name";
+           common_name_camel_case_nospaces = "CommonName";
+           common_name_kebab_lower_case = "common-name";
+         }
+         {
+           name_full = "Full Name";
+           name_camel_case_nospaces = "FullName";
+           name_kebab_lower_case = "full-name";
+           installation_prefix_camel_case_nospaces_opt = None;
+           installation_prefix_kebab_lower_case_opt = None;
+         }
+         {
+           url_info_about_opt = None;
+           url_update_info_opt = None;
+           help_link_opt = None;
+           estimated_byte_size_opt = None;
+           windows_language_code_id_opt = None;
+           embeds_32bit_uninstaller = true;
+           embeds_64bit_uninstaller = true;
+         })
 [what_are_components]
 
 If this were not a demonstration, all your components would be dynamically

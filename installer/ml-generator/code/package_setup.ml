@@ -1,16 +1,14 @@
-(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
-   is in common use in Opam packages we should provide backwards compatibility.
-   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
-[@@@alert "-deprecated"]
-
 open Dkml_package_console_setup
+module Cmd = Cmdliner.Cmd
 module Term = Cmdliner.Term
 
 (* TEMPLATE: register () *)
 
 let setup_cmd =
   let doc = "the installer" in
-  ( Term.(
+  Cmd.v
+    (Cmd.info "dkml-package-setup" ~version:Private_common.program_version ~doc)
+    Term.(
       const setup
       $ const (failwith "TEMPLATE: target_abi")
       $ const Private_common.program_version
@@ -22,12 +20,9 @@ let setup_cmd =
           ~program_name:Private_common.program_name
           ~target_abi:(failwith "TEMPLATE: target_abi")
           ~install_direction:
-            Dkml_install_runner.Path_eval.Global_context.Install),
-    Term.info "dkml-package-setup" ~version:Private_common.program_version ~doc
-  )
+            Dkml_install_runner.Path_eval.Global_context.Install)
 
 let () =
-  Term.(
-    exit
-    @@ Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"bed30047"
-         (fun () -> eval ~catch:false setup_cmd))
+  exit
+    (Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"bed30047"
+       (fun () -> Cmd.eval ~catch:false setup_cmd))

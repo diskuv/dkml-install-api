@@ -1,22 +1,12 @@
-(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
-   is in common use in Opam packages we should provide backwards compatibility.
-   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
-[@@@alert "-deprecated"]
-
 open Dkml_install_register
 open Dkml_install_api
 open Dkml_install_runner.Cmdliner_runner
 open Dkml_install_runner.Error_handling.Monad_syntax
+module Cmd = Cmdliner.Cmd
 module Term = Cmdliner.Term
 
-let default_cmd ~program_version =
-  let doc = "the OCaml CLI user installer" in
-  let sdocs = Cmdliner.Manpage.s_common_options in
-  let exits = Term.default_exits in
-  let man = help_secs in
-  ( Term.(ret (const (fun _log_config -> `Help (`Pager, None)) $ setup_log_t)),
-    Term.info "dkml-install-user-runner" ~version:program_version ~doc ~sdocs
-      ~exits ~man )
+let default_cmd () =
+  Term.(ret (const (fun _log_config -> `Help (`Pager, None)) $ setup_log_t))
 
 (** Install all non-administrative CLI subcommands for all the components.
   Even though all CLI subcommands are registered, setup.exe (setup_main) will
@@ -61,9 +51,14 @@ let main ~target_abi ~program_version =
   let reg = Component_registry.get () in
   let open Dkml_install_runner.Error_handling in
   Component_registry.validate reg;
-  Term.(
-    exit
-    @@ catch_and_exit_on_error ~id:"f59b4702" (fun () ->
-           eval_choice ~catch:false
-             (default_cmd ~program_version)
-             (help_cmd :: component_cmds ~reg ~target_abi)))
+  let doc = "the OCaml CLI user installer" in
+  let sdocs = Cmdliner.Manpage.s_common_options in
+  exit
+    (catch_and_exit_on_error ~id:"f59b4702" (fun () ->
+         let open Cmd in
+         eval ~catch:false
+         @@ group
+              (info "dkml-install-user-runner" ~version:program_version ~doc
+                 ~sdocs ~man:help_secs)
+              ~default:(default_cmd ())
+              (help_cmd :: component_cmds ~reg ~target_abi)))

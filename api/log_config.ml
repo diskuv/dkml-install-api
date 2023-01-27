@@ -8,7 +8,7 @@ type t = {
 let create ?log_config_style_renderer ?log_config_level () =
   { log_config_style_renderer; log_config_level }
 
-(** [to_args] translates the configuration to {!Bos.Cmd.t} *)
+(** [to_args] translates the configuration to a string array *)
 let to_args { log_config_style_renderer; log_config_level } =
   let color =
     match log_config_style_renderer with
@@ -16,7 +16,6 @@ let to_args { log_config_style_renderer; log_config_level } =
     | Some `None -> "never"
     | Some `Ansi_tty -> "always"
   in
-  Bos.Cmd.(
-    empty
-    % ("--verbosity=" ^ Logs.level_to_string log_config_level)
-    % ("--color=" ^ color))
+  [|
+    "--verbosity=" ^ Logs.level_to_string log_config_level; "--color=" ^ color;
+  |]

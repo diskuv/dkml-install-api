@@ -1,8 +1,3 @@
-(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
-   is in common use in Opam packages we should provide backwards compatibility.
-   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
-[@@@alert "-deprecated"]
-
 module type Component_config_defaultable = sig
   val install_depends_on : string list
   (** [install_depends_on] are the components, if any, that this component depends on
@@ -21,7 +16,7 @@ module type Component_config_defaultable = sig
     subcommand_name:string ->
     fl:Forward_progress.fatal_logger ->
     ctx_t:Types.Context.t Cmdliner.Term.t ->
-    (unit Cmdliner.Term.t * Cmdliner.Term.info) Forward_progress.t
+    unit Cmdliner.Cmd.t Forward_progress.t
   (** [install_user_subcommand ~component_name ~subcommand_name ~ctx_t] defines a
       subcommand that should be added to {b dkml-install-runner.exe}
       that, when invoked, will install the component with non-privileged
@@ -40,7 +35,7 @@ module type Component_config_defaultable = sig
       context record. The common options include options for logging. The
       context record is described at {!Dkml_install_api}.
 
-      You must include the [ctx_t] term in your returned [Term.t * Term.info],
+      You must include the [ctx_t] term in your returned [Term.t * Cmd.info],
       as in:
 
       {[
@@ -51,7 +46,7 @@ module type Component_config_defaultable = sig
 
         let install_user_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
           let doc = "Install the pieces that don't require Administrative rights" in
-          Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Term.(const execute_install $ ctx_t, info subcommand_name ~doc), fl)
+          Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Cmd.(v (info subcommand_name ~doc) (const execute_install $ ctx_t)), fl)
       ]}
 
       Your [Term.t] function ([install_user_subcommand ctx]) should raise
@@ -62,7 +57,7 @@ module type Component_config_defaultable = sig
     subcommand_name:string ->
     fl:Forward_progress.fatal_logger ->
     ctx_t:Types.Context.t Cmdliner.Term.t ->
-    (unit Cmdliner.Term.t * Cmdliner.Term.info) Forward_progress.t
+    unit Cmdliner.Cmd.t Forward_progress.t
   (** [uninstall_user_subcommand ~component_name ~ctx_t] defines a
       subcommand that should be added to {b dkml-install-runner.exe}
       that, when invoked, will uninstall the component with non-privileged
@@ -81,7 +76,7 @@ module type Component_config_defaultable = sig
       context record. The common options include options for logging. The
       context record is described at {!Dkml_install_api}.
 
-      You must include the [ctx_t] term in your returned [Term.t * Term.info],
+      You must include the [ctx_t] term in your returned [Term.t * Cmd.info],
       as in:
 
       {[
@@ -92,7 +87,7 @@ module type Component_config_defaultable = sig
 
       let uninstall_user_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
           let doc = "Uninstall the pieces that don't require Administrative rights" in
-        Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Term.(const execute_uninstall $ ctx_t, info subcommand_name ~doc), fl)
+        Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Cmd.(v (info subcommand_name ~doc) (const execute_uninstall $ ctx_t)), fl)
       ]}
 
       Your [Term.t] function ([uninstall_user_subcommand ctx]) should raise
@@ -117,7 +112,7 @@ module type Component_config_defaultable = sig
     subcommand_name:string ->
     fl:Forward_progress.fatal_logger ->
     ctx_t:Types.Context.t Cmdliner.Term.t ->
-    (unit Cmdliner.Term.t * Cmdliner.Term.info) Forward_progress.t
+    unit Cmdliner.Cmd.t Forward_progress.t
   (** [install_admin_subcommand ~component_name ~subcommand_name ~fl ~ctx_t] defines a
       subcommand that should be added to {b dkml-install-runner.exe}
       that, when invoked, will install the component with privileged
@@ -136,7 +131,7 @@ module type Component_config_defaultable = sig
       context record. The common options include options for logging. The
       context record is described at {!Dkml_install_api}.
 
-      You must include the [ctx_t] term in your returned [Term.t * Term.info],
+      You must include the [ctx_t] term in your returned [Term.t * Cmd.info],
       as in:
 
       {[
@@ -147,7 +142,7 @@ module type Component_config_defaultable = sig
 
         let install_admin_subcommand ~component_name ~subcommand_name ~ctx_t =
           let doc = "Install the pieces requiring Administrative rights" in
-          Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Term.(const execute_install_admin $ ctx_t, info subcommand_name ~doc), fl)
+          Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Cmd.(v (info subcommand_name ~doc) (const execute_install_admin $ ctx_t)), fl)
       ]}
 
       Your [Term.t] function ([execute_install_admin ctx]) should raise
@@ -158,7 +153,7 @@ module type Component_config_defaultable = sig
     subcommand_name:string ->
     fl:Forward_progress.fatal_logger ->
     ctx_t:Types.Context.t Cmdliner.Term.t ->
-    (unit Cmdliner.Term.t * Cmdliner.Term.info) Forward_progress.t
+    unit Cmdliner.Cmd.t Forward_progress.t
   (** [uninstall_admin_subcommand ~component_name ~ctx_t] defines a
       subcommand that should be added to {b dkml-install-runner.exe}
       that, when invoked, will uninstall the component with privileged
@@ -177,7 +172,7 @@ module type Component_config_defaultable = sig
       context record. The common options include options for logging. The
       context record is described at {!Dkml_install_api}.
 
-      You must include the [ctx_t] term in your returned [Term.t * Term.info],
+      You must include the [ctx_t] term in your returned [Term.t * Cmd.info],
       as in:
 
       {[
@@ -188,7 +183,7 @@ module type Component_config_defaultable = sig
 
         let uninstall_admin_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
           let doc = "Install the pieces requiring Administrative rights" in
-          Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Term.(const execute_uninstall_admin $ ctx_t, info subcommand_name ~doc), fl)
+          Dkml_install_api.Forward_progress.Continue_progress (Cmdliner.Cmd.(v (info subcommand_name ~doc) (const execute_uninstall_admin $ ctx_t)), fl)
       ]}
 
       Your [Term.t] function ([execute_uninstall_admin ctx]) should raise

@@ -1,11 +1,6 @@
-(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
-   is in common use in Opam packages we should provide backwards compatibility.
-   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
-[@@@alert "-deprecated"]
-
-open Bos
 open Dkml_install_runner.Error_handling.Monad_syntax
 module Arg = Cmdliner.Arg
+module Cmd = Cmdliner.Cmd
 module Term = Cmdliner.Term
 
 let generate_installer_from_archive_dir ~install_direction ~archive_dir
@@ -345,7 +340,7 @@ let opam_context_t =
       ~docv:"OPAM_SWITCH_PREFIX" ~doc
   in
   let unbackslash = function '\\' -> '/' | c -> c in
-  match OS.Env.var "OPAM_SWITCH_PREFIX" with
+  match Bos.OS.Env.var "OPAM_SWITCH_PREFIX" with
   | Some current_opam_switch_prefix ->
       Arg.(
         value
@@ -385,4 +380,4 @@ let create_installers organization program_name program_info =
       $ uninstaller_bytecode_t)
   in
   Dkml_install_runner.Cmdliner_runner.eval_progress
-    (t, Term.info ~version:"%%VERSION%%" "dkml-install-create-installers")
+    Cmd.(v (info ~version:"%%VERSION%%" "dkml-install-create-installers") t)

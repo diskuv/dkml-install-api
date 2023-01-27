@@ -1,11 +1,6 @@
-(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
-   is in common use in Opam packages we should provide backwards compatibility.
-   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
-[@@@alert "-deprecated"]
-
-open Bos
 module Arg = Cmdliner.Arg
 module Term = Cmdliner.Term
+module Cmd = Cmdliner.Cmd
 module Context = Types.Context
 module Forward_progress = Forward_progress
 
@@ -19,11 +14,8 @@ let administrator =
 
 module Default_component_config = struct
   let install_depends_on = []
-
   let uninstall_depends_on = []
-
   let do_nothing_with_ctx_t _ctx = ()
-
   let sdocs = Cmdliner.Manpage.s_common_options
 
   let install_user_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
@@ -33,10 +25,8 @@ module Default_component_config = struct
          parts, if any, that need %s"
         component_name administrator
     in
-    let cmd =
-      Term.
-        (const do_nothing_with_ctx_t $ ctx_t, info subcommand_name ~sdocs ~doc)
-    in
+    let info = Cmd.info subcommand_name ~sdocs ~doc in
+    let cmd = Cmd.v info Term.(const do_nothing_with_ctx_t $ ctx_t) in
     Forward_progress.return (cmd, fl)
 
   let uninstall_user_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
@@ -46,14 +36,11 @@ module Default_component_config = struct
          parts, if any, that need %s"
         component_name administrator
     in
-    let cmd =
-      Term.
-        (const do_nothing_with_ctx_t $ ctx_t, info subcommand_name ~sdocs ~doc)
-    in
+    let info = Cmd.info subcommand_name ~sdocs ~doc in
+    let cmd = Cmd.v info Term.(const do_nothing_with_ctx_t $ ctx_t) in
     Forward_progress.return (cmd, fl)
 
   let needs_install_admin ~ctx:(_ : Context.t) = false
-
   let needs_uninstall_admin ~ctx:(_ : Context.t) = false
 
   let install_admin_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
@@ -63,10 +50,8 @@ module Default_component_config = struct
          that need %s"
         component_name administrator
     in
-    let cmd =
-      Term.
-        (const do_nothing_with_ctx_t $ ctx_t, info subcommand_name ~sdocs ~doc)
-    in
+    let info = Cmd.info subcommand_name ~sdocs ~doc in
+    let cmd = Cmd.v info Term.(const do_nothing_with_ctx_t $ ctx_t) in
     Forward_progress.return (cmd, fl)
 
   let uninstall_admin_subcommand ~component_name ~subcommand_name ~fl ~ctx_t =
@@ -76,10 +61,8 @@ module Default_component_config = struct
          '%s' that need %s"
         component_name administrator
     in
-    let cmd =
-      Term.
-        (const do_nothing_with_ctx_t $ ctx_t, info subcommand_name ~sdocs ~doc)
-    in
+    let info = Cmd.info subcommand_name ~sdocs ~doc in
+    let cmd = Cmd.v info Term.(const do_nothing_with_ctx_t $ ctx_t) in
     Forward_progress.return (cmd, fl)
 
   let test () = ()
@@ -90,12 +73,12 @@ module Log_config = struct
 end
 
 let log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd =
-  Logs.info (fun m -> m "Running command: %a" Cmd.pp cmd);
+  Logs.info (fun m -> m "Running command: %a" Bos.Cmd.pp cmd);
   let fl = Forward_progress.stderr_fatallog in
   let open Astring in
   let sequence =
     let ( let* ) = Result.bind in
-    let* env = OS.Env.current () in
+    let* env = Bos.OS.Env.current () in
     let new_env =
       let is_not_defined =
         match String.Map.find "OCAMLRUNPARAM" env with
@@ -105,16 +88,15 @@ let log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd =
       in
       if is_not_defined then String.Map.add "OCAMLRUNPARAM" "b" env else env
     in
-    OS.Cmd.run_status ~env:new_env cmd
+    Bos.OS.Cmd.run_status ~env:new_env cmd
   in
   match sequence with
   | Ok (`Exited 0) ->
       if Logs.level () = Some Logs.Debug then
-        Logs.info (fun m ->
-            m "%a ran successfully" Cmd.pp cmd)
+        Logs.info (fun m -> m "%a ran successfully" Bos.Cmd.pp cmd)
       else
         Logs.info (fun m ->
-          m "%a ran successfully" Fmt.(option string) (Cmd.line_tool cmd));
+            m "%a ran successfully" Fmt.(option string) (Bos.Cmd.line_tool cmd));
       ()
   | Ok (`Exited spawned_exitcode) ->
       let adjective, exitcode =
@@ -138,16 +120,16 @@ let log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd =
             Root cause: @[The %scommand had exit code %d:@ %a@]\n\n\
             >>> %s <<<"
            (Forward_progress.Exit_code.to_short_sentence exitcode)
-           adjective spawned_exitcode Cmd.pp cmd
+           adjective spawned_exitcode Bos.Cmd.pp cmd
            (Forward_progress.Exit_code.to_short_sentence exitcode));
       exit (Forward_progress.Exit_code.to_int_exitcode exitcode)
   | Ok (`Signaled c) ->
       fl ~id
-        (Fmt.str "The command@ %a@ terminated from a signal %d" Cmd.pp cmd c);
+        (Fmt.str "The command@ %a@ terminated from a signal %d" Bos.Cmd.pp cmd c);
       exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)
   | Error rmsg ->
       fl ~id
-        (Fmt.str "The command@ %a@ could not be run due to: %a" Cmd.pp cmd
+        (Fmt.str "The command@ %a@ could not be run due to: %a" Bos.Cmd.pp cmd
            Rresult.R.pp_msg rmsg);
       exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)
 
@@ -185,13 +167,15 @@ let chmod_plus_readwrite_dir ~id dir =
         e
     | Ok () ->
         let path = Fpath.(dir // rel) in
-        let* mode = OS.Path.Mode.get path in
+        let* mode = Bos.OS.Path.Mode.get path in
         if mode land 0o600 <> 0o600 then
-          let+ () = OS.Path.Mode.set path (mode lor 0o600) in
+          let+ () = Bos.OS.Path.Mode.set path (mode lor 0o600) in
           ()
         else Ok ()
   in
-  let* res = OS.Path.fold ~err:raise_fold_error chmod_u_rw (Ok ()) [ dir ] in
+  let* res =
+    Bos.OS.Path.fold ~err:raise_fold_error chmod_u_rw (Ok ()) [ dir ]
+  in
   match res with
   | Ok () -> Ok ()
   | Error s ->
@@ -228,7 +212,7 @@ let uninstall_directory_onerror_exit ~id ~dir ~wait_seconds_if_stuck =
       file. *)
   let fl = Forward_progress.stderr_fatallog in
   let sequence =
-    let* exists = OS.Path.exists dir in
+    let* exists = Bos.OS.Path.exists dir in
     if exists then (
       Logs.info (fun m -> m "Uninstalling directory: %a" Fpath.pp dir);
       let* () = chmod_plus_readwrite_dir ~id dir in
@@ -377,7 +361,7 @@ let uninstall_directory_onerror_exit ~id ~dir ~wait_seconds_if_stuck =
                     | WSTOPPED v ->
                         Error (Rresult.R.msgf "DOS 'rd' stopped by signal %d" v))
       *)
-      | _ -> OS.Dir.delete ~recurse:true dir)
+      | _ -> Bos.OS.Dir.delete ~recurse:true dir)
     else Ok ()
   in
   match sequence with

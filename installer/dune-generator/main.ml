@@ -1,11 +1,6 @@
-(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
-   is in common use in Opam packages we should provide backwards compatibility.
-   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
-[@@@alert "-deprecated"]
-
 open Sexplib0
-open Bos
 module Arg = Cmdliner.Arg
+module Cmd = Cmdliner.Cmd
 module Term = Cmdliner.Term
 
 (* {1 Directories} *)
@@ -14,7 +9,7 @@ let fpath_pp_mixed fmt v =
   let s = Fmt.str "%a" Fpath.pp v in
   Fmt.pf fmt "%s" (String.map (function '\\' -> '/' | c -> c) s)
 
-let pwd () = Rresult.R.error_msg_to_invalid_arg (OS.Dir.current ())
+let pwd () = Rresult.R.error_msg_to_invalid_arg (Bos.OS.Dir.current ())
 
 let project_abs_dir ~pwd project_root =
   if Fpath.is_rel project_root then Fpath.(pwd // project_root)
@@ -38,7 +33,8 @@ let write_dune_inc fmt ~output_rel dune_inc =
     "; When regenerating, erase **all** content from this file, save the file, \
      and then run:@\n";
   Fmt.pf fmt ";   dune clean@\n";
-  Fmt.pf fmt ";   dune build '@%a/gen-dkml' --auto-promote@\n" fpath_pp_mixed output_reldir;
+  Fmt.pf fmt ";   dune build '@%a/gen-dkml' --auto-promote@\n" fpath_pp_mixed
+    output_reldir;
   Fmt.pf fmt "%a@\n" Fmt.(list ~sep:(any "@\n@\n") Sexp.pp_hum) dune_inc;
   Format.pp_print_flush fmt ()
 
@@ -243,9 +239,9 @@ let main () project_root corrected =
   let output_dir, corrected_base = Fpath.split_base corrected in
   Rresult.R.error_msg_to_invalid_arg
     (let ( let* ) = Rresult.R.bind in
-     let* (_ : bool) = OS.Dir.create output_dir in
+     let* (_ : bool) = Bos.OS.Dir.create output_dir in
      let* z =
-       OS.File.with_oc corrected
+       Bos.OS.File.with_oc corrected
          (fun oc () ->
            let fmt = Format.formatter_of_out_channel oc in
            write_dune_inc
@@ -283,4 +279,4 @@ let () =
     "Print a $(b,dune.inc) that, when included in Dune, will produce an \
      installer generator executable"
   in
-  Term.(exit @@ eval (main_t, info "dune-of-installer-generator" ~doc))
+  exit Cmd.(eval (v (info "dune-of-installer-generator" ~doc) main_t))

@@ -60,7 +60,8 @@ let uninstall target_abi program_name package_args : unit =
         elevated_cmd ~target_abi ~staging_files_source
           Cmd.(
             exe_cmd "dkml-install-admin-runner.exe"
-            % "uninstall-adminall" %% args)
+            % "uninstall-adminall"
+            %% of_list (Array.to_list args))
       in
       if needs then spawn ec else Forward_progress.return ((), fl)
     in
@@ -84,7 +85,7 @@ let uninstall target_abi program_name package_args : unit =
             Cmd.(
               exe_cmd "dkml-install-user-runner.exe"
               % ("uninstall-user-" ^ Cfg.component_name)
-              %% args))
+              %% of_list (Array.to_list args)))
     in
     (* Run admin-runner.exe commands *)
     let* (), _fl = spawn_admin_if_needed () in

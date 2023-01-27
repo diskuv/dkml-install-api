@@ -1,11 +1,6 @@
-(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
-   is in common use in Opam packages we should provide backwards compatibility.
-   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
-[@@@alert "-deprecated"]
-
-open Bos
 open Dkml_install_runner.Error_handling.Monad_syntax
 module Arg = Cmdliner.Arg
+module Cmd = Cmdliner.Cmd
 module Term = Cmdliner.Term
 
 let copy_as_is file =
@@ -18,7 +13,7 @@ let copy_as_is file =
   @@ Dkml_install_runner.Error_handling.map_rresult_error_to_progress
   @@ Dkml_install_runner.Error_handling.continue_or_exit
   @@ Dkml_install_runner.Error_handling.map_rresult_error_to_progress
-  @@ OS.File.with_oc (Fpath.v file)
+  @@ Bos.OS.File.with_oc (Fpath.v file)
        (fun oc () ->
          let fmt = Format.formatter_of_out_channel oc in
          Fmt.pf fmt "%s" content;
@@ -57,7 +52,8 @@ let () =
   let doc =
     "Writes $(b,.ml) files that are used by dune-of-installer-generator.exe"
   in
-  Term.(
-    exit
-    @@ Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"878ee300"
-         (fun () -> eval (main_t, info "ml-of-installer-generator" ~doc)))
+  exit
+    (Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"878ee300"
+       (fun () ->
+         Cmd.(
+           eval ~catch:false (v (info "ml-of-installer-generator" ~doc) main_t))))

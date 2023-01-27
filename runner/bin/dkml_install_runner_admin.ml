@@ -1,22 +1,12 @@
-(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
-   is in common use in Opam packages we should provide backwards compatibility.
-   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
-[@@@alert "-deprecated"]
-
 open Dkml_install_register
 open Dkml_install_api
 open Dkml_install_runner.Cmdliner_runner
 open Dkml_install_runner.Error_handling.Monad_syntax
+module Cmd = Cmdliner.Cmd
 module Term = Cmdliner.Term
 
-let default_cmd ~program_version =
-  let doc = "the OCaml CLI administrator installer" in
-  let sdocs = Cmdliner.Manpage.s_common_options in
-  let exits = Term.default_exits in
-  let man = help_secs in
-  ( Term.(ret (const (fun _log_config -> `Help (`Pager, None)) $ setup_log_t)),
-    Term.info "dkml-install-admin-runner" ~version:program_version ~doc ~sdocs
-      ~exits ~man )
+let default_cmd () =
+  Term.(ret (const (fun _log_config -> `Help (`Pager, None)) $ setup_log_t))
 
 (** {1 Setup}
 
@@ -53,31 +43,27 @@ let uninstall_admin_cmds ~reg ~target_abi ~selector =
    User Account Control prompt and on Unix we only want one sudo password
    prompt. Drawback is that progress is a bit harder to track; we'll survive! *)
 
-let run_terms_with_common_runner_args ~log_config ~prefix ~staging_files_source
-    acc (term_t, term_info) =
+let run_cmd_with_common_runner_args ~log_config ~prefix ~staging_files_source
+    acc cmd =
   let common_runner_cmd =
     Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config ~prefix
       ~staging_files_source
   in
-  let common_runner_args =
-    Array.of_list (Term.name term_info :: Bos.Cmd.to_list common_runner_cmd)
-  in
+  let common_runner_args = Array.append [| Cmd.name cmd |] common_runner_cmd in
   match acc with
   | `Ok () -> (
-      let name = Term.name term_info in
-      match
-        Term.(eval ~argv:common_runner_args ~catch:false (term_t, term_info))
-      with
-      | `Ok () -> `Ok ()
-      | `Error `Exn ->
+      let name = Cmd.name cmd in
+      match Cmd.(eval_value ~argv:common_runner_args ~catch:false cmd) with
+      | Ok (`Ok ()) -> `Ok ()
+      | Ok `Version -> `Help (`Pager, None)
+      | Ok `Help -> `Help (`Pager, None)
+      | Error `Exn ->
           `Error (false, Fmt.str "Terminated with an exception in %s" name)
-      | `Error `Parse ->
+      | Error `Parse ->
           `Error (false, Fmt.str "Terminated due to parsing problems in %s" name)
-      | `Error `Term ->
+      | Error `Term ->
           `Error
-            (false, Fmt.str "Ended with an unsuccessful exit code in %s" name)
-      | `Version -> `Help (`Pager, None)
-      | `Help -> `Help (`Pager, None))
+            (false, Fmt.str "Ended with an unsuccessful exit code in %s" name))
   | _ as a -> a
 
 let helper_all_cmd ~doc ~name ~install_direction ~program_version f =
@@ -88,18 +74,19 @@ let helper_all_cmd ~doc ~name ~install_direction ~program_version f =
     in
     return
       (List.fold_left
-         (run_terms_with_common_runner_args ~log_config ~prefix
+         (run_cmd_with_common_runner_args ~log_config ~prefix
             ~staging_files_source)
          (`Ok ())
          (f ~selector:(to_selector selector)))
   in
-  ( Term.(
+  Cmd.v
+    (Cmd.info name ~version:program_version ~doc)
+    Term.(
       ret
         (Dkml_install_runner.Cmdliner_runner.unwrap_progress_nodefault_t
            (const runall $ setup_log_t
            $ component_selector_t ~install_direction
-           $ prefix_t $ staging_files_opt_t $ opam_context_opt_t))),
-    Term.info name ~version:program_version ~doc )
+           $ prefix_t $ staging_files_opt_t $ opam_context_opt_t)))
 
 let install_all_cmd ~reg ~target_abi =
   let doc = "install all components" in
@@ -126,18 +113,23 @@ let main ~target_abi ~program_version =
   let reg = Component_registry.get () in
   let open Dkml_install_runner.Error_handling in
   Component_registry.validate reg;
-  Term.(
-    exit
-    @@ catch_and_exit_on_error ~id:"0c9ebd09" (fun () ->
-           (* [install_all_cmd] and [uninstall_all_cmd] will only use
-              CLI specified components. [install_admin_cmds] and
-              [uninstall_admin_cmds] will use _all_ components, which means
-              any individual component can be installed and uninstalled
-              by invoking the individual subcommand. *)
-           eval_choice ~catch:false
-             (default_cmd ~program_version)
-             (help_cmd
-              :: install_all_cmd ~reg ~target_abi ~program_version
-              :: uninstall_all_cmd ~reg ~target_abi ~program_version
-              :: install_admin_cmds ~reg ~target_abi ~selector:All_components
-             @ uninstall_admin_cmds ~reg ~target_abi ~selector:All_components)))
+  let doc = "the OCaml CLI administrator installer" in
+  let sdocs = Cmdliner.Manpage.s_common_options in
+  exit
+    (catch_and_exit_on_error ~id:"0c9ebd09" (fun () ->
+         let open Cmd in
+         eval ~catch:false
+         @@ (* [install_all_cmd] and [uninstall_all_cmd] will only use
+               CLI specified components. [install_admin_cmds] and
+               [uninstall_admin_cmds] will use _all_ components, which means
+               any individual component can be installed and uninstalled
+               by invoking the individual subcommand. *)
+         group
+           (info "dkml-install-admin-runner" ~version:program_version ~doc
+              ~sdocs ~man:help_secs)
+           ~default:(default_cmd ())
+           (help_cmd
+            :: install_all_cmd ~reg ~target_abi ~program_version
+            :: uninstall_all_cmd ~reg ~target_abi ~program_version
+            :: install_admin_cmds ~reg ~target_abi ~selector:All_components
+           @ uninstall_admin_cmds ~reg ~target_abi ~selector:All_components)))

@@ -1,10 +1,5 @@
-(* Cmdliner 1.0 -> 1.1 deprecated a lot of things. But until Cmdliner 1.1
-   is in common use in Opam packages we should provide backwards compatibility.
-   In fact, Diskuv OCaml is not even using Cmdliner 1.1. *)
-[@@@alert "-deprecated"]
-
-open Bos
 module Arg = Cmdliner.Arg
+module Cmd = Cmdliner.Cmd
 module Term = Cmdliner.Term
 
 let help man_format cmds topic =
@@ -75,11 +70,8 @@ let create_context ~install_direction ~staging_default ~target_abi
    strings. *)
 
 let quote s = Fmt.str "`%s'" s
-
 let err_no kind s = Fmt.str "no %s %s" (quote s) kind
-
 let err_not_dir s = Fmt.str "%s is not a directory" (quote s)
-
 let raw_pp_str fmt s = Fmt.string fmt (String.escaped s)
 
 let raw_dir =
@@ -110,14 +102,15 @@ let prefix_t =
 
 (** Directory containing dkml-package.bc or whatever executable
    (perhaps a renamed setup.exe in a non-bin folder) is currently running. *)
-let exec_dir = Fpath.(parent (v OS.Arg.exec))
+let exec_dir = Fpath.(parent (v Bos.OS.Arg.exec))
 
 (** The root directory that was uncompressed at end-user install time *)
 let enduser_archive_dir () =
   (* get path to .archivetree *)
   let open Error_handling.Monad_syntax in
   let archivetree () =
-    Diskuvbox.find_up ~from_dir:exec_dir ~basenames:[ Fpath.v ".archivetree" ]
+    Diskuvbox.find_up ~from_dir:exec_dir
+      ~basenames:[ Fpath.v ".archivetree" ]
       ~max_ascent:3 ()
   in
   let* archivetree_opt, fl =
@@ -319,23 +312,30 @@ let component_selector_t ~install_direction =
 let common_runner_args ~log_config ~prefix ~staging_files_source =
   let z s = "--" ^ s in
   let args =
-    Cmd.(
-      Dkml_install_api.Log_config.to_args log_config
-      % z Cmdliner_common.prefix_arg
-      % Fpath.to_string prefix)
+    Array.concat
+      [
+        Dkml_install_api.Log_config.to_args log_config;
+        [| z Cmdliner_common.prefix_arg; Fpath.to_string prefix |];
+      ]
   in
   let args =
     match staging_files_source with
     | Path_location.Opam_staging_switch_prefix switch_prefix ->
-        Cmd.(
-          args
-          % z Cmdliner_common.opam_context_args
-          % Fpath.to_string switch_prefix)
+        Array.concat
+          [
+            args;
+            [|
+              z Cmdliner_common.opam_context_args; Fpath.to_string switch_prefix;
+            |];
+          ]
     | Staging_files_dir staging_files ->
-        Cmd.(
-          args
-          % z Cmdliner_common.staging_files_arg
-          % Fpath.to_string staging_files)
+        Array.concat
+          [
+            args;
+            [|
+              z Cmdliner_common.staging_files_arg; Fpath.to_string staging_files;
+            |];
+          ]
   in
   args
 
@@ -354,21 +354,23 @@ let help_cmd =
       `Blocks help_secs;
     ]
   in
-  ( Term.(ret (const help $ Arg.man_format $ Term.choice_names $ topic)),
-    Term.info "help" ~doc ~exits:Term.default_exits ~man )
+  let info = Cmd.info "help" ~doc ~man in
+  Cmd.v info
+    Term.(ret (const help $ Arg.man_format $ Term.choice_names $ topic))
 
-(* Term evalation *)
+(* Term evaluation *)
 
-let eval_progress (term, info) =
-  match Term.eval (term, info) with
-  | `Ok v -> (
+let eval_progress cmd =
+  let open Dkml_install_api.Forward_progress in
+  match Cmd.eval_value cmd with
+  | Ok `Version -> Cmd.Exit.ok
+  | Ok `Help -> Cmd.Exit.ok
+  | Ok (`Ok v) -> (
       match v with
-      | Dkml_install_api.Forward_progress.Completed -> `Ok ()
-      | Dkml_install_api.Forward_progress.Continue_progress ((), _) -> `Ok ()
-      | Dkml_install_api.Forward_progress.Halted_progress exitcode ->
-          exit
-            (Dkml_install_api.Forward_progress.Exit_code.to_int_exitcode
-               exitcode))
-  | `Version -> `Version
-  | `Help -> `Help
-  | `Error e -> `Error e
+      | Completed -> Cmd.Exit.ok
+      | Continue_progress ((), _) -> Cmd.Exit.ok
+      | Halted_progress exitcode -> Exit_code.to_int_exitcode exitcode)
+  | Error `Parse ->
+      Exit_code.to_int_exitcode Exit_code.Exit_unrecoverable_failure
+  | Error `Term | Error `Exn ->
+      Exit_code.to_int_exitcode Exit_code.Exit_transient_failure
