@@ -124,7 +124,6 @@ let needs_uninstall_admin ~reg ~selector ~log_config ~target_abi ~prefix
   List.exists Fun.id bools
 
 let console_component_name = "xx-console"
-
 let console_required_components = [ console_component_name; "staging-ocamlrun" ]
 
 let elevated_cmd ~target_abi ~staging_files_source cmd =

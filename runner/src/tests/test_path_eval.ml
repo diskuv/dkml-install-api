@@ -4,7 +4,6 @@ open Path_eval.Private
 open More_testables
 
 let fpath = Alcotest.testable Fpath.pp Fpath.equal
-
 let fpath_is_prefix = Alcotest.testable Fpath.pp Fpath.is_prefix
 
 let () =

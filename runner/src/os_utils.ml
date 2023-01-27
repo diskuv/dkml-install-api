@@ -12,7 +12,6 @@ type install_files_source =
   | Install_files_dir of Fpath.t
 
 type install_files_type = Staging | Static
-
 type package_selector = Package | Component
 
 (** [absdir_install_files ~component_name install_files_type install_files_source] is

@@ -3,22 +3,16 @@ open Dkml_install_register
 open More_testables
 
 let ( let* ) = Forward_progress.bind
-
 let return = Forward_progress.return
-
 let fatallog = Dkml_install_api.Forward_progress.stderr_fatallog
-
 let ops = Queue.create ()
 
 module A = struct
   include Default_component_config
 
   let component_name = "a"
-
   let install_depends_on = [ "b" ]
-
   let uninstall_depends_on = [ "b" ]
-
   let test () = Queue.add ("test eval " ^ "a") ops
 end
 
@@ -26,7 +20,6 @@ module B = struct
   include Default_component_config
 
   let component_name = "b"
-
   let test () = Queue.add ("test eval " ^ "b") ops
 end
 
@@ -34,12 +27,10 @@ module C = struct
   include Default_component_config
 
   let component_name = "c"
-
   let install_depends_on = [ "a" ]
 
   (* Test different install/uninstall_depends_on *)
   let uninstall_depends_on = []
-
   let test () = Queue.add ("test eval " ^ "c") ops
 end
 

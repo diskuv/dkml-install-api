@@ -51,7 +51,6 @@ let map_string_error_to_progress = function
 module Let_syntax = struct
   module Let_syntax = struct
     let bind = Dkml_install_api.Forward_progress.bind
-
     let map = Dkml_install_api.Forward_progress.map
 
     let return v =
@@ -71,6 +70,5 @@ module Monad_syntax = struct
 
   (* This is a error=string map *)
   let ( let+ ) x f = Let_syntax.Let_syntax.map f x
-
   let return = Let_syntax.Let_syntax.return
 end

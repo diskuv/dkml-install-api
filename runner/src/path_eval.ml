@@ -47,7 +47,6 @@ module Global_context = struct
       }
 
   let global_pathonly_vars { global_pathonly_vars; _ } = global_pathonly_vars
-
   let global_vars { global_vars; _ } = global_vars
 
   let tmp_dir { default_tmp_dir; _ } =

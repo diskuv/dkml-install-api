@@ -18,7 +18,6 @@ let program_name =
   }
 
 let program_version = "0.0.0-dev"
-
 let program_assets = { Author_types.logo_icon_32x32_opt = None }
 
 let program_info =

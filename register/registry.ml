@@ -1,9 +1,7 @@
 open Dkml_install_api
 
 let ( let* ) = Forward_progress.bind
-
 let ( let+ ) r f = Forward_progress.map f r
-
 let return = Forward_progress.return
 
 type t = (string, (module Component_config)) Hashtbl.t
@@ -13,7 +11,6 @@ type component_selector =
   | Just_named_components_plus_their_dependencies of string list
 
 let global_registry : t = Hashtbl.create 17
-
 let get () = global_registry
 
 let on_error s = function
