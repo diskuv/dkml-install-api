@@ -17,8 +17,8 @@ let (_ : string list) = Default_component_config.install_depends_on
    Logging is configured just before this function is called through Cmdliner
    Term evaluation of `log_config`. If you don't see log statement, make
    sure the log statements are created inside (or after) `setup ...`. *)
-let setup target_abi program_version organization program_name program_assets
-    program_info package_args : unit =
+let setup target_abi build_info program_version organization program_name
+    program_assets program_info package_args : unit =
   let open Dkml_install_runner.Error_handling.Monad_syntax in
   (* deconstruct *)
   let ( prefix_opt,
@@ -72,7 +72,9 @@ let setup target_abi program_version organization program_name program_assets
       let* ec, fl =
         elevated_cmd ~target_abi ~staging_files_source
           Cmd.(
-            exe_cmd "dkml-install-admin-runner.exe"
+            exe_cmd
+              (build_info.Dkml_package_console_common.Author_types.package_name
+             ^ "-admin-runner.exe")
             % "install-adminall"
             %% of_list (Array.to_list args))
       in
@@ -146,7 +148,10 @@ let setup target_abi program_version organization program_name program_assets
           let module Cfg = (val cfg : Component_config) in
           Dkml_package_console_common.spawn
             Cmd.(
-              exe_cmd "dkml-install-user-runner.exe"
+              exe_cmd
+                (build_info
+                   .Dkml_package_console_common.Author_types.package_name
+               ^ "-user-runner.exe")
               % ("install-user-" ^ Cfg.component_name)
               %% of_list (Array.to_list args)))
     in

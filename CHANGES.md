@@ -3,6 +3,8 @@
 ## 0.4.0
 
 * Switch to cmdliner.1.1.1 from cmdliner.1.0.4 in the API
+* Require `--package-name` to distinguish multiple installers in the same
+  project
 
 ## 0.3.1
 

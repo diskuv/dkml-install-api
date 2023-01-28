@@ -14,7 +14,7 @@ let copy_file ~src ~dst =
   get_ok_or_failwith_string (Diskuvbox.copy_file ~err:box_err ~src ~dst ())
 
 let populate_archive ~archive_dir ~abi_selector ~runner_admin_exe
-    ~runner_user_exe ~packager_entry_exe ~packager_bytecode =
+    ~runner_user_exe ~packager_entry_exe ~packager_bytecode ~package_name =
   (* Make a `.archivetree` empty file so executables like
      bin/dkml-package-setup.bc can be renamed setup.exe, but still
      setup.exe will be able to locate all the other archive files. *)
@@ -47,11 +47,13 @@ let populate_archive ~archive_dir ~abi_selector ~runner_admin_exe
       (* Copy runner binaries. TODO: Should these be bytecode, not .exe? *)
       get_ok_or_failwith_string
         (Diskuvbox.copy_file ~err:box_err ~src:(resolve runner_admin_exe)
-           ~dst:Fpath.(archive_dir / "bin" / "dkml-install-admin-runner.exe")
+           ~dst:
+             Fpath.(archive_dir / "bin" / (package_name ^ "-admin-runner.exe"))
            ());
       get_ok_or_failwith_string
         (Diskuvbox.copy_file ~err:box_err ~src:(resolve runner_user_exe)
-           ~dst:Fpath.(archive_dir / "bin" / "dkml-install-user-runner.exe")
+           ~dst:
+             Fpath.(archive_dir / "bin" / (package_name ^ "-user-runner.exe"))
            ());
       (* Copy dkml-package-setup/uninstaller binaries. *)
       get_ok_or_failwith_string

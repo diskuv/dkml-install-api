@@ -26,11 +26,11 @@ On Windows it is {{:https://docs.microsoft.com/en-us/windows/security/identity-p
 to separate functionality that requires administrative privileges from
 functionality that does not require non-administrative privileges.
 [Dkml_install_api] follows the same recommendations:
-- There will be a {e single} executable ["dkml-install-admin-runner.exe"] that is
+- There will be a {e single} executable ["<package>-admin-runner.exe"] that is
   responsible for the following functionality for {e all} components:
   + Administrator installation defined by {!Component_config.install_admin_subcommand}
   + Administrator uninstallation defined by {!Component_config.uninstall_admin_subcommand}
-- There will be a {e single} executable ["dkml-install-user-runner.exe"] that is
+- There will be a {e single} executable ["<package>-user-runner.exe"] that is
   responsible for the following functionality for {e all} components:
   + User installation defined by {!Component_config.install_user_subcommand}
   + User uninstallation defined by {!Component_config.uninstall_user_subcommand}

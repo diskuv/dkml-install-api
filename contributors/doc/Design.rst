@@ -134,8 +134,8 @@ Here is what the ``opam install ...`` step does in detail:
 3. Create
    `dune_site plugin loader <https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages>`_-based executables
    named ``dkml-package-setup.bc``, ``dkml-package-uninstaller.bc``,
-   ``dkml-install-user-runner.exe`` and
-   ``dkml-install-admin-runner.exe`` that will perform the steps in
+   ``<package>-user-runner.exe`` and
+   ``<package>-admin-runner.exe`` that will perform the steps in
    :ref:`UserPhases`
 
 4. The last step depends on what type of installer
@@ -155,7 +155,7 @@ Here is what the ``opam install ...`` step does in detail:
         into the ``staging`` top-level folder of the ``$I.zip`` archive.
 
         The ``dkml-package-setup.bc``, ``dkml-package-uninstaller.bc``,
-        ``dkml-install-user-runner.exe`` and ``dkml-install-admin-runner.exe``
+        ``<package>-user-runner.exe`` and ``<package>-admin-runner.exe``
         executables will be placed in the root of the
         ``$I.zip`` archive.
 
@@ -188,7 +188,7 @@ User runs the installer
    configuration that lets them display text (ex. license) or ask more
    questions.
 4. [``dkml-package-setup.bc``] Formulate command line options for
-   ``dkml-install-user-runner.exe`` and  ``dkml-install-admin-runner.exe``
+   ``<package>-user-runner.exe`` and  ``<package>-admin-runner.exe``
    that correspond to the end-user selections. By default the staging directory
    will be the ``staging`` directory that is in the same directory as
    ``dkml-package-setup.bc``. The same command line options
@@ -200,7 +200,7 @@ User runs the installer
      "selections" artifact created by the Console Installer or GUI installer
      to describe the end-user choices. And there needs to be some mapping
      from that "selections" artifact into command line options for
-     ``dkml-install-user-runner.exe`` and  ``dkml-install-admin-runner.exe``.
+     ``<package>-user-runner.exe`` and  ``<package>-admin-runner.exe``.
      And each component should be able to influence how that selections artifact
      is created.
      
@@ -226,17 +226,17 @@ User runs the installer
 6. [``dkml-package-setup.bc``] **ADMIN_INSTALL phase** If there are any
    components that needs administrative/root privileges, then:
 
-   1. [``dkml-package-setup.bc``] Spawn the ``dkml-install-admin-runner.exe``
+   1. [``dkml-package-setup.bc``] Spawn the ``<package>-admin-runner.exe``
       executable as an elevated Unix process:
 
       .. code:: bash
 
          # If doas is available, especially for OpenBSD
-         doas dkml-install-admin-runner
+         doas <package>-admin-runner
          # If sudo is available
-         sudo dkml-install-admin-runner
+         sudo <package>-admin-runner
          # Otherwise use su
-         su root -c dkml-install-admin-runner
+         su root -c <package>-admin-runner
 
       or with a
       `Windows User Account Control Application Manifest <https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works#request-execution-levels>`_.
@@ -245,12 +245,12 @@ User runs the installer
 
       .. code:: powershell
 
-         Start-Process powershell -ArgumentList '& dkml-install-admin-runner.exe' -verb RunAs
+         Start-Process powershell -ArgumentList '& <package>-admin-runner.exe' -verb RunAs
 
-      The options given to ``dkml-install-admin-runner.exe`` were formulated
+      The options given to ``<package>-admin-runner.exe`` were formulated
       in an earlier step, plus an extra option is added for the location of
       the ``staging`` folder.
-   2. [``dkml-install-admin-runner.exe``] In topological order call each
+   2. [``<package>-admin-runner.exe``] In topological order call each
       component:
 
       .. code:: ocaml
@@ -262,11 +262,11 @@ User runs the installer
    <end_user_installation_prefix>.
 8. [``dkml-package-setup.bc``] **USER_INSTALL phase**:
 
-   1. [``dkml-package-setup.bc``] Spawn ``dkml-install-user-runner.exe``
+   1. [``dkml-package-setup.bc``] Spawn ``<package>-user-runner.exe``
       with the options formulated
       in an earlier step, plus an option for the location of the ``staging``
       folder.
-   2. [``dkml-install-user-runner.exe``] In topological order call each
+   2. [``<package>-user-runner.exe``] In topological order call each
       component like:
 
       .. code:: ocaml

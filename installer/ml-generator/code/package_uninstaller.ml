@@ -12,6 +12,7 @@ let uninstall_cmd =
     Term.(
       const uninstall
       $ const (failwith "TEMPLATE: target_abi")
+      $ const Private_common.build_info
       $ const Private_common.program_name
       $ Dkml_package_console_common.package_args_t
           ~program_name:Private_common.program_name

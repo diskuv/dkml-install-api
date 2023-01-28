@@ -156,7 +156,7 @@ let elevated_cmd ~target_abi ~staging_files_source cmd =
         | Ok None | Error _ -> (
             match OS.Cmd.resolve (Cmd.v "su") with
             | Ok su ->
-                (* su -c "dkml-install-admin-runner ..." *)
+                (* su -c "<package>-admin-runner ..." *)
                 return Cmd.(su % "-c" % to_string cmd)
             | Error e ->
                 Dkml_install_runner.Error_handling.runner_fatal_log

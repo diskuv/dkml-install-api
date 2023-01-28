@@ -11,6 +11,7 @@ let setup_cmd =
     Term.(
       const setup
       $ const (failwith "TEMPLATE: target_abi")
+      $ const Private_common.build_info
       $ const Private_common.program_version
       $ const Private_common.organization
       $ const Private_common.program_name

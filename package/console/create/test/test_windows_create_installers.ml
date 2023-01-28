@@ -43,6 +43,7 @@ let () =
 let () =
   exit
     (Dkml_package_console_create.create_installers
+       { package_name = "package-name" }
        {
          legal_name = "Legal Name";
          common_name_full = "Common Name";

@@ -17,7 +17,7 @@ let (_ : string list) = Default_component_config.uninstall_depends_on
    Logging is configured just before this function is called through Cmdliner
    Term evaluation of `log_config`. If you don't see log statement, make
    sure the log statements are created inside (or after) `setup ...`. *)
-let uninstall target_abi program_name package_args : unit =
+let uninstall target_abi build_info program_name package_args : unit =
   let open Dkml_install_runner.Error_handling.Monad_syntax in
   (* deconstruct *)
   let prefix_opt, component_selector, staging_files_source, log_config =
@@ -59,7 +59,9 @@ let uninstall target_abi program_name package_args : unit =
       let* ec, fl =
         elevated_cmd ~target_abi ~staging_files_source
           Cmd.(
-            exe_cmd "dkml-install-admin-runner.exe"
+            exe_cmd
+              (build_info.Dkml_package_console_common.Author_types.package_name
+             ^ "-admin-runner.exe")
             % "uninstall-adminall"
             %% of_list (Array.to_list args))
       in
@@ -83,7 +85,7 @@ let uninstall target_abi program_name package_args : unit =
           let module Cfg = (val cfg : Component_config) in
           Dkml_package_console_common.spawn
             Cmd.(
-              exe_cmd "dkml-install-user-runner.exe"
+              exe_cmd (build_info.package_name ^ "-user-runner.exe")
               % ("uninstall-user-" ^ Cfg.component_name)
               %% of_list (Array.to_list args)))
     in

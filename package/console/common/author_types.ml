@@ -1,3 +1,7 @@
+type build_info = {
+  package_name : string;
+}
+
 type program_name = {
   name_full : string;
   name_camel_case_nospaces : string;

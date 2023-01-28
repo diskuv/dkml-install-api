@@ -55,8 +55,8 @@ The files will just be empty files.
   $ install -d _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs
   $ install -d _opam/share/dkml-component-offline-test-b/staging-files/darwin_arm64
   $ install -d _opam/share/dkml-component-offline-test-b/staging-files/darwin_x86_64
-  $ diskuvbox touch _opam/bin/dkml-install-admin-runner.exe
-  $ diskuvbox touch _opam/bin/dkml-install-user-runner.exe
+  $ diskuvbox touch _opam/bin/example-admin-runner.exe
+  $ diskuvbox touch _opam/bin/example-user-runner.exe
   $ diskuvbox touch _opam/share/dkml-component-offline-test-a/static-files/README.txt
   $ diskuvbox touch _opam/share/dkml-component-offline-test-a/static-files/icon.png
   $ diskuvbox touch _opam/share/dkml-component-offline-test-b/staging-files/generic/somecode-offline-test-b.bc
@@ -67,8 +67,8 @@ The files will just be empty files.
   $ diskuvbox tree --encoding UTF-8 -d 5 _opam
   _opam
   ├── bin/
-  │   ├── dkml-install-admin-runner.exe
-  │   └── dkml-install-user-runner.exe
+  │   ├── example-admin-runner.exe
+  │   └── example-user-runner.exe
   ├── lib/
   │   ├── dkml-component-offline-test-a/
   │   ├── dkml-component-offline-test-b/
@@ -156,6 +156,7 @@ called `create_installers.exe`:
   let () =
     exit
       (Dkml_package_console_create.create_installers
+         { package_name = "package-name" }
          {
            legal_name = "Legal Name";
            common_name_full = "Common Name";
@@ -319,10 +320,10 @@ into a temporary archive tree.
   │   │   │           └── icon.png
   │   │   ├── linux_x86_64/
   │   │   │   ├── bin/
-  │   │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   │   ├── dkml-package-entry.exe
-  │   │   │   │   └── dkml-package.bc
+  │   │   │   │   ├── dkml-package.bc
+  │   │   │   │   ├── package-name-admin-runner.exe
+  │   │   │   │   └── package-name-user-runner.exe
   │   │   │   ├── sg/
   │   │   │   │   └── offline-test-b/
   │   │   │   │       └── generic/
@@ -332,11 +333,11 @@ into a temporary archive tree.
   │   │   │           └── icon.png
   │   │   └── windows_x86_64/
   │   │       ├── bin/
-  │   │       │   ├── dkml-install-admin-runner.exe
-  │   │       │   ├── dkml-install-user-runner.exe
   │   │       │   ├── dkml-package-entry.exe
   │   │       │   ├── dkml-package-uninstall.exe
-  │   │       │   └── dkml-package.bc
+  │   │       │   ├── dkml-package.bc
+  │   │       │   ├── package-name-admin-runner.exe
+  │   │       │   └── package-name-user-runner.exe
   │   │       ├── sg/
   │   │       │   ├── offline-test-b/
   │   │       │   │   └── generic/
@@ -353,19 +354,19 @@ into a temporary archive tree.
   │       │           └── generic/
   │       ├── linux_x86_64/
   │       │   ├── bin/
-  │       │   │   ├── dkml-install-admin-runner.exe
-  │       │   │   ├── dkml-install-user-runner.exe
   │       │   │   ├── dkml-package-entry.exe
-  │       │   │   └── dkml-package.bc
+  │       │   │   ├── dkml-package.bc
+  │       │   │   ├── package-name-admin-runner.exe
+  │       │   │   └── package-name-user-runner.exe
   │       │   └── sg/
   │       │       └── offline-test-b/
   │       │           └── generic/
   │       └── windows_x86_64/
   │           ├── bin/
-  │           │   ├── dkml-install-admin-runner.exe
-  │           │   ├── dkml-install-user-runner.exe
   │           │   ├── dkml-package-entry.exe
-  │           │   └── dkml-package.bc
+  │           │   ├── dkml-package.bc
+  │           │   ├── package-name-admin-runner.exe
+  │           │   └── package-name-user-runner.exe
   │           └── sg/
   │               ├── offline-test-b/
   │               │   └── generic/
@@ -417,10 +418,10 @@ Sidenote:
   │   │   │           └── icon.png
   │   │   ├── linux_x86_64/
   │   │   │   ├── bin/
-  │   │   │   │   ├── dkml-install-admin-runner.exe
-  │   │   │   │   ├── dkml-install-user-runner.exe
   │   │   │   │   ├── dkml-package-entry.exe
-  │   │   │   │   └── dkml-package.bc
+  │   │   │   │   ├── dkml-package.bc
+  │   │   │   │   ├── package-name-admin-runner.exe
+  │   │   │   │   └── package-name-user-runner.exe
   │   │   │   ├── sg/
   │   │   │   │   └── offline-test-b/
   │   │   │   │       └── generic/
@@ -430,11 +431,11 @@ Sidenote:
   │   │   │           └── icon.png
   │   │   └── windows_x86_64/
   │   │       ├── bin/
-  │   │       │   ├── dkml-install-admin-runner.exe
-  │   │       │   ├── dkml-install-user-runner.exe
   │   │       │   ├── dkml-package-entry.exe
   │   │       │   ├── dkml-package-uninstall.exe
-  │   │       │   └── dkml-package.bc
+  │   │       │   ├── dkml-package.bc
+  │   │       │   ├── package-name-admin-runner.exe
+  │   │       │   └── package-name-user-runner.exe
   │   │       ├── sg/
   │   │       │   ├── offline-test-b/
   │   │       │   │   └── generic/
@@ -451,19 +452,19 @@ Sidenote:
   │       │           └── generic/
   │       ├── linux_x86_64/
   │       │   ├── bin/
-  │       │   │   ├── dkml-install-admin-runner.exe
-  │       │   │   ├── dkml-install-user-runner.exe
   │       │   │   ├── dkml-package-entry.exe
-  │       │   │   └── dkml-package.bc
+  │       │   │   ├── dkml-package.bc
+  │       │   │   ├── package-name-admin-runner.exe
+  │       │   │   └── package-name-user-runner.exe
   │       │   └── sg/
   │       │       └── offline-test-b/
   │       │           └── generic/
   │       └── windows_x86_64/
   │           ├── bin/
-  │           │   ├── dkml-install-admin-runner.exe
-  │           │   ├── dkml-install-user-runner.exe
   │           │   ├── dkml-package-entry.exe
-  │           │   └── dkml-package.bc
+  │           │   ├── dkml-package.bc
+  │           │   ├── package-name-admin-runner.exe
+  │           │   └── package-name-user-runner.exe
   │           └── sg/
   │               ├── offline-test-b/
   │               │   └── generic/
@@ -493,8 +494,8 @@ Sidenote:
   ./
   full-name-linux_x86_64-i-0.1.0/.archivetree
   full-name-linux_x86_64-i-0.1.0/bin/
-  full-name-linux_x86_64-i-0.1.0/bin/dkml-install-admin-runner.exe
-  full-name-linux_x86_64-i-0.1.0/bin/dkml-install-user-runner.exe
+  full-name-linux_x86_64-i-0.1.0/bin/dkml-package-entry.exe
+  full-name-linux_x86_64-i-0.1.0/bin/dkml-package.bc
 
   $ target/bundle-full-name-linux_x86_64-i.sh -o target/i -e .tar.gz tar --gzip
   $ tar tvfz target/i/full-name-linux_x86_64-i-0.1.0.tar.gz | tail -n5 | awk '{print $NF}' | sort
@@ -542,10 +543,10 @@ contents is exactly the same as the archive tree, except that
   st\offline-test-a\icon.png
   st\offline-test-a\README.txt
   bin\dkml-package.bc
-  bin\dkml-install-admin-runner.exe
-  bin\dkml-install-user-runner.exe
   setup.exe
   bin\dkml-package-uninstall.exe
+  bin\package-name-admin-runner.exe
+  bin\package-name-user-runner.exe
   vcruntime140.dll
   vcruntime140_1.dll
   vc_redist.dkml-target-abi.exe
@@ -570,9 +571,9 @@ contents is exactly the same as the archive tree, except that
   sg\staging-ocamlrun\windows_x86_64\bin\ocamlrun.exe
   sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll
   bin\dkml-package.bc
-  bin\dkml-install-admin-runner.exe
-  bin\dkml-install-user-runner.exe
   uninstall.exe
+  bin\package-name-admin-runner.exe
+  bin\package-name-user-runner.exe
   vcruntime140.dll
   vcruntime140_1.dll
   vc_redist.dkml-target-abi.exe

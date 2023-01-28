@@ -1,5 +1,7 @@
 open Dkml_package_console_common
 
+let build_info = { Author_types.package_name = "example" }
+
 let organization =
   {
     Author_types.legal_name = "Example LLC";

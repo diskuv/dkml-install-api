@@ -40,6 +40,13 @@ val box_err : string -> 'a
 (** {1 Author Supplied Types} *)
 
 module Author_types : sig
+  (** The type of build information.
+      
+      [package_name] - Which opam package the program will be generated from *)
+  type build_info = {
+    package_name : string;
+  }
+  
   type program_name = {
     name_full : string;
     name_camel_case_nospaces : string;

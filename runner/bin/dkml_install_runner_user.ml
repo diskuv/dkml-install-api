@@ -38,7 +38,7 @@ let component_cmds ~reg ~target_abi =
      in
      return (install_user_cmds @ uninstall_user_cmds))
 
-let main ~target_abi ~program_version =
+let main ~target_abi ~package_name ~program_version =
   (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
      reset the logger to what was given on the command line. *)
   let (_ : Log_config.t) =
@@ -58,7 +58,8 @@ let main ~target_abi ~program_version =
          let open Cmd in
          eval ~catch:false
          @@ group
-              (info "dkml-install-user-runner" ~version:program_version ~doc
-                 ~sdocs ~man:help_secs)
+              (info
+                 (package_name ^ "-user-runner")
+                 ~version:program_version ~doc ~sdocs ~man:help_secs)
               ~default:(default_cmd ())
               (help_cmd :: component_cmds ~reg ~target_abi)))

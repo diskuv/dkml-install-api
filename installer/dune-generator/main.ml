@@ -38,7 +38,7 @@ let write_dune_inc fmt ~output_rel dune_inc =
   Fmt.pf fmt "%a@\n" Fmt.(list ~sep:(any "@\n@\n") Sexp.pp_hum) dune_inc;
   Format.pp_print_flush fmt ()
 
-let main () project_root corrected =
+let main () project_root package_name corrected =
   let components = Common_installer_generator.ocamlfind () in
   let dkml_components = List.map (fun s -> "dkml-component-" ^ s) components in
   let project_rel_dir = project_rel_dir project_root in
@@ -75,7 +75,7 @@ let main () project_root corrected =
           ];
         executable
           [
-            public_name "dkml-install-user-runner";
+            public_name (package_name ^ "-user-runner");
             name "runner_user";
             modules [ "runner_user" ];
             ocamlopt_flags
@@ -90,7 +90,7 @@ let main () project_root corrected =
           ];
         executable
           [
-            public_name "dkml-install-admin-runner";
+            public_name (package_name ^ "-admin-runner");
             name "runner_admin";
             modules [ "runner_admin" ];
             ocamlopt_flags
@@ -105,7 +105,7 @@ let main () project_root corrected =
           ];
         executable
           [
-            public_name "dkml-install-create-installers";
+            public_name (package_name ^ "-create-installers");
             name "create_installers";
             libraries
               ([ "dkml-package-console.create"; "cmdliner"; "private_common" ]
@@ -114,7 +114,7 @@ let main () project_root corrected =
           ];
         executable
           [
-            public_name "dkml-install-package-install";
+            public_name (package_name ^ "-package-install");
             name "entry_install";
             libraries
               ([ "dkml-package-console.entry"; "cmdliner"; "private_common" ]
@@ -129,7 +129,7 @@ let main () project_root corrected =
           ];
         executable
           [
-            public_name "dkml-install-package-uninstall";
+            public_name (package_name ^ "-package-uninstall");
             name "entry_uninstall";
             libraries
               ([ "dkml-package-console.entry"; "cmdliner"; "private_common" ]
@@ -264,6 +264,10 @@ let project_root_t =
   let doc = "" in
   Arg.(required & opt (some dir) None & info ~doc [ "project-root" ])
 
+let package_name_t =
+  let doc = "" in
+  Arg.(required & opt (some dir) None & info ~doc [ "package-name" ])
+
 let setup_log style_renderer level =
   Fmt_tty.setup_std_outputs ?style_renderer ();
   Logs.set_level level;
@@ -272,7 +276,9 @@ let setup_log style_renderer level =
 let setup_log_t =
   Term.(const setup_log $ Fmt_cli.style_renderer () $ Logs_cli.level ())
 
-let main_t = Term.(const main $ setup_log_t $ project_root_t $ corrected_t)
+let main_t =
+  Term.(
+    const main $ setup_log_t $ project_root_t $ package_name_t $ corrected_t)
 
 let () =
   let doc =
