@@ -337,7 +337,7 @@ module type Intf = sig
           % Fpath.to_string
               (ctx.Context.path_eval "%{_:share}%/generic/your_bytecode.bc")
           (* Pass --verbosity and --color to your bytecode *)
-          %% Log_config.to_args ctx.Context.log_config)
+          %% of_list (Array.to_list (Log_config.to_args ctx.Context.log_config)))
 
     let () =
       let reg = Component_registry.get () in
