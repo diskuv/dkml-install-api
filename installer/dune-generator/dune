@@ -1,14 +1,21 @@
-(executable
+(library
+ (name dune_sexp)
+ (modules dune_sexp)
+ (libraries 
+  sexplib0))
+
+(executables
  (package dkml-install-installer)
- (name main)
- (public_name dune-of-installer-generator)
+ (names package_main common_main)
+ (modules package_main common_main)
+ (public_names package-dune-of-installer-generator common-dune-of-installer-generator)
  (libraries
   bos
   cmdliner
   common_installer_generator
+  dune_sexp
   fmt.cli
   fmt.tty
   fpath
   logs.cli
-  logs.fmt
-  sexplib0))
+  logs.fmt))

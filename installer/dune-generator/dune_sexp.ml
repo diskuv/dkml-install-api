@@ -13,6 +13,7 @@ let destination_file ~filename ~destination =
   List [ Atom filename; Atom "as"; Atom destination ]
 
 let executable l = List ([ Atom "executable" ] @ l)
+let package = _arg_of_string "package"
 let deps l = List ([ Atom "deps" ] @ l)
 let action l = List ([ Atom "action" ] @ l)
 let progn l = List ([ Atom "progn" ] @ l)
