@@ -36,11 +36,10 @@ let generate_installer_from_archive_dir ~install_direction ~archive_dir
   return !uninstallers
 
 let create_forone_abi ~abi_selector ~install_component_names
-    ~uninstall_component_names ~build_info ~organization ~program_name
-    ~program_version ~program_info ~opam_context ~work_dir ~target_dir
-    ~runner_admin_exe ~runner_user_exe ~packager_install_exe
-    ~packager_uninstall_exe ~packager_setup_bytecode
-    ~packager_uninstaller_bytecode =
+    ~uninstall_component_names ~organization ~program_name ~program_version
+    ~program_info ~opam_context ~work_dir ~target_dir ~runner_admin_exe
+    ~runner_user_exe ~packager_install_exe ~packager_uninstall_exe
+    ~packager_setup_bytecode ~packager_uninstaller_bytecode =
   let abi = Dkml_install_runner.Path_location.show_abi_selector abi_selector in
   (* Get Opam sources *)
   let* opam_staging_files_source, _fl =
@@ -68,9 +67,7 @@ let create_forone_abi ~abi_selector ~install_component_names
     (* Copy non-component files into archive *)
     Logs.debug (fun l -> l "Copying non-component files into archive tree");
     Populate_archive.populate_archive ~archive_dir ~abi_selector
-      ~runner_admin_exe ~runner_user_exe ~packager_entry_exe ~packager_bytecode
-      ~package_name:
-        build_info.Dkml_package_console_common.Author_types.package_name;
+      ~runner_admin_exe ~runner_user_exe ~packager_entry_exe ~packager_bytecode;
     (* Get archive destinations.
 
        The destinations are nothing more than a *_files_source which
@@ -151,11 +148,11 @@ let create_forone_abi ~abi_selector ~install_component_names
   in
   return ()
 
-let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) build_info
-    organization program_name program_info program_version component_list
-    work_dir target_dir opam_context abis runner_admin_exe runner_user_exe
-    packager_install_exe packager_uninstall_exe packager_setup_bytecode
-    packager_uninstaller_bytecode =
+let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) organization
+    program_name program_info program_version component_list work_dir target_dir
+    opam_context abis runner_admin_exe runner_user_exe packager_install_exe
+    packager_uninstall_exe packager_setup_bytecode packager_uninstaller_bytecode
+    =
   (* Get component plugins; logging already setup *)
   let reg = Dkml_install_register.Component_registry.get () in
   (* Get component names.
@@ -218,7 +215,7 @@ let create_forall_abi (_log_config : Dkml_install_api.Log_config.t) build_info
       ~fl:Dkml_install_runner.Error_handling.runner_fatal_log
       (fun abi_selector ->
         create_forone_abi ~abi_selector ~install_component_names
-          ~uninstall_component_names ~build_info ~organization ~program_name
+          ~uninstall_component_names ~organization ~program_name
           ~program_version ~program_info ~opam_context
           ~work_dir:(Fpath.v work_dir) ~target_dir:(Fpath.v target_dir)
           ~runner_admin_exe:(Fpath.v runner_admin_exe)
@@ -372,15 +369,15 @@ let component_list_t =
     The generic .tar.gz "installer" is likely unusable since it will not have
     any ABI specific files.
 *)
-let create_installers build_info organization program_name program_info =
+let create_installers organization program_name program_info =
   let t =
     Term.(
       const create_forall_abi $ Dkml_install_runner.Cmdliner_runner.setup_log_t
-      $ const build_info $ const organization $ const program_name
-      $ const program_info $ program_version_t $ component_list_t $ work_dir_t
-      $ target_dir_t $ opam_context_t $ abis_t $ runner_admin_exe_t
-      $ runner_user_exe_t $ entry_install_exe_t $ entry_uninstall_exe_t
-      $ setup_bytecode_t $ uninstaller_bytecode_t)
+      $ const organization $ const program_name $ const program_info
+      $ program_version_t $ component_list_t $ work_dir_t $ target_dir_t
+      $ opam_context_t $ abis_t $ runner_admin_exe_t $ runner_user_exe_t
+      $ entry_install_exe_t $ entry_uninstall_exe_t $ setup_bytecode_t
+      $ uninstaller_bytecode_t)
   in
   Dkml_install_runner.Cmdliner_runner.eval_progress
     Cmd.(v (info ~version:"%%VERSION%%" "dkml-install-create-installers") t)
