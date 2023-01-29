@@ -1,6 +1,5 @@
 val setup :
   Dkml_install_api.Context.Abi_v2.t ->
-  Dkml_package_console_common.Author_types.build_info ->
   string ->
   Dkml_package_console_common.Author_types.organization ->
   Dkml_package_console_common.Author_types.program_name ->
