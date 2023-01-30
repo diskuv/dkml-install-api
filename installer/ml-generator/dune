@@ -1,14 +1,3 @@
-(executable
- (package dkml-install-installer)
- (name main)
- (public_name ml-of-installer-generator)
- (libraries
-  bos
-  cmdliner
-  common_installer_generator
-  dkml-install-runner
-  ml_of_installer_generator_lib))
-
 (rule
  (deps
   (glob_files code/*.ml)
@@ -16,3 +5,33 @@
  (target code.ml)
  (action
   (run ocaml-crunch -m plain -e ml -e manifest -o %{target} code/)))
+
+(library
+ (name code)
+ (modules code))
+
+(executable
+ (package dkml-install-installer)
+ (public_name common-ml-of-installer-generator)
+ (name common_main)
+ (modules common_main)
+ (libraries
+  bos
+  cmdliner
+  code
+  common_installer_generator
+  dkml-install-runner
+  ml_of_installer_generator_lib))
+
+(executable
+ (package dkml-install-installer)
+ (public_name package-ml-of-installer-generator)
+ (name package_main)
+ (modules package_main)
+ (libraries
+  bos
+  cmdliner
+  code
+  common_installer_generator
+  dkml-install-runner
+  ml_of_installer_generator_lib))

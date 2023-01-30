@@ -7,7 +7,7 @@ let copy_as_is file =
   let content =
     match Code.read file with
     | Some x -> x
-    | None -> failwith (Fmt.str "No %s in crunched code.ml" file)
+    | None -> failwith (Fmt.str "No %s in crunched common_code.ml" file)
   in
   Dkml_install_runner.Error_handling.continue_or_exit
   @@ Dkml_install_runner.Error_handling.map_rresult_error_to_progress
@@ -37,13 +37,6 @@ let main () =
      copy_as_is "discover.ml";
      copy_as_is "entry-application.manifest";
      copy ~target_abi ~components "entry_assembly_manifest.ml";
-     copy ~target_abi ~components "entry_install.ml";
-     copy ~target_abi ~components "entry_uninstall.ml";
-     copy ~target_abi ~components "create_installers.ml";
-     copy ~target_abi ~components "runner_admin.ml";
-     copy ~target_abi ~components "runner_user.ml";
-     copy ~target_abi ~components "package_setup.ml";
-     copy ~target_abi ~components "package_uninstaller.ml";
      return ())
 
 let main_t = Term.(const main $ const ())
@@ -56,4 +49,4 @@ let () =
     (Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"878ee300"
        (fun () ->
          Cmd.(
-           eval ~catch:false (v (info "ml-of-installer-generator" ~doc) main_t))))
+           eval ~catch:false (v (info "common-ml-of-installer-generator" ~doc) main_t))))
