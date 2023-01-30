@@ -171,6 +171,7 @@ let main () project_root package_name common_dir corrected =
         install
           [
             section "bin";
+            package package_name;
             files
               [
                 (* Bytecode is not automatically installed.
