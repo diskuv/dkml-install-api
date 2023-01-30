@@ -100,7 +100,7 @@ let uninstall_all_cmd ~reg ~target_abi =
     ~install_direction:Dkml_install_runner.Path_eval.Global_context.Uninstall
     (uninstall_admin_cmds ~reg ~target_abi)
 
-let main ~target_abi ~package_name ~program_version =
+let main ~target_abi ~program_version =
   (* Initial logger. Cmdliner evaluation of setup_log_t (through ctx_t) will
      reset the logger to what was given on the command line. *)
   let (_ : Log_config.t) =
@@ -125,9 +125,8 @@ let main ~target_abi ~package_name ~program_version =
                any individual component can be installed and uninstalled
                by invoking the individual subcommand. *)
          group
-           (info
-              (package_name ^ "-admin-runner")
-              ~version:program_version ~doc ~sdocs ~man:help_secs)
+           (info "dkml-install-admin-runner" ~version:program_version ~doc
+              ~sdocs ~man:help_secs)
            ~default:(default_cmd ())
            (help_cmd
             :: install_all_cmd ~reg ~target_abi ~program_version
