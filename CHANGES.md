@@ -3,6 +3,7 @@
 ## 0.4.0
 
 * Switch to cmdliner.1.1.1 from cmdliner.1.0.4 in the API
+* Support OCaml 5.1.0
 * Require `--package-name` to distinguish multiple installers in the same
   project
 

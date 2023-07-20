@@ -31,8 +31,7 @@
  (libraries dkml-install-runner.admin))
 
 (rule
- (alias runtest)
- (package dkml-install-runner)
+;  (package dkml-install-runner)
  (target validate_user.dlls.txt.corrected)
  (deps
   (:bc validate_user.bc))
@@ -44,16 +43,13 @@
     (run ocamlobjinfo %{bc}))
    (with-stdout-to
     %{target}
-    (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
-   (diff validate_user.dlls.txt %{target}))))
+    (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info)))))
 
 (rule
- (alias runtest)
- (package dkml-install-runner)
+;  (package dkml-install-runner)
  (target validate_admin.dlls.txt.corrected)
  (deps
   (:bc validate_admin.bc))
- ; (enabled_if (<> %{os_type} Win32))
  (action
   (progn
    (with-stdout-to
@@ -61,5 +57,33 @@
     (run ocamlobjinfo %{bc}))
    (with-stdout-to
     %{target}
-    (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info))
-   (diff validate_admin.dlls.txt %{target}))))
+    (run awk "/.*:/ {x=0} /Used DLLs:/{x=1} x==1 {print}" %{target}.info)))))
+
+(rule
+ (alias runtest)
+ (package dkml-install-runner)
+ (enabled_if (< %{ocaml_version} 5.1.0))
+ (action
+   (diff validate_user_pre51.dlls.txt validate_user.dlls.txt.corrected)))
+
+(rule
+ (alias runtest)
+ (package dkml-install-runner)
+ (enabled_if (< %{ocaml_version} 5.1.0))
+ (action
+   (diff validate_admin_pre51.dlls.txt validate_admin.dlls.txt.corrected)))
+
+(rule
+ (alias runtest)
+ (package dkml-install-runner)
+ (enabled_if (>= %{ocaml_version} 5.1.0))
+ (action
+   (diff validate_user_51.dlls.txt validate_user.dlls.txt.corrected)))
+
+(rule
+ (alias runtest)
+ (package dkml-install-runner)
+ (enabled_if (>= %{ocaml_version} 5.1.0))
+ (action
+   (diff validate_admin_51.dlls.txt validate_admin.dlls.txt.corrected)))
+
