@@ -74,12 +74,20 @@ called ``create_installers.exe``:
     :start-after: [what_are_components]
     :end-before:  [what_are_components]
 
-If this were not a demonstration, all your components would be dynamically
-probed from your Opam directory structure using the Dune Site plugin:
-https://dune.readthedocs.io/en/latest/sites.html#plugins-and-dynamic-loading-of-packages
+You can see a real "curl" component at
+https://github.com/diskuv/dkml-component-curl/tree/40a6484a3fe3636d02b3c1ead41ad8c6d97dc449
 
-You can see a real component at:
-https://github.com/diskuv/dkml-component-curl/blob/1cbecbaf7252e1fbe2ee5f56805fcf03e34fb4b6/src/buildtime_installer/dkml_component_staging_curl.ml
+In particular:
+
+* ``dkml-component-staging-curl.opam`` will download a ``curl`` executable for
+  Windows and stage it for installation on the end-user machine.
+* ``src/buildtime_installer/dkml_component_staging_curl.ml`` defines the
+  component. It tells DkML Install API that it needs to run code during
+  installation for Unix machines only.
+* ``src/installtime_enduser/unix/unix_install.ml`` is code that runs on the
+  end-user machine during installation, if and only if it is Unix. It creates
+  a symlink in a well-known location pointing to whichever ``curl`` is found in
+  the PATH during installation.
 
 --------------------------------------------------------------------------------
 Use the generated ``create_installers.exe``

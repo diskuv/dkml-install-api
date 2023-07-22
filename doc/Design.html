@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Design &mdash; DKML Install API  documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -79,17 +80,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="design">
+  <section id="design">
 <h1>Design<a class="headerlink" href="#design" title="Permalink to this heading"></a></h1>
-<div class="section" id="goals">
+<section id="goals">
 <h2>Goals<a class="headerlink" href="#goals" title="Permalink to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p>Re-use existing installation software when it is available.</p></li>
 <li><p>Avoid lock-in to any existing installation software.</p></li>
 <li><p>Use OCaml as much as possible.</p></li>
 </ol>
-</div>
-<div class="section" id="terms">
+</section>
+<section id="terms">
 <h2>Terms<a class="headerlink" href="#terms" title="Permalink to this heading"></a></h2>
 <dl>
 <dt>Packaging</dt><dd><p>The procedure for taking source code, doing some compiling and other
@@ -124,10 +125,10 @@ for a component, we’ll be calling that the OPAM_BUILD phase</p>
 for a component, we’ll be calling that the OPAM_INSTALL Phase</p>
 </dd>
 </dl>
-</div>
-<div class="section" id="packaging-flow">
+</section>
+<section id="packaging-flow">
 <h2>Packaging Flow<a class="headerlink" href="#packaging-flow" title="Permalink to this heading"></a></h2>
-<div class="section" id="creating-the-installer-package">
+<section id="creating-the-installer-package">
 <h3>Creating the installer package<a class="headerlink" href="#creating-the-installer-package" title="Permalink to this heading"></a></h3>
 <p>The installer can be generated directly using:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>opam switch create installer-<span class="nv">$INSTALLERNAME</span> --empty
@@ -203,8 +204,8 @@ rsync -a <span class="nv">$OPAM_SWITCH_PREFIX</span>/share/<span class="nv">$C</
 <li><p>Create
 <a class="reference external" href="https://dune.readthedocs.io/en/stable/sites.html#plugins-and-dynamic-loading-of-packages">dune_site plugin loader</a>-based executables
 named <code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>, <code class="docutils literal notranslate"><span class="pre">dkml-package-uninstaller.bc</span></code>,
-<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and
-<code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code> that will perform the steps in
+<code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-user-runner.exe</span></code> and
+<code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-admin-runner.exe</span></code> that will perform the steps in
 <a class="reference internal" href="#userphases"><span class="std std-ref">User runs the installer</span></a></p></li>
 <li><p>The last step depends on what type of installer
 generator has been configured. <em>As of Apr 2022 only the Console
@@ -219,7 +220,7 @@ into the <code class="docutils literal notranslate"><span class="pre">static</sp
 <p>All of the <code class="docutils literal notranslate"><span class="pre">$OPAM_SWITCH_PREFIX/share/$I/staging-files/</span></code> will go
 into the <code class="docutils literal notranslate"><span class="pre">staging</span></code> top-level folder of the <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>, <code class="docutils literal notranslate"><span class="pre">dkml-package-uninstaller.bc</span></code>,
-<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
+<code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-user-runner.exe</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-admin-runner.exe</span></code>
 executables will be placed in the root of the
 <code class="docutils literal notranslate"><span class="pre">$I.zip</span></code> archive.</p>
 </dd>
@@ -235,8 +236,8 @@ configure than 0install.</p>
 </dl>
 </li>
 </ol>
-</div>
-<div class="section" id="user-runs-the-installer">
+</section>
+<section id="user-runs-the-installer">
 <span id="userphases"></span><h3>User runs the installer<a class="headerlink" href="#user-runs-the-installer" title="Permalink to this heading"></a></h3>
 <ol class="arabic">
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>] Load all the components with
@@ -254,7 +255,7 @@ Some components may have
 configuration that lets them display text (ex. license) or ask more
 questions.</p></li>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>] Formulate command line options for
-<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and  <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
+<code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-user-runner.exe</span></code> and  <code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-admin-runner.exe</span></code>
 that correspond to the end-user selections. By default the staging directory
 will be the <code class="docutils literal notranslate"><span class="pre">staging</span></code> directory that is in the same directory as
 <code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>. The same command line options
@@ -265,7 +266,7 @@ will be used in both executables.</p>
 “selections” artifact created by the Console Installer or GUI installer
 to describe the end-user choices. And there needs to be some mapping
 from that “selections” artifact into command line options for
-<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code> and  <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>.
+<code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-user-runner.exe</span></code> and  <code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-admin-runner.exe</span></code>.
 And each component should be able to influence how that selections artifact
 is created.</p>
 <p>A good start is by analogy to cross-platform UI component design, where
@@ -289,27 +290,27 @@ needs administrative/root privileges. The check will be like:</p>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>] <strong>ADMIN_INSTALL phase</strong> If there are any
 components that needs administrative/root privileges, then:</p>
 <ol class="arabic">
-<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>] Spawn the <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>] Spawn the <code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-admin-runner.exe</span></code>
 executable as an elevated Unix process:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># If doas is available, especially for OpenBSD</span>
-doas dkml-install-admin-runner
+doas &lt;package&gt;-admin-runner
 <span class="c1"># If sudo is available</span>
-sudo dkml-install-admin-runner
+sudo &lt;package&gt;-admin-runner
 <span class="c1"># Otherwise use su</span>
-su root -c dkml-install-admin-runner
+su root -c &lt;package&gt;-admin-runner
 </pre></div>
 </div>
 <p>or with a
 <a class="reference external" href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works#request-execution-levels">Windows User Account Control Application Manifest</a>.</p>
 <p>An alternative for Windows is to use PowerShell to ask for Administrative privileges:</p>
-<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">Start-Process</span> <span class="n">powershell</span> <span class="n">-ArgumentList</span> <span class="s1">&#39;&amp; dkml-install-admin-runner.exe&#39;</span> <span class="n">-verb</span> <span class="n">RunAs</span>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="nb">Start-Process</span> <span class="n">powershell</span> <span class="n">-ArgumentList</span> <span class="s1">&#39;&amp; &lt;package&gt;-admin-runner.exe&#39;</span> <span class="n">-verb</span> <span class="n">RunAs</span>
 </pre></div>
 </div>
-<p>The options given to <code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code> were formulated
+<p>The options given to <code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-admin-runner.exe</span></code> were formulated
 in an earlier step, plus an extra option is added for the location of
 the <code class="docutils literal notranslate"><span class="pre">staging</span></code> folder.</p>
 </li>
-<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-admin-runner.exe</span></code>] In topological order call each
+<li><p>[<code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-admin-runner.exe</span></code>] In topological order call each
 component:</p>
 <div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Component</span><span class="p">.</span><span class="n">run_as_admin</span> <span class="s2">&quot;&lt;end_user_installation_prefix&gt;&quot;</span>
 </pre></div>
@@ -322,11 +323,11 @@ the <code class="docutils literal notranslate"><span class="pre">static/$C</span
 &lt;end_user_installation_prefix&gt;.</p></li>
 <li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>] <strong>USER_INSTALL phase</strong>:</p>
 <ol class="arabic">
-<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>] Spawn <code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-package-setup.bc</span></code>] Spawn <code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-user-runner.exe</span></code>
 with the options formulated
 in an earlier step, plus an option for the location of the <code class="docutils literal notranslate"><span class="pre">staging</span></code>
 folder.</p></li>
-<li><p>[<code class="docutils literal notranslate"><span class="pre">dkml-install-user-runner.exe</span></code>] In topological order call each
+<li><p>[<code class="docutils literal notranslate"><span class="pre">&lt;package&gt;-user-runner.exe</span></code>] In topological order call each
 component like:</p>
 <div class="highlight-ocaml notranslate"><div class="highlight"><pre><span></span><span class="nn">Component</span><span class="p">.</span><span class="n">run_as_user</span> <span class="s2">&quot;&lt;end_user_installation_prefix&gt;&quot;</span>
 </pre></div>
@@ -335,9 +336,9 @@ component like:</p>
 </ol>
 </li>
 </ol>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
            </div>

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Writing Components &mdash; DKML Install API  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -83,9 +84,9 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="writing-components">
+  <section id="writing-components">
 <span id="writingcomponents"></span><h1>Writing Components<a class="headerlink" href="#writing-components" title="Permalink to this heading"></a></h1>
-<div class="section" id="introduction">
+<section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading"></a></h2>
 <p>You first decision will be how to break your installation into one or more
 components.</p>
@@ -195,8 +196,8 @@ have only limited access to external OCaml libraries. See
 </div>
 </dd>
 </dl>
-</div>
-<div class="section" id="configuration-module">
+</section>
+<section id="configuration-module">
 <span id="configurationmodule"></span><h2>Configuration Module<a class="headerlink" href="#configuration-module" title="Permalink to this heading"></a></h2>
 <p>Configuration functions can only access:
 * the OCaml Stdlib
@@ -213,8 +214,8 @@ phase so you can run any bytecode executables you have placed in
 <code class="docutils literal notranslate"><span class="pre">&lt;share&gt;/staging-files/</span></code>, or compile new native executables on the end-users
 machine. Just declare a dependency on them using the instructions in their
 documentation.</p>
-</div>
-<div class="section" id="staging-files">
+</section>
+<section id="staging-files">
 <span id="stagingfiles"></span><h2>Staging Files<a class="headerlink" href="#staging-files" title="Permalink to this heading"></a></h2>
 <p>As a Component author you should
 <strong>only create bytecode executables with no C stubs</strong>
@@ -296,12 +297,12 @@ not Windows. In fact, using <code class="docutils literal notranslate"><span cla
 <p>The use of a Opam operating system selector like <code class="docutils literal notranslate"><span class="pre">{os</span> <span class="pre">=</span> <span class="pre">&quot;win32&quot;}</span></code> means
 that Linux or macOS build machines cannot cross-compile to Windows. Instead,
 have your build machines compile into as many architectures as it supports.</p>
-</div>
-<div class="section" id="static-files">
+</section>
+<section id="static-files">
 <span id="staticfiles"></span><h2>Static Files<a class="headerlink" href="#static-files" title="Permalink to this heading"></a></h2>
 <p>Any static file will go straight into the end-user installation directory.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Console Packager &mdash; DKML Install API  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -78,16 +79,16 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="console-packager">
+  <section id="console-packager">
 <h1>Console Packager<a class="headerlink" href="#console-packager" title="Permalink to this heading"></a></h1>
 <p>The goal of this chapter is to demonstrate how archives are created, and
 specifically how self-extracting archives work on Windows.</p>
-<div class="sidebar">
+<aside class="sidebar">
 <p class="sidebar-title">Source Code</p>
 <p>The <a class="reference external" href="https://github.com/diskuv/dkml-install-api/blob/main/package/console/create/test/test_windows_create_installers.t">test_windows_create_installers.t</a>
 CRAM test script is the source of code examples in this chapter.</p>
-</div>
-<div class="section" id="generating-the-installer-starts-with-an-opam-switch">
+</aside>
+<section id="generating-the-installer-starts-with-an-opam-switch">
 <h2>Generating the installer starts with an Opam switch<a class="headerlink" href="#generating-the-installer-starts-with-an-opam-switch" title="Permalink to this heading"></a></h2>
 <p>We’ll just mimic an Opam switch by creating a directory structure and some
 files.</p>
@@ -108,8 +109,8 @@ generate those two files for us.</p>
 <span class="gp">  $ </span>install -d _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs
 <span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test-b/staging-files/darwin_arm64
 <span class="gp">  $ </span>install -d _opam/share/dkml-component-offline-test-b/staging-files/darwin_x86_64
-<span class="gp">  $ </span>diskuvbox touch _opam/bin/dkml-install-admin-runner.exe
-<span class="gp">  $ </span>diskuvbox touch _opam/bin/dkml-install-user-runner.exe
+<span class="gp">  $ </span>diskuvbox touch _opam/bin/example-admin-runner.exe
+<span class="gp">  $ </span>diskuvbox touch _opam/bin/example-user-runner.exe
 <span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test-a/static-files/README.txt
 <span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test-a/static-files/icon.png
 <span class="gp">  $ </span>diskuvbox touch _opam/share/dkml-component-offline-test-b/staging-files/generic/somecode-offline-test-b.bc
@@ -120,8 +121,8 @@ generate those two files for us.</p>
 <span class="gp">  $ </span>diskuvbox tree --encoding UTF-8 -d <span class="m">5</span> _opam
 <span class="go">  _opam</span>
 <span class="go">  ├── bin/</span>
-<span class="go">  │   ├── dkml-install-admin-runner.exe</span>
-<span class="go">  │   └── dkml-install-user-runner.exe</span>
+<span class="go">  │   ├── example-admin-runner.exe</span>
+<span class="go">  │   └── example-user-runner.exe</span>
 <span class="go">  ├── lib/</span>
 <span class="go">  │   ├── dkml-component-offline-test-a/</span>
 <span class="go">  │   ├── dkml-component-offline-test-b/</span>
@@ -146,8 +147,8 @@ generate those two files for us.</p>
 <span class="go">                  └── lib/</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="what-are-these-components">
+</section>
+<section id="what-are-these-components">
 <h2>What are these components?<a class="headerlink" href="#what-are-these-components" title="Permalink to this heading"></a></h2>
 <p>In a typical graphical desktop installer, you are able to select which pieces of
 an application are installed on your machine. For example, a Git installer
@@ -217,46 +218,53 @@ called <code class="docutils literal notranslate"><span class="pre">create_insta
   
         <span class="c">(* During installation test-b needs test-a *)</span>
         <span class="k">let</span> <span class="n">install_depends_on</span> <span class="o">=</span> <span class="o">[</span> <span class="s2">&quot;staging-ocamlrun&quot;</span><span class="o">;</span> <span class="s2">&quot;offline-test-a&quot;</span> <span class="o">]</span>
-  
         <span class="k">let</span> <span class="n">uninstall_depends_on</span> <span class="o">=</span> <span class="bp">[]</span>
       <span class="k">end</span><span class="o">)</span>
   
   <span class="c">(* Let&#39;s also create an entry point for `create_installers.exe` *)</span>
   <span class="k">let</span> <span class="bp">()</span> <span class="o">=</span>
-    <span class="nn">Term</span><span class="p">.</span><span class="o">(</span>
-      <span class="n">exit</span>
-      <span class="o">@@</span> <span class="nn">Dkml_package_console_create</span><span class="p">.</span><span class="n">create_installers</span>
-           <span class="o">{</span>
-             <span class="n">legal_name</span> <span class="o">=</span> <span class="s2">&quot;Legal Name&quot;</span><span class="o">;</span>
-             <span class="n">common_name_full</span> <span class="o">=</span> <span class="s2">&quot;Common Name&quot;</span><span class="o">;</span>
-             <span class="n">common_name_camel_case_nospaces</span> <span class="o">=</span> <span class="s2">&quot;CommonName&quot;</span><span class="o">;</span>
-             <span class="n">common_name_kebab_lower_case</span> <span class="o">=</span> <span class="s2">&quot;common-name&quot;</span><span class="o">;</span>
-           <span class="o">}</span>
-           <span class="o">{</span>
-             <span class="n">name_full</span> <span class="o">=</span> <span class="s2">&quot;Full Name&quot;</span><span class="o">;</span>
-             <span class="n">name_camel_case_nospaces</span> <span class="o">=</span> <span class="s2">&quot;FullName&quot;</span><span class="o">;</span>
-             <span class="n">name_kebab_lower_case</span> <span class="o">=</span> <span class="s2">&quot;full-name&quot;</span><span class="o">;</span>
-             <span class="n">installation_prefix_camel_case_nospaces_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
-             <span class="n">installation_prefix_kebab_lower_case_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
-           <span class="o">}</span>
-           <span class="o">{</span>
-             <span class="n">url_info_about_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
-             <span class="n">url_update_info_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
-             <span class="n">help_link_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
-             <span class="n">estimated_byte_size_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
-             <span class="n">windows_language_code_id_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
-             <span class="n">embeds_32bit_uninstaller</span> <span class="o">=</span> <span class="bp">true</span><span class="o">;</span>
-             <span class="n">embeds_64bit_uninstaller</span> <span class="o">=</span> <span class="bp">true</span><span class="o">;</span>
-           <span class="o">})</span>
+    <span class="n">exit</span>
+      <span class="o">(</span><span class="nn">Dkml_package_console_create</span><span class="p">.</span><span class="n">create_installers</span>
+         <span class="o">{</span>
+           <span class="n">legal_name</span> <span class="o">=</span> <span class="s2">&quot;Legal Name&quot;</span><span class="o">;</span>
+           <span class="n">common_name_full</span> <span class="o">=</span> <span class="s2">&quot;Common Name&quot;</span><span class="o">;</span>
+           <span class="n">common_name_camel_case_nospaces</span> <span class="o">=</span> <span class="s2">&quot;CommonName&quot;</span><span class="o">;</span>
+           <span class="n">common_name_kebab_lower_case</span> <span class="o">=</span> <span class="s2">&quot;common-name&quot;</span><span class="o">;</span>
+         <span class="o">}</span>
+         <span class="o">{</span>
+           <span class="n">name_full</span> <span class="o">=</span> <span class="s2">&quot;Full Name&quot;</span><span class="o">;</span>
+           <span class="n">name_camel_case_nospaces</span> <span class="o">=</span> <span class="s2">&quot;FullName&quot;</span><span class="o">;</span>
+           <span class="n">name_kebab_lower_case</span> <span class="o">=</span> <span class="s2">&quot;full-name&quot;</span><span class="o">;</span>
+           <span class="n">installation_prefix_camel_case_nospaces_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
+           <span class="n">installation_prefix_kebab_lower_case_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
+         <span class="o">}</span>
+         <span class="o">{</span>
+           <span class="n">url_info_about_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
+           <span class="n">url_update_info_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
+           <span class="n">help_link_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
+           <span class="n">estimated_byte_size_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
+           <span class="n">windows_language_code_id_opt</span> <span class="o">=</span> <span class="nc">None</span><span class="o">;</span>
+           <span class="n">embeds_32bit_uninstaller</span> <span class="o">=</span> <span class="bp">true</span><span class="o">;</span>
+           <span class="n">embeds_64bit_uninstaller</span> <span class="o">=</span> <span class="bp">true</span><span class="o">;</span>
+         <span class="o">})</span>
 </pre></div>
 </div>
-<p>If this were not a demonstration, all your components would be dynamically
-probed from your Opam directory structure using the Dune Site plugin:
-<a class="reference external" href="https://dune.readthedocs.io/en/latest/sites.html#plugins-and-dynamic-loading-of-packages">https://dune.readthedocs.io/en/latest/sites.html#plugins-and-dynamic-loading-of-packages</a></p>
-<p>You can see a real component at:
-<a class="reference external" href="https://github.com/diskuv/dkml-component-curl/blob/1cbecbaf7252e1fbe2ee5f56805fcf03e34fb4b6/src/buildtime_installer/dkml_component_staging_curl.ml">https://github.com/diskuv/dkml-component-curl/blob/1cbecbaf7252e1fbe2ee5f56805fcf03e34fb4b6/src/buildtime_installer/dkml_component_staging_curl.ml</a></p>
-</div>
-<div class="section" id="use-the-generated-create-installers-exe">
+<p>You can see a real “curl” component at
+<a class="reference external" href="https://github.com/diskuv/dkml-component-curl/tree/40a6484a3fe3636d02b3c1ead41ad8c6d97dc449">https://github.com/diskuv/dkml-component-curl/tree/40a6484a3fe3636d02b3c1ead41ad8c6d97dc449</a></p>
+<p>In particular:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dkml-component-staging-curl.opam</span></code> will download a <code class="docutils literal notranslate"><span class="pre">curl</span></code> executable for
+Windows and stage it for installation on the end-user machine.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/buildtime_installer/dkml_component_staging_curl.ml</span></code> defines the
+component. It tells DkML Install API that it needs to run code during
+installation for Unix machines only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">src/installtime_enduser/unix/unix_install.ml</span></code> is code that runs on the
+end-user machine during installation, if and only if it is Unix. It creates
+a symlink in a well-known location pointing to whichever <code class="docutils literal notranslate"><span class="pre">curl</span></code> is found in
+the PATH during installation.</p></li>
+</ul>
+</section>
+<section id="use-the-generated-create-installers-exe">
 <h2>Use the generated <code class="docutils literal notranslate"><span class="pre">create_installers.exe</span></code><a class="headerlink" href="#use-the-generated-create-installers-exe" title="Permalink to this heading"></a></h2>
 <div class="admonition important">
 <p class="admonition-title">Important</p>
@@ -409,8 +417,8 @@ are files that are directly copied to the end-user’s installation directory.</
 <span class="go">      └── 7zr.exe</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="bring-your-own-archiver-archives">
+</section>
+<section id="bring-your-own-archiver-archives">
 <h2>Bring-your-own-archiver archives<a class="headerlink" href="#bring-your-own-archiver-archives" title="Permalink to this heading"></a></h2>
 <p>Currently there is only one “supported” archiver: tar.</p>
 <p>You could use your own tar archiver so you can distribute software for
@@ -535,8 +543,8 @@ tar (or RPM, etc.) inside of OCaml.</p>
 <span class="go">  full-name-linux_x86_64-i-0.1.0/st/offline-test-a/icon.png</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="setup-exe-installers">
+</section>
+<section id="setup-exe-installers">
 <h2>setup.exe installers<a class="headerlink" href="#setup-exe-installers" title="Permalink to this heading"></a></h2>
 <p>There are also fully built setup.exe installers available.
 The setup.exe is just a special version of the decompressor 7z.exe called an
@@ -660,8 +668,8 @@ with no pinned packages.</p></li>
 <p>That’s it for how archives and setup.exe work!</p>
 <p>Go through the remaining documentation to see what a real
 <em>packager</em> <code class="docutils literal notranslate"><span class="pre">setup.bc</span></code> does, and what goes into a real component.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
