@@ -28,21 +28,21 @@ jobs:
       - name: Cache conda
         uses: actions/cache@v3
         env:
-          # Increase this value to reset cache if contributors/environment.yml
+          # Increase this value to reset cache if contributors/environment-ci.yml
           # has not changed
           CACHE_NUMBER: 0
         with:
           path: ~/conda_pkgs_dir
           key:
             ${{ runner.os }}-conda-${{ env.CACHE_NUMBER }}-${{
-            hashFiles('contributors/environment.yml') }}
+            hashFiles('contributors/environment-ci.yml') }}
       - name: Setup Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
           mamba-version: "*"
           channels: conda-forge,defaults
           python-version: 3.7
-          environment-file: contributors/environment.yml
+          environment-file: contributors/environment-ci.yml
           auto-activate-base: false
           activate-environment: sphinx-env
           use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!

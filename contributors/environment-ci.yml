@@ -1,0 +1,9 @@
+name: sphinx-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - sphinx
+  - sphinx_rtd_theme
+  - rstcheck
+  - python=3
