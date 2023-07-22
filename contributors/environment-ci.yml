@@ -1,4 +1,4 @@
-name: sphinx-env
+name: sphinx-env-ci
 channels:
   - conda-forge
   - defaults
