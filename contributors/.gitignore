@@ -6,3 +6,4 @@
 
 # Ignore https://github.com/marketplace/actions/setup-miniconda created files
 setup-miniconda-patched-environment.yml
+setup-miniconda-patched-environment-ci.yml
