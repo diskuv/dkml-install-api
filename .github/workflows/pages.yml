@@ -49,6 +49,9 @@ jobs:
           use-only-tar-bz2: true # IMPORTANT: This needs to be set for caching to work properly!
       - name: Install graphviz
         run: sudo apt install graphviz
+      - name: Git Status
+        shell: bash -l {0}
+        run: git status && git log -n1
       - name: Build Sphinx
         shell: bash -l {0}
         run: cd contributors && make publish-prepare-docs
