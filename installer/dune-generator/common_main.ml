@@ -126,4 +126,4 @@ let () =
     "Print a $(b,dune.inc) that, when included in Dune, will produce an \
      installer generator executable"
   in
-  exit Cmd.(eval (v (info "dune-of-installer-generator" ~doc) main_t))
+  exit Cmd.(eval (v (info "common-dune-of-installer-generator" ~doc) main_t))
