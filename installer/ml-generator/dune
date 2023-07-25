@@ -19,9 +19,7 @@
   bos
   cmdliner
   code
-  common_installer_generator
-  dkml-install-runner
-  ml_of_installer_generator_lib))
+  dkml-install-runner))
 
 (executable
  (package dkml-install-installer)
