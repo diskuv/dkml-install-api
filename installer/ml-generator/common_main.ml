@@ -1,4 +1,3 @@
-open Dkml_install_runner.Error_handling.Monad_syntax
 module Arg = Cmdliner.Arg
 module Cmd = Cmdliner.Cmd
 module Term = Cmdliner.Term
@@ -22,12 +21,9 @@ let copy_as_is file =
        ()
 
 let main () =
-  Dkml_install_runner.Error_handling.continue_or_exit
-    (let* target_abi, _fl = Dkml_install_runner.Ocaml_abi.create_v2 () in
-     copy_as_is "discover.ml";
-     copy_as_is "entry-application.manifest";
-     copy_as_is "entry_assembly_manifest.ml";
-     return ())
+  copy_as_is "discover.ml";
+  copy_as_is "entry-application.manifest";
+  copy_as_is "entry_assembly_manifest.ml"
 
 let main_t = Term.(const main $ const ())
 
@@ -39,4 +35,5 @@ let () =
     (Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"878ee300"
        (fun () ->
          Cmd.(
-           eval ~catch:false (v (info "common-ml-of-installer-generator" ~doc) main_t))))
+           eval ~catch:false
+             (v (info "common-ml-of-installer-generator" ~doc) main_t))))

@@ -38,8 +38,10 @@ let write_dune_inc fmt ~output_rel dune_inc =
   Fmt.pf fmt "%a@\n" Fmt.(list ~sep:(any "@\n@\n") Sexp.pp_hum) dune_inc;
   Format.pp_print_flush fmt ()
 
-let main () project_root package_name common_dir corrected =
-  let components = Common_installer_generator.ocamlfind () in
+let main () project_root package_name desired_components common_dir corrected =
+  let components =
+    Common_installer_generator.ocamlfind ~desired_components ()
+  in
   let dkml_components = List.map (fun s -> "dkml-component-" ^ s) components in
   let project_rel_dir = project_rel_dir project_root in
   let common_dir_slash =
@@ -264,6 +266,14 @@ let common_dir_t =
   in
   Arg.(required & opt (some dir) (Some ".") & info ~doc [ "common-dir" ])
 
+let desired_components_t =
+  let doc =
+    "A component to add to the set of desired components. Only desired \
+     components and their transitive dependencies are packaged. May be \
+     repeated. At least one component must be specified."
+  in
+  Arg.(non_empty & opt_all string [] & info [ "component" ] ~doc)
+
 let setup_log style_renderer level =
   Fmt_tty.setup_std_outputs ?style_renderer ();
   Logs.set_level level;
@@ -274,8 +284,8 @@ let setup_log_t =
 
 let main_t =
   Term.(
-    const main $ setup_log_t $ project_root_t $ package_name_t $ common_dir_t
-    $ corrected_t)
+    const main $ setup_log_t $ project_root_t $ package_name_t
+    $ desired_components_t $ common_dir_t $ corrected_t)
 
 let () =
   let doc =

@@ -1,5 +1,11 @@
 # Changes
 
+## 0.5.0
+
+* Breaking change: Only register desired components. Previously all the
+  components in the ocamlfind universe (ex. opam switch) were registered.
+  Now only chosen components and their dependencies are registered.
+
 ## 0.4.0
 
 * Switch to cmdliner.1.1.1 from cmdliner.1.0.4 in the API

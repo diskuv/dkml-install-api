@@ -21,8 +21,10 @@ let copy_as_is file =
          Ok ())
        ()
 
-let main () =
-  let components = Common_installer_generator.ocamlfind () in
+let main desired_components () =
+  let components =
+    Common_installer_generator.ocamlfind ~desired_components ()
+  in
 
   let copy ~target_abi ~components filename =
     let content = Option.get (Code.read filename) in
@@ -43,7 +45,15 @@ let main () =
      copy ~target_abi ~components "package_uninstaller.ml";
      return ())
 
-let main_t = Term.(const main $ const ())
+let desired_components_t =
+  let doc =
+    "A component to add to the set of desired components. Only desired \
+     components and their transitive dependencies are packaged. May be \
+     repeated. At least one component must be specified."
+  in
+  Arg.(non_empty & opt_all string [] & info [ "component" ] ~doc)
+
+let main_t = Term.(const main $ desired_components_t $ const ())
 
 let () =
   let doc =
@@ -53,4 +63,5 @@ let () =
     (Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"878ee300"
        (fun () ->
          Cmd.(
-           eval ~catch:false (v (info "package-ml-of-installer-generator" ~doc) main_t))))
+           eval ~catch:false
+             (v (info "package-ml-of-installer-generator" ~doc) main_t))))
