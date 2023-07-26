@@ -1,3 +1,6 @@
+type t = { all_components : string list }
+type phase = Installation | Uninstallation
+
 module StringSet = Set.Make (struct
   type t = string
 
@@ -11,27 +14,21 @@ let should_debug =
 
 let debug f = if should_debug then f Fmt.epr else ()
 
-(** [ocamlfind ~desired_components ()] uses an ["ocamlfind"]-based
-    algorithm to get the desired DkML Install API components
-    ([desired_components]) and their transitive dependencies.
-
-    A lexographic sort is performed for stability. *)
-let ocamlfind ~desired_components () =
+let create () =
   Fmt.epr "Initializing findlib: ";
   Findlib.init ();
   Fmt.epr "done.@.";
-
-  let uniq = List.sort_uniq String.compare in
-
   (* A. Get every package in the ocamlfind universe / opam switch that
      could possibly be a component.
 
      Our technique is to use the definition of component:
-     a component is a package that registers itself with DkML Install API
+     - a component is a package that registers itself with DkML Install API
+     - a component has a META with the field [dkml_install] set
+     to "component"
 
      Since we are using ocamlfind, component packages must be within the
-     transitive *users* of [dkml-install.register]. We'll get more than
-     we want though (ie. a superset).
+     transitive *users* of [dkml-install.register]. Then we'll filter
+     down to the correct subset which has the [dkml_install] META field.
 
      Essentially:
      ["ocamlfind query -format '%p' -d -r dkml-install.register"]
@@ -42,117 +39,119 @@ let ocamlfind ~desired_components () =
   Fmt.epr "@[<hov 2>Descendants of dkml-install.register:@ @[%a@]@]@."
     Fmt.(list ~sep:sp string)
     superset_all_components;
+  let all_components =
+    List.map
+      (fun component -> Fl_package_base.query component)
+      superset_all_components
+    |> List.filter_map (fun { Fl_package_base.package_name; package_defs; _ } ->
+           match Fl_metascanner.lookup "dkml_install" [] package_defs with
+           | "component" -> Some package_name
+           | _other_package -> None
+           | exception Not_found -> None)
+  in
+  Fmt.epr
+    "@[<hov 2>Descendant subset that has dkml_install=component in META:@ \
+     @[%a@]@]@."
+    Fmt.(list ~sep:sp string)
+    all_components;
+  { all_components }
 
-  (* B. We want to restrict ourselves to just the components that are
-     desired by the installer (and their transitive component dependencies).
+let ocamlfind { all_components } ~phase ~desired_components () =
+  let depends_on =
+    match phase with
+    | Installation -> "install_depends_on"
+    | Uninstallation -> "uninstall_depends_on"
+  in
+  let uniq = List.sort_uniq String.compare in
+  let info_fmt v =
+    Fmt.epr ("[%s] " ^^ v)
+      (match phase with
+      | Installation -> "Installation"
+      | Uninstallation -> "Uninstallation")
+  in
+  let info f = f info_fmt in
 
-     Since we are using ocamlfind, these desired packages are _mostly_ within
-     the transitive *requirements* of the installer components. The edge case
-     is that a transitive package may be ["dkml-component-COMPONENT_A.api"];
-     we must "follow" the API package and visit ["dkml-component-COMPONENT_A"]
-     as well.
-
-     We'll get more than we want though (ie. a superset).
-
-     Essentially:
-     ["ocamlfind query -format '%p' -r dkml-component-<needed_by_installer1>"]
-     ["ocamlfind query -format '%p' -r dkml-component-<needed_by_installerN>"]
+  (* B. We want to the transitive component dependencies of the
+     installer (or uninstaller) components.
 
      We'll need to de-duplicate the results since we have N desired
-     installer components, plus expansions of any .api libraries.
+     installer components.
   *)
-  let superset_desired_and_required_components =
+  let transitive_components =
     let visited = ref [] in
-    let requires plain_lib =
-      if List.mem plain_lib !visited then []
-      else (
-        (* Maintain guard against infinite recursion *)
-        visited := plain_lib :: !visited;
-        (* Only if we haven't processed the library do we ask for more *)
-        let candidates = Fl_package_base.requires ~preds:[] plain_lib in
-        (* Findlib returns [plain_lib] in addition to the actual requirements.
-           Get rid of the [plain_lib]. *)
-        List.filter (Fun.negate (String.equal plain_lib)) candidates)
-    in
     let rec helper remaining =
-      let expand plain_lib =
-        let descent_candidates = requires plain_lib in
-        debug (fun l ->
-            l "@[           (expand)  %a@]@."
-              Fmt.(Dump.list string)
-              descent_candidates);
-        [ plain_lib ] :: helper descent_candidates |> List.flatten |> uniq
-      in
       match remaining with
       | [] -> []
+      | lib :: tl when List.mem lib !visited ->
+          debug (fun l -> l "[visited]  library = %s@." lib);
+          helper tl
       | lib :: tl -> (
-          (* Is dotted library? *)
-          match String.index_opt lib '.' with
-          | None ->
-              (* Plain library like dkml-component-COMPONENT_A *)
-              debug (fun l -> l "[plain]  library = %s@." lib);
-              let expanded_libs = expand lib in
+          match Fl_package_base.query lib with
+          | exception Fl_package_base.No_such_package (x, y) ->
+              Fmt.epr
+                "WARNING: findlib gave No_such_package (%s, %s). Skipping %s@."
+                x y lib;
+              helper tl
+          | exception _ ->
+              Fmt.epr "Unknown exception A@.";
+              helper tl
+          | { package_defs; _ } ->
+              (* Maintain guard against infinite recursion *)
+              visited := lib :: !visited;
+              let depends_on_values =
+                match Fl_metascanner.lookup depends_on [] package_defs with
+                | exception Not_found -> []
+                | exception _ ->
+                    Fmt.epr "Unknown exception B@.";
+                    []
+                | depends_on_value ->
+                    Astring.String.cuts ~empty:false ~sep:" " depends_on_value
+              in
               debug (fun l ->
-                  l "[plain]  expanded(%s)= %a@." lib
+                  l "[%s]  depends_on = %a@." lib
                     Fmt.(Dump.list string)
-                    expanded_libs);
-              expanded_libs :: helper tl
-          | Some index_first_dot ->
-              (* Dotted library like dkml-component-COMPONENT_A.api? *)
-              let plain_lib = String.sub lib 0 index_first_dot in
-              debug (fun l -> l "[dotted] library = %s@." lib);
-              debug (fun l -> l "[dotted] plain library = %s@." plain_lib);
-              (* Recursively find what the plain library dependencies are *)
-              let expanded_libs = expand plain_lib in
-              debug (fun l ->
-                  l "[dotted] expanded(%s) = %a@." plain_lib
-                    Fmt.(Dump.list string)
-                    expanded_libs);
-              expanded_libs :: helper tl)
+                    depends_on_values);
+              (lib :: helper depends_on_values) @ helper tl)
     in
     let desired_pkgs =
       List.map
         (fun component -> "dkml-component-" ^ component)
         desired_components
     in
-    helper desired_pkgs |> List.flatten |> uniq
+    helper desired_pkgs |> uniq
   in
-  Fmt.epr "@[<hov 2>Ancestors of %a:@ @[%a@]@]@."
-    Fmt.(list ~sep:sp string)
-    desired_components
-    Fmt.(list ~sep:sp string)
-    superset_desired_and_required_components;
+  info (fun l ->
+      l "@[<hov 2>Ancestors of %a:@ @[%a@]@]@."
+        Fmt.(list ~sep:sp string)
+        desired_components
+        Fmt.(list ~sep:sp string)
+        transitive_components);
 
   (* C. We want the intersection of A and B. That is, the packages that both
      could possibly be components (A) _and_ are a transitive dependency of
      the desired components (B).
-
-     This still has too more than we want.
   *)
-  let superset_refined_sorted_components =
+  let refined_components =
     StringSet.(
-      inter
-        (of_list superset_all_components)
-        (of_list superset_desired_and_required_components)
-      |> elements)
+      inter (of_list all_components) (of_list transitive_components) |> elements)
   in
 
-  (* D. We want the refined set of packages (C) to be only real components.
+  (* D. We want the actual component names, not the full package name.
 
      We rely on the naming requirement that component packages are named
      ["dkml-component-COMPONENT_NAME"].
   *)
   let components =
     let prefix = "dkml-component-" in
-    List.filter
-      (Astring.String.is_prefix ~affix:prefix)
-      superset_refined_sorted_components
+    List.filter (Astring.String.is_prefix ~affix:prefix) refined_components
     |> List.map (fun s ->
            Astring.String.(sub ~start:(String.length prefix) s |> Sub.to_string))
     |> List.sort String.compare
   in
-  Fmt.epr
-    "@[<hov 2>Desired components and their transitive dependencies:@ @[%a@]@]@."
-    Fmt.(list ~sep:sp string)
-    components;
+  info (fun l ->
+      l
+        "@[<hov 2>Desired components and their transitive dependencies:@ \
+         @[%a@]@]@."
+        Fmt.(list ~sep:sp string)
+        components);
   components

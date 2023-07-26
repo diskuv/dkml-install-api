@@ -21,9 +21,18 @@ let copy_as_is file =
          Ok ())
        ()
 
-let main desired_components () =
-  let components =
-    Common_installer_generator.ocamlfind ~desired_components ()
+let main install_components uninstall_components () =
+  let cig = Common_installer_generator.create () in
+  let install_components =
+    Common_installer_generator.ocamlfind cig ~phase:Installation
+      ~desired_components:install_components ()
+  in
+  let uninstall_components =
+    Common_installer_generator.ocamlfind cig ~phase:Uninstallation
+      ~desired_components:uninstall_components ()
+  in
+  let both_components =
+    install_components @ uninstall_components |> List.sort_uniq String.compare
   in
 
   let copy ~target_abi ~components filename =
@@ -36,26 +45,36 @@ let main desired_components () =
 
   Dkml_install_runner.Error_handling.continue_or_exit
     (let* target_abi, _fl = Dkml_install_runner.Ocaml_abi.create_v2 () in
-     copy ~target_abi ~components "entry_install.ml";
-     copy ~target_abi ~components "entry_uninstall.ml";
-     copy ~target_abi ~components "create_installers.ml";
-     copy ~target_abi ~components "runner_admin.ml";
-     copy ~target_abi ~components "runner_user.ml";
-     copy ~target_abi ~components "package_setup.ml";
-     copy ~target_abi ~components "package_uninstaller.ml";
+     copy ~target_abi ~components:install_components "entry_install.ml";
+     copy ~target_abi ~components:uninstall_components "entry_uninstall.ml";
+     copy ~target_abi ~components:both_components "create_installers.ml";
+     copy ~target_abi ~components:both_components "runner_admin.ml";
+     copy ~target_abi ~components:both_components "runner_user.ml";
+     copy ~target_abi ~components:install_components "package_setup.ml";
+     copy ~target_abi ~components:uninstall_components "package_uninstaller.ml";
      return ())
 
-let desired_components_t =
+let install_components_t =
   let doc =
-    "A component to add to the set of desired components. Only desired \
-     components and their transitive dependencies are packaged. May be \
-     repeated. At least one component must be specified."
+    "A component to add to the set of desired components that run during \
+     installation. Only desired components and their transitive dependencies \
+     are packaged. May be repeated. At least one component must be specified."
   in
-  Arg.(non_empty & opt_all string [] & info [ "component" ] ~doc)
+  Arg.(non_empty & opt_all string [] & info [ "install" ] ~doc)
 
-let main_t = Term.(const main $ desired_components_t $ const ())
+let uninstall_components_t =
+  let doc =
+    "A component to add to the set of desired components that run during \
+     uninstallation. Only desired components and their transitive dependencies \
+     are packaged. May be repeated."
+  in
+  Arg.(value & opt_all string [] & info [ "uninstall" ] ~doc)
+
+let main_t =
+  Term.(const main $ install_components_t $ uninstall_components_t $ const ())
 
 let () =
+  Logs.set_reporter (Logs.format_reporter ());
   let doc =
     "Writes $(b,.ml) files that are used by dune-of-installer-generator.exe"
   in

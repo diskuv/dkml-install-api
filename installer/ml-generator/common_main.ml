@@ -28,6 +28,7 @@ let main () =
 let main_t = Term.(const main $ const ())
 
 let () =
+  Logs.set_reporter (Logs.format_reporter ());
   let doc =
     "Writes $(b,.ml) files that are used by dune-of-installer-generator.exe"
   in

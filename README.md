@@ -1,6 +1,6 @@
-# DKML Install API 0.4.0
+# DkML Install API 0.4.0
 
-The DKML Install API lets you take the tools you know (OCaml and Opam) and
+The DkML Install API lets you take the tools you know (OCaml and Opam) and
 well-known¹ installer generators, to generate a installer for your OCaml
 project.
 
@@ -8,14 +8,14 @@ project.
 > generator is available, but other well-known installer generators like
 > 0install or cpack could be added in the future.
 
-Specifically the DKML Install API lets you take a) pre-designed packages from
+Specifically the DkML Install API lets you take a) pre-designed packages from
 Opam and b) installation instructions written in OCaml source code, and
 assembles binary artifacts that act as the primary materials to installer
 generators.
 
-The full documentation is available at https://diskuv.github.io/dkml-install-api/index.html
+The full documentation is available at <https://diskuv.github.io/dkml-install-api/index.html>
 
-The OCaml module documentation is available at https://diskuv.github.io/dkml-install-api/odoc/index.html
+The OCaml module documentation is available at <https://diskuv.github.io/dkml-install-api/odoc/index.html>
 
 ## Installing
 

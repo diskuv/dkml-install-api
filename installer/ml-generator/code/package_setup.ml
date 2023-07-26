@@ -23,6 +23,7 @@ let setup_cmd =
             Dkml_install_runner.Path_eval.Global_context.Install)
 
 let () =
+  Logs.set_reporter (Logs.format_reporter ());
   exit
     (Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"bed30047"
        (fun () -> Cmd.eval ~catch:false setup_cmd))

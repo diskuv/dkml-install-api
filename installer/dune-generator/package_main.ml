@@ -38,11 +38,29 @@ let write_dune_inc fmt ~output_rel dune_inc =
   Fmt.pf fmt "%a@\n" Fmt.(list ~sep:(any "@\n@\n") Sexp.pp_hum) dune_inc;
   Format.pp_print_flush fmt ()
 
-let main () project_root package_name desired_components common_dir corrected =
-  let components =
-    Common_installer_generator.ocamlfind ~desired_components ()
+let main () project_root package_name install_components uninstall_components
+    common_dir corrected =
+  let cig = Common_installer_generator.create () in
+  let install_components =
+    Common_installer_generator.ocamlfind cig ~phase:Installation
+      ~desired_components:install_components ()
   in
-  let dkml_components = List.map (fun s -> "dkml-component-" ^ s) components in
+  let uninstall_components =
+    Common_installer_generator.ocamlfind cig ~phase:Uninstallation
+      ~desired_components:uninstall_components ()
+  in
+
+  let dkml_install_components =
+    List.map (fun s -> "dkml-component-" ^ s) install_components
+  in
+  let dkml_uninstall_components =
+    List.map (fun s -> "dkml-component-" ^ s) uninstall_components
+  in
+  let dkml_both_components =
+    dkml_install_components @ dkml_uninstall_components
+    |> List.sort_uniq String.compare
+  in
+
   let project_rel_dir = project_rel_dir project_root in
   let common_dir_slash =
     Fpath.(v common_dir |> normalize |> to_string)
@@ -75,7 +93,7 @@ let main () project_root package_name desired_components common_dir corrected =
               ];
             libraries
               ([ "dkml-install-runner.user"; "private_common" ]
-              @ dkml_components);
+              @ dkml_both_components);
           ];
         executable
           [
@@ -94,7 +112,7 @@ let main () project_root package_name desired_components common_dir corrected =
               ];
             libraries
               ([ "dkml-install-runner.admin"; "private_common" ]
-              @ dkml_components);
+              @ dkml_both_components);
           ];
         executable
           [
@@ -103,7 +121,7 @@ let main () project_root package_name desired_components common_dir corrected =
             name "create_installers";
             libraries
               ([ "dkml-package-console.create"; "cmdliner"; "private_common" ]
-              @ dkml_components);
+              @ dkml_both_components);
             modules [ "create_installers" ];
           ];
         executable
@@ -113,7 +131,7 @@ let main () project_root package_name desired_components common_dir corrected =
             name "entry_install";
             libraries
               ([ "dkml-package-console.entry"; "cmdliner"; "private_common" ]
-              @ dkml_components);
+              @ dkml_install_components);
             modules [ "entry_install" ];
             ocamlopt_flags
               [
@@ -132,7 +150,7 @@ let main () project_root package_name desired_components common_dir corrected =
             name "entry_uninstall";
             libraries
               ([ "dkml-package-console.entry"; "cmdliner"; "private_common" ]
-              @ dkml_components);
+              @ dkml_uninstall_components);
             modules [ "entry_uninstall" ];
             ocamlopt_flags
               [
@@ -152,7 +170,7 @@ let main () project_root package_name desired_components common_dir corrected =
             modes_byte_exe;
             libraries
               ([ "dkml-package-console.setup"; "cmdliner"; "private_common" ]
-              @ dkml_components);
+              @ dkml_install_components);
             modules [ "package_setup" ];
           ];
         executable
@@ -167,7 +185,7 @@ let main () project_root package_name desired_components common_dir corrected =
                  "cmdliner";
                  "private_common";
                ]
-              @ dkml_components);
+              @ dkml_uninstall_components);
             modules [ "package_uninstaller" ];
           ];
         install
@@ -266,13 +284,21 @@ let common_dir_t =
   in
   Arg.(required & opt (some dir) (Some ".") & info ~doc [ "common-dir" ])
 
-let desired_components_t =
+let install_components_t =
   let doc =
-    "A component to add to the set of desired components. Only desired \
-     components and their transitive dependencies are packaged. May be \
-     repeated. At least one component must be specified."
+    "A component to add to the set of desired components that run during \
+     installation. Only desired components and their transitive dependencies \
+     are packaged. May be repeated. At least one component must be specified."
   in
-  Arg.(non_empty & opt_all string [] & info [ "component" ] ~doc)
+  Arg.(non_empty & opt_all string [] & info [ "install" ] ~doc)
+
+let uninstall_components_t =
+  let doc =
+    "A component to add to the set of desired components that run during \
+     uninstallation. Only desired components and their transitive dependencies \
+     are packaged. May be repeated."
+  in
+  Arg.(value & opt_all string [] & info [ "uninstall" ] ~doc)
 
 let setup_log style_renderer level =
   Fmt_tty.setup_std_outputs ?style_renderer ();
@@ -285,9 +311,10 @@ let setup_log_t =
 let main_t =
   Term.(
     const main $ setup_log_t $ project_root_t $ package_name_t
-    $ desired_components_t $ common_dir_t $ corrected_t)
+    $ install_components_t $ uninstall_components_t $ common_dir_t $ corrected_t)
 
 let () =
+  Logs.set_reporter (Logs.format_reporter ());
   let doc =
     "Print a $(b,dune.inc) that, when included in Dune, will produce an \
      installer generator executable"

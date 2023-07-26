@@ -20,6 +20,7 @@ let uninstall_cmd =
             Dkml_install_runner.Path_eval.Global_context.Uninstall)
 
 let () =
+  Logs.set_reporter (Logs.format_reporter ());
   exit
     (Dkml_install_runner.Error_handling.catch_and_exit_on_error ~id:"68c85707"
        (fun () -> Cmd.eval ~catch:false uninstall_cmd))

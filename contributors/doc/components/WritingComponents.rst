@@ -30,10 +30,14 @@ Every installation uses a ``dkml-install-runner.exe`` executable customized
 to an installer. The component you write will be linked into
 ``dkml-install-runner.exe`` at installation time.
 
-A component has a :ref:`ConfigurationModule` that configures values and methods
+A properly configured component is an opam package that has:
+* A required :ref:`ConfigurationModule` which configures values and methods
 used in the installation lifecycle and in the installer generators.
+* A :ref:`META` file with required fields
+* optional :ref:`StagingFiles`
+* optional :ref:`StaticFiles`
 
-For example, when the following configuration values are defined:
+For example, when the following :ref:`ConfigurationModule` values are defined:
 
 .. code:: ocaml
 
@@ -63,10 +67,11 @@ the following can occur:
 
     $ dkml-install-runner.exe --help
 
-A component can also have :ref:`StagingFiles`
-that will be available during installation (but not after), and can also have
-:ref:`StaticFiles` that will be installed directly to the final end-user
-installation folder.
+If a component has :ref:`StagingFiles` they will be available during
+installation (but not after).
+
+If a component has :ref:`StaticFiles` they will be installed directly to the
+final end-user installation folder.
 
 As a component author you will need to write a :ref:`ConfigurationModule`
 with methods like ``install_user_subcommand`` that will ``execute`` at
@@ -161,6 +166,42 @@ phase so you can run any bytecode executables you have placed in
 ``<share>/staging-files/``, or compile new native executables on the end-users
 machine. Just declare a dependency on them using the instructions in their
 documentation.
+
+.. _META:
+
+META
+----
+
+Dune and other OCaml build tools automatically create ``META`` files that get
+installed during ``opam install``. DkML Install API needs three (3) fields
+that can be seen at the bottom of the following ``META`` file:
+
+.. code-block:: text
+
+  version = "2.0.2"
+  description = ""
+  requires =
+  "bos
+   dkml-component-common-desktop
+   dkml-component-staging-ocamlrun.api
+   dkml-install.register
+   logs"
+  archive(byte) = "dkml_component_offline_desktop_full.cma"
+  archive(native) = "dkml_component_offline_desktop_full.cmxa"
+  plugin(byte) = "dkml_component_offline_desktop_full.cma"
+  plugin(native) = "dkml_component_offline_desktop_full.cmxs"
+  dkml_install = "component"
+  install_depends_on = "staging-ocamlrun staging-desktop-full staging-withdkml"
+  uninstall_depends_on = "staging-ocamlrun"
+
+The ``dkml_install`` field must be ``component``.
+
+The ``install_depends_on`` and ``uninstall_depends_on`` field must duplicate
+the same fields in the :ref:`ConfigurationModule`. The duplication is technical
+debt.
+
+See https://dune.readthedocs.io/en/stable/reference/findlib.html#how-dune-generates-meta-files
+for how to add these three (3) fields to your Dune project.
 
 .. _StagingFiles:
 

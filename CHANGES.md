@@ -5,6 +5,10 @@
 * Breaking change: Only register desired components. Previously all the
   components in the ocamlfind universe (ex. opam switch) were registered.
   Now only chosen components and their dependencies are registered.
+* Breaking change: Add install/uninstall dependencies to META of each
+  component opam package. For now this is duplicative with Component
+  Registry, but gives access component graph purely with ocamlfind so can
+  be used at code generation time.
 
 ## 0.4.0
 
