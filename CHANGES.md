@@ -2,7 +2,8 @@
 
 ## 0.5.1
 
-* Internal: Add Spawn.spawn_out
+* Add parameter `log_spawn_onerror_exit ?success_exitcodes`
+* Internal: Add `Spawn.spawn_out`
 
 ## 0.5.0
 

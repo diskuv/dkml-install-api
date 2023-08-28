@@ -228,9 +228,13 @@ module type Intf = sig
   (** {2 Process execution} *)
 
   val log_spawn_onerror_exit :
-    id:string -> ?conformant_subprocess_exitcodes:bool -> Bos.Cmd.t -> unit
-  (** [log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd] logs the command [cmd] and runs it
-      synchronously, and prints an error on the fatal logger [fl ~id]
+    id:string ->
+    ?success_exitcodes:(int -> bool) ->
+    ?conformant_subprocess_exitcodes:bool ->
+    Bos.Cmd.t ->
+    unit
+  (** [log_spawn_onerror_exit ~id ?success_exitcodes ?conformant_subprocess_exitcodes cmd] logs the
+      command [cmd] and runs it synchronously, and prints an error on the fatal logger [fl ~id]
       and then exits with a non-zero exit code if the command exits with a non-zero
       error code.
 
@@ -239,7 +243,16 @@ module type Intf = sig
       backtraces. Any exiting environment variable ["OCAMLRUNPARAM"] will
       be kept, however.
 
-      {3 Exit Codes}
+      {3 Success Exit Codes}
+
+      By default exit code 0 is determined to be a success, and every other exit code is
+      determined to be a failure. The [success_exitcodes] parameter can be specified to
+      change which codes are determined to be successes.
+
+      Further exit code process is described in the next section after an exit code is
+      determined to be a failure.
+
+      {3 Failed Exit Codes}
 
       The exit code used to leave this process depends on [conformant_subprocess_exitcodes].
 

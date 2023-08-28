@@ -72,7 +72,8 @@ module Log_config = struct
   include Log_config
 end
 
-let log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd =
+let log_spawn_onerror_exit ~id ?(success_exitcodes = fun i -> i == 0)
+    ?conformant_subprocess_exitcodes cmd =
   Logs.info (fun m -> m "Running command: %a" Bos.Cmd.pp cmd);
   let fl = Forward_progress.stderr_fatallog in
   let open Astring in
@@ -91,12 +92,16 @@ let log_spawn_onerror_exit ~id ?conformant_subprocess_exitcodes cmd =
     Bos.OS.Cmd.run_status ~env:new_env cmd
   in
   match sequence with
-  | Ok (`Exited 0) ->
+  | Ok (`Exited spawned_exitcode) when success_exitcodes spawned_exitcode ->
       if Logs.level () = Some Logs.Debug then
-        Logs.info (fun m -> m "%a ran successfully" Bos.Cmd.pp cmd)
+        Logs.info (fun m ->
+            m "%a ran successfully with exit code %d" Bos.Cmd.pp cmd
+              spawned_exitcode)
       else
         Logs.info (fun m ->
-            m "%a ran successfully" Fmt.(option string) (Bos.Cmd.line_tool cmd));
+            m "%a ran successfully with exit code %d"
+              Fmt.(option string)
+              (Bos.Cmd.line_tool cmd) spawned_exitcode);
       ()
   | Ok (`Exited spawned_exitcode) ->
       let adjective, exitcode =
