@@ -107,9 +107,9 @@ let setup target_abi program_version organization program_name program_assets
         in
         (* Write uninstaller into Windows registry *)
         let* (), _fl =
-          Windows_registry.write_program_entry ~installation_prefix:prefix
-            ~organization ~program_name ~program_assets ~program_version
-            ~program_info
+          Windows_registry.Add_remove_programs.write_program_entry
+            ~installation_prefix:prefix ~organization ~program_name
+            ~program_assets ~program_version ~program_info
         in
         return ()
       else return ()

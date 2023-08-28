@@ -40,13 +40,11 @@ val box_err : string -> 'a
 (** {1 Author Supplied Types} *)
 
 module Author_types : sig
+  type build_info = { package_name : string }
   (** The type of build information.
       
       [package_name] - Which opam package the program will be generated from *)
-  type build_info = {
-    package_name : string;
-  }
-  
+
   type program_name = {
     name_full : string;
     name_camel_case_nospaces : string;
@@ -210,20 +208,22 @@ val package_args_t :
     uninstaller.exe *)
 
 module Windows_registry : sig
-  val delete_program_entry :
-    program_name:Author_types.program_name ->
-    unit Dkml_install_api.Forward_progress.t
-  (** Delete from the Windows registry so that the program will not appear in
+  module Add_remove_programs : sig
+    val delete_program_entry :
+      program_name:Author_types.program_name ->
+      unit Dkml_install_api.Forward_progress.t
+    (** Delete from the Windows registry so that the program will not appear in
       Add/Remove Programs *)
 
-  val write_program_entry :
-    installation_prefix:Fpath.t ->
-    organization:Author_types.organization ->
-    program_name:Author_types.program_name ->
-    program_assets:Author_types.program_assets ->
-    program_version:string ->
-    program_info:Author_types.program_info ->
-    unit Dkml_install_api.Forward_progress.t
-  (** Write into the Windows registry so that the program will appear Add/Remove
+    val write_program_entry :
+      installation_prefix:Fpath.t ->
+      organization:Author_types.organization ->
+      program_name:Author_types.program_name ->
+      program_assets:Author_types.program_assets ->
+      program_version:string ->
+      program_info:Author_types.program_info ->
+      unit Dkml_install_api.Forward_progress.t
+    (** Write into the Windows registry so that the program will appear Add/Remove
       Programs *)
+  end
 end

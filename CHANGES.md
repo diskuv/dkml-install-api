@@ -1,5 +1,9 @@
 # Changes
 
+## 0.5.1
+
+* Internal: Add Spawn.spawn_out
+
 ## 0.5.0
 
 * Breaking change: Only register desired components. Previously all the
