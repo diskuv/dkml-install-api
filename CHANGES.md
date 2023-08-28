@@ -2,6 +2,8 @@
 
 ## 0.5.1
 
+* Add `vcver.txt` file in staging root which has the version
+  of the Visual Studio runtime used.
 * Add parameter `log_spawn_onerror_exit ?success_exitcodes`
 * Internal: Add `Spawn.spawn_out`
 

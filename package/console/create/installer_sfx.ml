@@ -143,10 +143,17 @@ let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~archive_path
       | None ->
           Rresult.R.error_msgf "No files matched the pattern %a" Fpath.pp
             crt_pat
-      | Some (src, _defs) -> Ok src
+      | Some (src, defs) ->
+          let vcver = Pat.format defs (Pat.v "$(vcver)") in
+          Ok (src, vcver)
     in
     let update_with_latest_vcruntimes arch =
-      let* z = latest_vccrt arch in
+      let* z, vcver = latest_vccrt arch in
+      (* We want to support
+         https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170#install-the-redistributable-packages
+         eventually. So dump the version of vcruntime which should match the version of vcredist. *)
+      let vcver_file = Fpath.(archive_dir / "vcver.txt") in
+      let* () = OS.File.writef vcver_file "%s" vcver in
       (* ex. x64/Microsoft.VC142.CRT/vcruntime140.dll, x64/Microsoft.VC142.CRT/vcruntime140_1.dll *)
       (* 7z u: https://documentation.help/7-Zip-18.0/update.htm *)
       let cmd_update =
@@ -154,6 +161,7 @@ let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~archive_path
           v (Fpath.to_string sevenz_exe)
           % "u" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
           % Fpath.to_string archive_path
+          % Fpath.to_string vcver_file
           (* DIR/* is 7z's syntax for the contents of DIR *)
           % Fpath.(to_string (z / "vcruntime*.dll")))
       in
