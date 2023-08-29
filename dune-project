@@ -1,75 +1,68 @@
 (lang dune 2.9)
 (cram enable)
+(generate_opam_files true)
+
+(source (github diskuv/dkml-install-api))
+
+(license Apache-2.0)
+(authors "Diskuv, Inc. <opensource+dkml@support.diskuv.com>")
+(maintainers "opensource+dkml@support.diskuv.com")
 
 (name dkml-install)
 (version 0.5.0)
 
 (package
- (name dkml-install))
+ (name dkml-install)
+ (synopsis "API and registry for DkML installation components")
+ (description
+  "All DkML installation components implement the interfaces exposed in this API.")
+ (depends
+  (ocaml (>= 4.08.0))
+  (alcotest (and (>= 1.4.0) :with-test))
+  (ppx_deriving (>= 5.2.1))
+  (result (>= 1.5))
+  (astring (>= 0.8.5))
+  (bos (>= 0.2.0))
+  (cmdliner (>= 1.1.1))
+  (fmt (>= 0.8.9))
+  (tsort (>= 2.1.0))
+  (diskuvbox (and (>= 0.1.1) :with-test))))
 
 (package
- (name dkml-install-runner))
+ (name dkml-install-runner)
+ (synopsis "Runner executable for DkML installation")
+ (description
+  "The runner executable is responsible for loading and running all DkML installation components.")
+ (depends
+  (alcotest (and (>= 1.4.0) :with-test))
+  (dkml-install (= :version))
+  (ppx_expect (>= v0.14.1))
+  (astring (>= 0.8.5))
+  (bos (>= 0.2.0))
+  (cmdliner (>= 1.1.1))
+  (fmt (>= 0.8.9))
+  (logs (>= 0.7.0))
+  (diskuvbox (>= 0.1.1))))
 
 (package
- (name dkml-install-installer))
+ (name dkml-install-installer)
+ (synopsis "Build tools for DkML installers")
+ (description
+  "Build-time executables that can generate Dune include files which will compile essential end-user executables.")
+ (depends
+  (alcotest (and (>= 1.4.0) :with-test))
+  (dkml-install (= :version))
+  (dkml-install-runner (= :version))))
 
 (package
- (name dkml-package-console))
-
-; (source
-;  (github diskuv/dkml-install-api))
-; (license Apache-2.0)
-; (authors "Diskuv, Inc. <opensource+diskuv-ocaml@support.diskuv.com>")
-; (maintainers "opensource+diskuv-ocaml@support.diskuv.com")
-;
-; (package
-;  (name dkml-install)
-;  (synopsis "API and registry for Diskuv OCaml (DKML) installation components")
-;  (description
-;   "All DKML installation components implement the interfaces exposed in this API.")
-;  (depends
-;   (alcotest (and (>= 1.4.0) :with-test))
-;   (odoc (and (>= 1.5.3) :with-doc))
-;   (dune (>= 2.9))
-;   (ppx_deriving (>= 5.2.1))
-;   (astring (>= 0.8.5))
-;   (bos (>= 0.2.0))
-;   (cmdliner (= 1.0.4))
-;   (fmt (>= 0.8.9))
-;   (tsort (>= 2.1.0))))
-
-; (package
-;  (name dkml-install-runner)
-;  (synopsis "Runner executable for Diskuv OCaml (DKML) installation")
-;  (description
-;   "The runner executable is responsible for loading and running all DKML installation components.")
-;  (sites
-;   ; <section> <name>
-;   (lib plugins))
-;  (depends
-;   (alcotest (and (>= 1.4.0) :with-test))
-;   (odoc (and (>= 1.5.3) :with-doc))
-;   (dkml-install (= :version))
-;   (dune (>= 2.9))
-;   (ppx_expect (>= v0.14.1))
-;   (astring (>= 0.8.5))
-;   (bos (>= 0.2.0))
-;   (cmdliner (= 1.0.4))
-;   (fmt (>= 0.8.9))
-;   (logs (>= 0.7.0))
-;   (diskuvbox (>= 0.1.0))))
-;
-; (package
-;  (name dkml-package-console)
-;  (synopsis "Console setup and uninstall executables for Diskuv OCaml (DKML) installation")
-;  (description
-;   "The setup and uninstall executables are responsible for launching the DKML runners.")
-;  (depends
-;   (alcotest (and (>= 1.4.0) :with-test))
-;   (odoc (and (>= 1.5.3) :with-doc))
-;   (dkml-install (= :version))
-;   ; runner/console/bin/dune site requires dkml-install-runner package
-;   (dkml-install-runner (= :version))
-;   (dune (>= 2.9))
-;   (diskuvbox (>= 0.1.0))
-;   (crunch (>= 3.3.1))))
+ (name dkml-package-console)
+ (synopsis "Console setup and uninstall executables for DkML installation")
+ (description "The setup and uninstall executables are responsible for launching the DkML runners.")
+ (depends
+  (alcotest (and (>= 1.4.0) :with-test))
+  (dkml-install (= :version))
+  ; runner/console/bin/dune site requires dkml-install-runner package
+  (dkml-install-runner (= :version))
+  (diskuvbox (>= 0.1.1))
+  (crunch (>= 3.3.1))
+  (dkml-component-xx-console (>= 0.1.1))))
