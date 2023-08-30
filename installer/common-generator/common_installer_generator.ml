@@ -14,6 +14,9 @@ let should_debug =
 
 let debug f = if should_debug then f Fmt.epr else ()
 
+let components_to_packages =
+  List.map (fun component -> "dkml-component-" ^ component)
+
 let create () =
   Fmt.epr "Initializing findlib: ";
   Findlib.init ();
@@ -111,13 +114,10 @@ let ocamlfind { all_components } ~phase ~desired_components () =
                   l "[%s]  depends_on = %a@." lib
                     Fmt.(Dump.list string)
                     depends_on_values);
-              (lib :: helper depends_on_values) @ helper tl)
+              (lib :: helper (components_to_packages depends_on_values))
+              @ helper tl)
     in
-    let desired_pkgs =
-      List.map
-        (fun component -> "dkml-component-" ^ component)
-        desired_components
-    in
+    let desired_pkgs = components_to_packages desired_components in
     helper desired_pkgs |> uniq
   in
   info (fun l ->
