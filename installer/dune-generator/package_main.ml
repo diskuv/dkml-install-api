@@ -33,8 +33,8 @@ let write_dune_inc fmt ~output_rel dune_inc =
     "; When regenerating, erase **all** content from this file, save the file, \
      and then run:@\n";
   Fmt.pf fmt ";   dune clean@\n";
-  Fmt.pf fmt ";   dune build '@%a/gen-dkml' --auto-promote@\n" fpath_pp_mixed
-    output_reldir;
+  Fmt.pf fmt ";   dune build '@%a' --auto-promote@\n" fpath_pp_mixed
+    Fpath.(output_reldir / "gen-dkml");
   Fmt.pf fmt "%a@\n" Fmt.(list ~sep:(any "@\n@\n") Sexp.pp_hum) dune_inc;
   Format.pp_print_flush fmt ()
 
