@@ -3,12 +3,8 @@
 name: Build with DkML compiler
 
 on:
+  # trigger on any push
   push:
-    branches:
-      - main
-      - v*
-    tags:
-      - v*
   # ... or trigger manually from GitHub web interface
   workflow_dispatch:
 
