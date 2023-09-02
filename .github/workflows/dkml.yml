@@ -55,19 +55,19 @@ jobs:
 
       - name: Setup DkML compilers on a Windows host
         if: startsWith(matrix.dkml_host_abi, 'windows_')
-        uses: .ci/dkml-compilers/gh-windows/pre
+        uses: ./.ci/dkml-compilers/gh-windows/pre
         with:
           DKML_COMPILER: ${{ env.DKML_COMPILER }}
 
       - name: Setup DkML compilers on a Darwin host
         if: startsWith(matrix.dkml_host_abi, 'darwin_')
-        uses: .ci/dkml-compilers/gh-darwin/pre
+        uses: ./.ci/dkml-compilers/gh-darwin/pre
         with:
           DKML_COMPILER: ${{ env.DKML_COMPILER }}
 
       - name: Setup DkML compilers on a Linux host
         if: startsWith(matrix.dkml_host_abi, 'linux_')
-        uses: .ci/dkml-compilers/gh-linux/pre
+        uses: ./.ci/dkml-compilers/gh-linux/pre
         with:
           DKML_COMPILER: ${{ env.DKML_COMPILER }}
 
@@ -86,12 +86,12 @@ jobs:
 
       - name: Teardown DkML compilers on a Windows host
         if: startsWith(matrix.dkml_host_abi, 'windows_')
-        uses: .ci/dkml-compilers/gh-windows/post
+        uses: ./.ci/dkml-compilers/gh-windows/post
 
       - name: Teardown DkML compilers on a Darwin host
         if: startsWith(matrix.dkml_host_abi, 'darwin_')
-        uses: .ci/dkml-compilers/gh-darwin/post
+        uses: ./.ci/dkml-compilers/gh-darwin/post
 
       - name: Teardown DkML compilers on a Linux host
         if: startsWith(matrix.dkml_host_abi, 'linux_')
-        uses: .ci/dkml-compilers/gh-linux/post
+        uses: ./.ci/dkml-compilers/gh-linux/post
