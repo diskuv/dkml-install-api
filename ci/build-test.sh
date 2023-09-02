@@ -30,5 +30,5 @@ opamrun exec -- ocamlc -config
 opamrun update
 
 # Make your own build logic! It may look like ...
-opamrun install . --deps-only --with-test
+opamrun install . --deps-only --with-test --yes
 opamrun exec -- dune runtest
