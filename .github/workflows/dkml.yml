@@ -37,13 +37,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Checkout DkML compilers on a Windows host
-        if: startsWith(matrix.dkml_host_abi, 'windows_')
-        shell: msys2 {0}
-        run: ./dk dkml.workflow.compilers PRERELEASE CI GitHub OS Windows
-
-      - name: Checkout DkML compilers on a non-Windows host
-        if: "!startsWith(matrix.dkml_host_abi, 'windows_')"
+      - name: Checkout DkML compilers code
         run: ./dk dkml.workflow.compilers PRERELEASE CI GitHub
 
       # The .ci/dkml-compilers "pre" actions will create the environment variables:
