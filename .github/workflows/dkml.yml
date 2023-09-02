@@ -36,8 +36,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
+      - name: Cache DkML compilers code
+        uses: actions/cache@v3
+        id: cache-dkml-compilers
+        with:
+          path: .ci/dkml-compilers
+          key: ${{ runner.os }}
+
       - name: Checkout DkML compilers code
+        if: steps.cache-dkml-compilers.outputs.cache-hit != 'true'
         run: ./dk dkml.workflow.compilers PRERELEASE CI GitHub
 
       # The .ci/dkml-compilers "pre" actions will create the environment variables:
