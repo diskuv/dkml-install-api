@@ -380,8 +380,9 @@ into a temporary archive tree.
   │               └── staging-ocamlrun/
   │                   └── windows_x86_64/
   ├── setup.exe.manifest
-  └── sfx/
-      └── 7zr.exe
+  ├── sfx/
+  │   └── 7zr.exe
+  └── vcver.txt
 [create_installers_work]
 
 --------------------------------------------------------------------------------
@@ -478,8 +479,9 @@ Sidenote:
   │               └── staging-ocamlrun/
   │                   └── windows_x86_64/
   ├── setup.exe.manifest
-  └── sfx/
-      └── 7zr.exe
+  ├── sfx/
+  │   └── 7zr.exe
+  └── vcver.txt
 
   $ diskuvbox tree --encoding UTF-8 -d 2 target
   target
@@ -550,6 +552,7 @@ contents is exactly the same as the archive tree, except that
   st\offline-test-a\icon.png
   st\offline-test-a\README.txt
   bin\dkml-package.bc
+  vcver.txt
   bin\dkml-install-admin-runner.exe
   bin\dkml-install-user-runner.exe
   setup.exe
@@ -578,6 +581,7 @@ contents is exactly the same as the archive tree, except that
   sg\staging-ocamlrun\windows_x86_64\bin\ocamlrun.exe
   sg\staging-ocamlrun\windows_x86_64\lib\ocaml\stublibs\dllthreads.dll
   bin\dkml-package.bc
+  vcver.txt
   bin\dkml-install-admin-runner.exe
   bin\dkml-install-user-runner.exe
   uninstall.exe

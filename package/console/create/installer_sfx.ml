@@ -18,8 +18,8 @@ let sevenz_log_level_opts =
   | Some Info -> Cmd.(output_log_level_min %% disable_stdout_stream)
   | _ -> disable_stdout_stream
 
-let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~archive_path
-    ~archive_dir =
+let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~work_dir
+    ~archive_path ~archive_dir =
   let ( let* ) = Rresult.R.bind in
   let pwd =
     Dkml_package_console_common.get_ok_or_failwith_rresult (OS.Dir.current ())
@@ -36,6 +36,9 @@ let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~archive_path
           in
           Logs.err (fun l -> l "FATAL: %s" msg);
           failwith msg
+  in
+  let work_abs_dir =
+    if Fpath.is_rel work_dir then Fpath.(pwd // work_dir) else work_dir
   in
   let run_7z cmd action =
     let* status = OS.Cmd.run_status cmd in
@@ -152,21 +155,31 @@ let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~archive_path
       (* We want to support
          https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files?view=msvc-170#install-the-redistributable-packages
          eventually. So dump the version of vcruntime which should match the version of vcredist. *)
-      let vcver_file = Fpath.(archive_dir / "vcver.txt") in
+      let vcver_file = Fpath.(work_dir / "vcver.txt") in
       let* () = OS.File.writef vcver_file "%s" vcver in
       (* ex. x64/Microsoft.VC142.CRT/vcruntime140.dll, x64/Microsoft.VC142.CRT/vcruntime140_1.dll *)
       (* 7z u: https://documentation.help/7-Zip-18.0/update.htm *)
-      let cmd_update =
+      (* let cmd_add =
+           Cmd.(
+             v (Fpath.to_string sevenz_exe)
+             % "a" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
+             % Fpath.to_string archive_path
+             (* DIR/* is 7z's syntax for the contents of DIR *)
+             % Fpath.(to_string (archive_dir / "vcver*.txt")))
+         in
+         Logs.debug (fun l -> l "Adding to 7z archive with: %a" Cmd.pp cmd_add);
+         let* () = run_7z cmd_add "add to a self-extracting archive" in *)
+      let cmd_add =
         Cmd.(
           v (Fpath.to_string sevenz_exe)
-          % "u" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
+          % "a" %% sevenz_log_level_opts %% sevenz_compression_level_opts % "-y"
           % Fpath.to_string archive_path
-          % Fpath.to_string vcver_file
           (* DIR/* is 7z's syntax for the contents of DIR *)
-          % Fpath.(to_string (z / "vcruntime*.dll")))
+          % Fpath.(to_string (z / "vcruntime*.dll"))
+          % Fpath.(to_string (work_abs_dir / "vcver*.txt")))
       in
-      Logs.debug (fun l -> l "Updating 7z archive with: %a" Cmd.pp cmd_update);
-      run_7z cmd_update "update a self-extracting archive"
+      Logs.debug (fun l -> l "Adding to 7z archive with: %a" Cmd.pp cmd_add);
+      run_7z cmd_add "add to a self-extracting archive"
     in
     let add_vcredist ~src =
       (* 7z a: https://documentation.help/7-Zip-18.0/add1.htm *)
@@ -353,7 +366,7 @@ let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
      in
      (* Step 2. Create ARCHIVE *)
      let* () =
-       create_7z_archive ~sevenz_exe ~install_direction ~abi_selector
+       create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~work_dir
          ~archive_path ~archive_dir
      in
      (* Step 3. Create SFX || ARCHIVE. Return sfx.exe *)
