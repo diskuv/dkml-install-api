@@ -76,9 +76,11 @@ let map f fwd =
   | Completed -> Completed
 
 let catch_exceptions ~id fl f =
+  (* Sister function is Error_handling.catch_and_exit_on_error *)
   try f fl
-  with _ ->
-    fl ~id (Printexc.get_backtrace ());
+  with e ->
+    let msg = Printexc.to_string e and stack = Printexc.get_backtrace () in
+    fl ~id (Fmt.str "@[%a@]@,@[%a@]" Fmt.lines msg Fmt.lines stack);
     Halted_progress Exit_unrecoverable_failure
 
 let pos_to_id (file, lnum, _cnum, _enum) =

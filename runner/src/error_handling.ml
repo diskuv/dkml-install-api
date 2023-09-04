@@ -7,6 +7,7 @@ let runner_fatal_log ~id s =
       l "%a%a@." styled_fatal_id id pp_style2 s)
 
 let catch_and_exit_on_error ~id f =
+  (* Sister function is Forward_progress.catch_exceptions *)
   try f ()
   with e ->
     let msg = Printexc.to_string e and stack = Printexc.get_backtrace () in
