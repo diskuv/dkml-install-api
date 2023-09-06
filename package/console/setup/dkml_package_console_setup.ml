@@ -49,25 +49,25 @@ let setup target_abi program_version organization program_name program_assets
       ( Dkml_install_runner.Error_handling.map_string_error_to_progress,
         Dkml_install_runner.Error_handling.map_rresult_error_to_progress )
     in
-    let* prefix, _fl =
+    let* prefix_dir, _fl =
       Dkml_package_console_common.get_user_installation_prefix ~program_name
         ~target_abi ~prefix_opt
     in
     let args =
-      Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config ~prefix
-        ~staging_files_source
+      Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config
+        ~prefix_dir ~staging_files_source
     in
-    let* archivedir, _fl =
+    let* archive_dir, _fl =
       Dkml_install_runner.Cmdliner_runner.enduser_archive_dir ()
     in
 
-    let exe_cmd s = Cmd.v Fpath.(to_string (archivedir / "bin" / s)) in
+    let exe_cmd s = Cmd.v Fpath.(to_string (archive_dir / "bin" / s)) in
 
     let spawn_admin_if_needed () =
       let open Dkml_package_console_common in
       let* needs, _fl =
-        needs_install_admin ~reg ~target_abi ~selector ~log_config ~prefix
-          ~staging_files_source
+        needs_install_admin ~reg ~target_abi ~selector ~log_config ~prefix_dir
+          ~archive_dir ~staging_files_source
       in
       let* ec, fl =
         elevated_cmd ~target_abi ~staging_files_source
@@ -91,7 +91,7 @@ let setup target_abi program_version organization program_name program_assets
     in
     (* The uninstaller may or may not be embedded. *)
     let uninstall_exe =
-      Fpath.(archivedir / "bin" / "dkml-package-uninstall.exe")
+      Fpath.(archive_dir / "bin" / "dkml-package-uninstall.exe")
     in
     let* is_uninstall_embedded, _fl =
       map_rresult_error_to_progress (Bos.OS.File.exists uninstall_exe)
@@ -102,13 +102,13 @@ let setup target_abi program_version organization program_name program_assets
         let* (), _fl =
           map_string_error_to_progress
             (Diskuvbox.copy_file ~err:box_err ~src:uninstall_exe
-               ~dst:Fpath.(prefix / "uninstall.exe")
+               ~dst:Fpath.(prefix_dir / "uninstall.exe")
                ())
         in
         (* Write uninstaller into Windows registry *)
         let* (), _fl =
           Windows_registry.Add_remove_programs.write_program_entry
-            ~installation_prefix:prefix ~organization ~program_name
+            ~installation_prefix:prefix_dir ~organization ~program_name
             ~program_assets ~program_version ~program_info
         in
         return ()
@@ -133,8 +133,8 @@ let setup target_abi program_version organization program_name program_assets
           let+ () =
             if exists then
               map_string_error_to_progress
-                (Diskuvbox.copy_dir ~err:box_err ~src:static_dir_fp ~dst:prefix
-                   ())
+                (Diskuvbox.copy_dir ~err:box_err ~src:static_dir_fp
+                   ~dst:prefix_dir ())
             else return ()
           in
           ())

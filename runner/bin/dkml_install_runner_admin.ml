@@ -43,11 +43,11 @@ let uninstall_admin_cmds ~reg ~target_abi ~selector =
    User Account Control prompt and on Unix we only want one sudo password
    prompt. Drawback is that progress is a bit harder to track; we'll survive! *)
 
-let run_cmd_with_common_runner_args ~log_config ~prefix ~staging_files_source
-    acc cmd =
+let run_cmd_with_common_runner_args ~log_config ~prefix_dir
+    ~staging_files_source acc cmd =
   let common_runner_cmd =
-    Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config ~prefix
-      ~staging_files_source
+    Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config
+      ~prefix_dir ~staging_files_source
   in
   let common_runner_args = Array.append [| Cmd.name cmd |] common_runner_cmd in
   match acc with
@@ -67,14 +67,14 @@ let run_cmd_with_common_runner_args ~log_config ~prefix ~staging_files_source
   | _ as a -> a
 
 let helper_all_cmd ~doc ~name ~install_direction ~program_version f =
-  let runall log_config selector prefix staging_files_opt opam_context_opt =
+  let runall log_config selector prefix_dir staging_files_opt opam_context_opt =
     let* staging_files_source, _fl =
       Dkml_install_runner.Path_location.staging_files_source
         ~staging_default:No_staging_default ~opam_context_opt ~staging_files_opt
     in
     return
       (List.fold_left
-         (run_cmd_with_common_runner_args ~log_config ~prefix
+         (run_cmd_with_common_runner_args ~log_config ~prefix_dir
             ~staging_files_source)
          (`Ok ())
          (f ~selector:(to_selector selector)))
@@ -86,7 +86,7 @@ let helper_all_cmd ~doc ~name ~install_direction ~program_version f =
         (Dkml_install_runner.Cmdliner_runner.unwrap_progress_nodefault_t
            (const runall $ setup_log_t
            $ component_selector_t ~install_direction
-           $ prefix_t $ staging_files_opt_t $ opam_context_opt_t)))
+           $ prefix_dir_t $ staging_files_opt_t $ opam_context_opt_t)))
 
 let install_all_cmd ~reg ~target_abi =
   let doc = "install all components" in

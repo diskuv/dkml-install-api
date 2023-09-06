@@ -21,12 +21,13 @@ module Interpreter : sig
     self_component_name:string ->
     abi:Dkml_install_api.Context.Abi_v2.t ->
     staging_files_source:Path_location.staging_files_source ->
-    prefix:Fpath.t ->
+    prefix_dir:Fpath.t ->
+    archive_dir:Fpath.t ->
     t Dkml_install_api.Forward_progress.t
-  (** [create global_ctx ~self_component_name ~abi ~staging_files_source ~prefix]
+  (** [create global_ctx ~self_component_name ~abi ~staging_files_source ~prefix_dir ~archive_dir]
       creates an interpreter
       for the component [self_component_name] for installations into
-      the [prefix] directory. 
+      the [prefix_dir] directory. 
         
       [global_ctx] is the global context from {!Global_context.create}. *)
 
@@ -34,9 +35,10 @@ module Interpreter : sig
     self_component_name:string ->
     abi:Dkml_install_api.Context.Abi_v2.t ->
     staging_files_source:Path_location.staging_files_source ->
-    prefix:Fpath.t ->
+    prefix_dir:Fpath.t ->
+    archive_dir:Fpath.t ->
     t Dkml_install_api.Forward_progress.t
-  (** [create_minimal ~self_component_name ~abi ~staging_files_source ~prefix]
+  (** [create_minimal ~self_component_name ~abi ~staging_files_source ~prefix_dir ~archive_dir]
       creates a "minimal" interpreter with only one [self_component_name]
       component. The interpreter also has access to non-component
       specific variables. *)

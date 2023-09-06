@@ -63,12 +63,12 @@ let version_m_n_o_p version =
   | Some (major, minor, patch, _info) -> Fmt.str "%d.%d.%d.0" major minor patch
   | None -> "0.0.0.0"
 
-let create_minimal_context ~self_component_name ~log_config ~target_abi ~prefix
-    ~staging_files_source =
+let create_minimal_context ~self_component_name ~log_config ~target_abi
+    ~prefix_dir ~archive_dir ~staging_files_source =
   let open Dkml_install_runner.Path_eval in
   let* interpreter, _fl =
     Interpreter.create_minimal ~self_component_name ~abi:target_abi
-      ~staging_files_source ~prefix
+      ~staging_files_source ~prefix_dir ~archive_dir
   in
   return
     {
@@ -78,15 +78,16 @@ let create_minimal_context ~self_component_name ~log_config ~target_abi ~prefix
       log_config;
     }
 
-let needs_install_admin ~reg ~selector ~log_config ~target_abi ~prefix
-    ~staging_files_source =
+let needs_install_admin ~reg ~selector ~log_config ~target_abi ~prefix_dir
+    ~archive_dir ~staging_files_source =
   let+ bools =
     Dkml_install_register.Component_registry.install_eval reg ~selector
       ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         let* ctx, _fl =
           create_minimal_context ~self_component_name:Cfg.component_name
-            ~log_config ~target_abi ~prefix ~staging_files_source
+            ~log_config ~target_abi ~prefix_dir ~archive_dir
+            ~staging_files_source
         in
         Logs.debug (fun l ->
             l
@@ -100,15 +101,16 @@ let needs_install_admin ~reg ~selector ~log_config ~target_abi ~prefix
   in
   List.exists Fun.id bools
 
-let needs_uninstall_admin ~reg ~selector ~log_config ~target_abi ~prefix
-    ~staging_files_source =
+let needs_uninstall_admin ~reg ~selector ~log_config ~target_abi ~prefix_dir
+    ~archive_dir ~staging_files_source =
   let+ bools =
     Dkml_install_register.Component_registry.uninstall_eval reg ~selector
       ~fl:Dkml_install_runner.Error_handling.runner_fatal_log ~f:(fun cfg ->
         let module Cfg = (val cfg : Component_config) in
         let* ctx, _fl =
           create_minimal_context ~self_component_name:Cfg.component_name
-            ~log_config ~target_abi ~prefix ~staging_files_source
+            ~log_config ~target_abi ~prefix_dir ~archive_dir
+            ~staging_files_source
         in
         Logs.debug (fun l ->
             l

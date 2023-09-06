@@ -43,8 +43,8 @@ let setup_log_t =
 (* Define a context that includes all component-based fields *)
 
 let create_context ~install_direction ~staging_default ~target_abi
-    self_component_name reg log_config prefix staging_files_opt opam_context_opt
-    =
+    self_component_name reg log_config prefix_dir archive_dir staging_files_opt
+    opam_context_opt =
   let open Path_eval in
   let open Error_handling.Monad_syntax in
   let* staging_files_source, _fl =
@@ -54,7 +54,7 @@ let create_context ~install_direction ~staging_default ~target_abi
   let* global_context, _fl = Global_context.create ~install_direction reg in
   let* interpreter, _fl =
     Interpreter.create global_context ~install_direction ~self_component_name
-      ~abi:target_abi ~staging_files_source ~prefix
+      ~abi:target_abi ~staging_files_source ~prefix_dir ~archive_dir
   in
   return
     {
@@ -84,7 +84,7 @@ let raw_dir =
 
 (* Options for installation commands *)
 
-let prefix_t =
+let prefix_dir_t =
   let doc = "$(docv) is the installation directory" in
   let t =
     Arg.(
@@ -166,10 +166,10 @@ let opam_context_opt_t =
       (Cmdliner.Manpage.escape "$OPAMROOT")
       Cmdliner_common.opam_context_args
       (if Sys.win32 then
-       Cmdliner.Manpage.escape
-         "(& opam env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression \
-          $_ }` for Windows PowerShell or `eval $(opam env)"
-      else "eval $(opam env)")
+         Cmdliner.Manpage.escape
+           "(& opam env) -split '\\r?\\n' | ForEach-Object { Invoke-Expression \
+            $_ }` for Windows PowerShell or `eval $(opam env)"
+       else "eval $(opam env)")
   in
   (* IMPORTANT: Do not get cute and try to default this to the environment
      variable OPAM_SWITCH_PREFIX. That would make self-contained installers
@@ -251,13 +251,14 @@ let unwrap_progress_nodefault_t t =
     `--opam-context` option of setup.exe) into the staging directory argument
     for admin.exe. *)
 let ctx_for_runner_t ~install_direction ~target_abi component_name reg =
+  let archive_dir = Error_handling.continue_or_exit @@ enduser_archive_dir () in
   let t =
     Term.(
       const
         (create_context ~install_direction ~target_abi
            ~staging_default:No_staging_default)
-      $ const component_name $ const reg $ setup_log_t $ prefix_t
-      $ staging_files_opt_t $ opam_context_opt_t)
+      $ const component_name $ const reg $ setup_log_t $ prefix_dir_t
+      $ const archive_dir $ staging_files_opt_t $ opam_context_opt_t)
   in
   unwrap_progress_nodefault_t t
 
@@ -273,18 +274,16 @@ let ctx_for_runner_t ~install_direction ~target_abi component_name reg =
     Unlike {!ctx_for_runner_t} the staging directory has a default
     (`Staging_default_dir`) based on relative paths from setup.exe. *)
 let ctx_for_package_t ~install_direction ~target_abi component_name reg =
+  let archive_dir = Error_handling.continue_or_exit @@ enduser_archive_dir () in
   let staging_default =
     Path_location.Staging_default_dir
-      (fun () ->
-        staging_default_dir_for_package
-          ~archive_dir:
-            (Error_handling.continue_or_exit @@ enduser_archive_dir ()))
+      (fun () -> staging_default_dir_for_package ~archive_dir)
   in
   let t =
     Term.(
       const (create_context ~install_direction ~target_abi ~staging_default)
-      $ const component_name $ const reg $ setup_log_t $ prefix_t
-      $ staging_files_opt_t $ opam_context_opt_t)
+      $ const component_name $ const reg $ setup_log_t $ prefix_dir_t
+      $ const archive_dir $ staging_files_opt_t $ opam_context_opt_t)
   in
   unwrap_progress_nodefault_t t
 
@@ -309,13 +308,13 @@ let component_selector_t ~install_direction =
 
 (* Misc *)
 
-let common_runner_args ~log_config ~prefix ~staging_files_source =
+let common_runner_args ~log_config ~prefix_dir ~staging_files_source =
   let z s = "--" ^ s in
   let args =
     Array.concat
       [
         Dkml_install_api.Log_config.to_args log_config;
-        [| z Cmdliner_common.prefix_arg; Fpath.to_string prefix |];
+        [| z Cmdliner_common.prefix_arg; Fpath.to_string prefix_dir |];
       ]
   in
   let args =

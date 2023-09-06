@@ -38,7 +38,7 @@ let () =
                      "There was at least one unresolved expression: \
                       %{components:all}%. Only the following components are \
                       visible: \n\
-                      [tmp; prefix; _:share-generic; _:share-abi; \
+                      [tmp; prefix; archive; _:share-generic; _:share-abi; \
                       ocamlrun:share-generic;\n\
                      \ ocamlrun:share-abi]")
                   r );

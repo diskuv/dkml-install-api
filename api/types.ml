@@ -143,30 +143,31 @@ The following fields are available from the context:
   expression will convert the path into native Windows (ex. C:\Program Files)
   or Unix format (ex. /usr/local/share).
 
-  An example expression is ["%{ocamlrun:share}/generic/bin/ocamlrun"]
+  An example expression is ["%{ocamlrun:share}%/generic/bin/ocamlrun"]
   which would be the location of ocamlrun.exe within the staging files directory.
 
   Templates:
 
-  - ["%{prefix}"] is the absolute path of the final installation directory. If you
+  - ["%{prefix}%"] is the absolute path of the final installation directory. If you
     are following {{:https://www.gnu.org/prep/standards/html_node/Directory-Variables.html} GNU directory standards},
-    you should populate ["%{prefix}"] with subdirectories "bin/", "share/", etc.
-  - ["%{tmp}"] is the absolute path to a temporary directory unique to the
+    you should populate ["%{prefix}%"] with subdirectories "bin/", "share/", etc.
+  - ["%{archive}%"] is the absolute path of the staging files directory.
+  - ["%{tmp}%"] is the absolute path to a temporary directory unique to the
     component that is currently being installed. No other component will use the
     same temporary directory.
-  - ["%{_:share-generic}"] is the absolute path to the ``generic`` Staging Files
+  - ["%{_:share-generic}%"] is the absolute path to the ``generic`` Staging Files
     directory of the component currently being installed.
-  - ["%{_:share-abi}"] is the absolute path to the ``<abi>`` Staging Files
+  - ["%{_:share-abi}%"] is the absolute path to the ``<abi>`` Staging Files
     of the component currently being installed, where ``<abi>`` is the
     ABI currently being installed
 
   More templates available to all [ctx] except [needs_admin ctx]:
 
-  - ["%{COMPONENT_NAME:share-generic}"] is the absolute path to
+  - ["%{COMPONENT_NAME:share-generic}%"] is the absolute path to
     the ``generic`` Staging Files of the named component.
     {e {b Only COMPONENT_NAMEs that are transitive dependencies
     of the currently-being-installed component will be resolved.}}
-  - ["%{COMPONENT_NAME:share-abi}"] is the absolute path to
+  - ["%{COMPONENT_NAME:share-abi}%"] is the absolute path to
     the ``<abi>`` Staging Files of the named component, where
     ``<abi>`` is the ABI currently being installed
 
@@ -194,7 +195,7 @@ The following fields are available from the context:
   Evaluates the given expression, resolving any templates embedded in the
   expression.
 
-  An example expression is ["%{components:all}"].
+  An example expression is ["%{components:all}%"].
 
   All templates that are available with [path_eval] are available with [eval].
   However unlike [path_eval] the [eval] function will do no path conversions on
@@ -203,8 +204,8 @@ The following fields are available from the context:
 
   Templates available to [eval] but not in [path_eval]:
 
-  - ["%{name}"] is the name of the component currently being installed
-  - ["%{components:all}"] is the space separated names of the components that are
+  - ["%{name}%"] is the name of the component currently being installed
+  - ["%{components:all}%"] is the space separated names of the components that are
   or will be installed
   }
 

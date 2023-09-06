@@ -59,14 +59,16 @@ module Interpreter = struct
     all_pathonly_vars : (string * string) list;
   }
 
-  let create_minimal ~self_component_name ~abi ~staging_files_source ~prefix =
+  let create_minimal ~self_component_name ~abi ~staging_files_source ~prefix_dir
+      ~archive_dir =
     let name_var = ("name", self_component_name) in
 
     let* temp_val, _fl =
       Error_handling.map_msg_error_to_progress (OS.Dir.tmp "path_eval_%s")
     in
     let temp_var = ("tmp", Fpath.to_string temp_val) in
-    let prefix_var = ("prefix", Fpath.to_string prefix) in
+    let prefix_var = ("prefix", Fpath.to_string prefix_dir) in
+    let archive_var = ("archive", Fpath.to_string archive_dir) in
     let current_share_generic_var =
       ( "_:share-generic",
         Fpath.to_string
@@ -83,7 +85,11 @@ module Interpreter = struct
     in
     let local_pathonly_vars =
       [
-        temp_var; prefix_var; current_share_generic_var; current_share_arch_var;
+        temp_var;
+        prefix_var;
+        archive_var;
+        current_share_generic_var;
+        current_share_arch_var;
       ]
     in
     let local_vars = [ name_var ] @ local_pathonly_vars in
@@ -91,14 +97,15 @@ module Interpreter = struct
     return { all_vars = local_vars; all_pathonly_vars = local_pathonly_vars }
 
   let create global_ctx ~install_direction ~self_component_name ~abi
-      ~staging_files_source ~prefix =
+      ~staging_files_source ~prefix_dir ~archive_dir =
     let name_var = ("name", self_component_name) in
     let* temp_val, _fl =
       Error_handling.map_msg_error_to_progress
         (Global_context.tmp_dir global_ctx)
     in
     let temp_var = ("tmp", Fpath.to_string temp_val) in
-    let prefix_var = ("prefix", Fpath.to_string prefix) in
+    let prefix_var = ("prefix", Fpath.to_string prefix_dir) in
+    let archive_var = ("archive", Fpath.to_string archive_dir) in
     let current_share_generic_var =
       ( "_:share-generic",
         Fpath.to_string
@@ -114,7 +121,13 @@ module Interpreter = struct
              staging_files_source) )
     in
     let local_pathonly_vars =
-      [ temp_var; prefix_var; current_share_generic_var; current_share_abi_var ]
+      [
+        temp_var;
+        prefix_var;
+        archive_var;
+        current_share_generic_var;
+        current_share_abi_var;
+      ]
     in
     let local_vars = [ name_var ] @ local_pathonly_vars in
 
@@ -213,7 +226,8 @@ module Private = struct
       Interpreter.create mock_global_ctx ~install_direction:Install
         ~self_component_name:"component_under_test" ~abi:Windows_x86
         ~staging_files_source:mock_staging_files_sources
-        ~prefix:(Fpath.v "/test/prefix")
+        ~prefix_dir:(Fpath.v "/test/prefix")
+        ~archive_dir:(Fpath.v "/test/archive")
     in
     let extra_pathonly_vars =
       [

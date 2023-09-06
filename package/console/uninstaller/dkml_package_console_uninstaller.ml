@@ -36,25 +36,25 @@ let uninstall target_abi program_name package_args : unit =
   in
 
   let uninstall_sequence _fl : unit Forward_progress.t =
-    let* prefix, _fl =
+    let* prefix_dir, _fl =
       Dkml_package_console_common.get_user_installation_prefix ~program_name
         ~target_abi ~prefix_opt
     in
-    let args =
-      Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config ~prefix
-        ~staging_files_source
-    in
-    let* archivedir, _fl =
+    let* archive_dir, _fl =
       Dkml_install_runner.Cmdliner_runner.enduser_archive_dir ()
     in
+    let args =
+      Dkml_install_runner.Cmdliner_runner.common_runner_args ~log_config
+        ~prefix_dir ~staging_files_source
+    in
 
-    let exe_cmd s = Cmd.v Fpath.(to_string (archivedir / "bin" / s)) in
+    let exe_cmd s = Cmd.v Fpath.(to_string (archive_dir / "bin" / s)) in
 
     let spawn_admin_if_needed () =
       let open Dkml_package_console_common in
       let* needs, _fl =
-        needs_uninstall_admin ~reg ~target_abi ~selector ~log_config ~prefix
-          ~staging_files_source
+        needs_uninstall_admin ~reg ~target_abi ~selector ~log_config ~prefix_dir
+          ~archive_dir ~staging_files_source
       in
       let* ec, fl =
         elevated_cmd ~target_abi ~staging_files_source

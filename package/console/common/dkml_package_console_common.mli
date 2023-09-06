@@ -18,7 +18,8 @@ val needs_install_admin :
   selector:Dkml_install_register.Component_registry.component_selector ->
   log_config:Dkml_install_api.Log_config.t ->
   target_abi:Dkml_install_api.Context.Abi_v2.t ->
-  prefix:Fpath.t ->
+  prefix_dir:Fpath.t ->
+  archive_dir:Fpath.t ->
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
   bool Dkml_install_api.Forward_progress.t
 
@@ -27,7 +28,8 @@ val needs_uninstall_admin :
   selector:Dkml_install_register.Component_registry.component_selector ->
   log_config:Dkml_install_api.Log_config.t ->
   target_abi:Dkml_install_api.Context.Abi_v2.t ->
-  prefix:Fpath.t ->
+  prefix_dir:Fpath.t ->
+  archive_dir:Fpath.t ->
   staging_files_source:Dkml_install_runner.Path_location.staging_files_source ->
   bool Dkml_install_api.Forward_progress.t
 
