@@ -57,13 +57,16 @@ let validate ?raise_on_error reg =
                let msg =
                  Fmt.str
                    "FATAL [14b63c08]. The component '%s' declares a dependency \
-                    on '%s' but that dependency is not available as a plugin. \
-                    Check the following in order: 1) Has `dkml-component-%s` \
-                    been added as an Opam (or findlib) dependency? 2) Does \
+                    on '%s' but that component is not available. Check the \
+                    following in order: 1) Has `dkml-component-%s` been added \
+                    as an Opam (or findlib) dependency? 2) Does \
                     `dkml-component-%s` call [Registry.add_component] using \
-                    [component_name=%a]?"
+                    [component_name=%a]? 3) Is there a \
+                    `META.dkml-component-%s.template` with either an \
+                    `install_depends_on` or `uninstall_depends_on` space \
+                    separated option that includes `%s`?"
                    Cfg.component_name dependency dependency dependency
-                   Fmt.Dump.string dependency
+                   Fmt.Dump.string dependency Cfg.component_name dependency
                in
                on_error msg raise_on_error)
            (Cfg.install_depends_on @ Cfg.uninstall_depends_on))
