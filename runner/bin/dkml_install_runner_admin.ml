@@ -91,13 +91,13 @@ let helper_all_cmd ~doc ~name ~install_direction ~program_version f =
 let install_all_cmd ~reg ~target_abi =
   let doc = "install all components" in
   helper_all_cmd ~name:"install-adminall" ~doc
-    ~install_direction:Dkml_install_runner.Path_eval.Global_context.Install
+    ~install_direction:Dkml_install_register.Install
     (install_admin_cmds ~reg ~target_abi)
 
 let uninstall_all_cmd ~reg ~target_abi =
   let doc = "uninstall all components" in
   helper_all_cmd ~name:"uninstall-adminall" ~doc
-    ~install_direction:Dkml_install_runner.Path_eval.Global_context.Uninstall
+    ~install_direction:Dkml_install_register.Uninstall
     (uninstall_admin_cmds ~reg ~target_abi)
 
 let main ~target_abi ~program_version =
@@ -112,8 +112,8 @@ let main ~target_abi ~program_version =
   (* Get all the available components *)
   let reg = Component_registry.get () in
   let open Dkml_install_runner.Error_handling in
-  Component_registry.validate reg;
-  let doc = "the OCaml CLI administrator installer" in
+  Component_registry.validate reg Dkml_install_register.Install;
+  let doc = "the administrator CLI installer" in
   let sdocs = Cmdliner.Manpage.s_common_options in
   exit
     (catch_and_exit_on_error ~id:"0c9ebd09" (fun () ->

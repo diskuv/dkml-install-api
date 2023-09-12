@@ -1,3 +1,5 @@
+include Register_types
+
 module Component_registry = Registry
 
 module Private = struct

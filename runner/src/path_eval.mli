@@ -2,13 +2,11 @@ module Global_context : sig
   type t
   (** the type of the global context *)
 
-  type install_direction = Install | Uninstall
-
   val create :
-    install_direction:install_direction ->
     Dkml_install_register.Component_registry.t ->
+    Dkml_install_register.install_direction ->
     t Dkml_install_api.Forward_progress.t
-  (** [create registry] creates a global context for components in the
+  (** [create registry direction] creates a global context for components in the
       [registry] *)
 end
 
@@ -17,7 +15,7 @@ module Interpreter : sig
 
   val create :
     Global_context.t ->
-    install_direction:Global_context.install_direction ->
+    install_direction:Dkml_install_register.install_direction ->
     self_component_name:string ->
     abi:Dkml_install_api.Context.Abi_v2.t ->
     staging_files_source:Path_location.staging_files_source ->

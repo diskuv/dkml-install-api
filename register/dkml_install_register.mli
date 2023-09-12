@@ -1,3 +1,5 @@
+include module type of Register_types
+
 (** The [Component_registry] is a global registry of all components that have been
     registered until now.
 

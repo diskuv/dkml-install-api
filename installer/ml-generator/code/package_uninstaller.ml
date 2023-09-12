@@ -16,8 +16,7 @@ let uninstall_cmd =
       $ Dkml_package_console_common.package_args_t
           ~program_name:Private_common.program_name
           ~target_abi:(failwith "TEMPLATE: target_abi")
-          ~install_direction:
-            Dkml_install_runner.Path_eval.Global_context.Uninstall)
+          ~install_direction:Dkml_install_register.Uninstall)
 
 let () =
   Logs.set_reporter (Logs.format_reporter ());

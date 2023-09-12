@@ -21,8 +21,9 @@ module type Intf = sig
       Ordinarily if there is an error a process {!exit} is performed. Set
       [raise_on_error] to [true] to raise an {!Invalid_argument} error instead. *)
 
-  val validate : ?raise_on_error:bool -> t -> unit
-  (** [validate ?raise_on_error registry] succeeds if and only if all dependencies of all
+  val validate :
+    ?raise_on_error:bool -> t -> Register_types.install_direction -> unit
+  (** [validate ?raise_on_error registry direction] succeeds if and only if all dependencies of all
       [add_component registry] have been themselves added.
         
       Ordinarily if there is an error a process {!exit} is performed. Set

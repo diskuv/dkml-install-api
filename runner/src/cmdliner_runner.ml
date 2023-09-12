@@ -51,7 +51,7 @@ let create_context ~install_direction ~staging_default ~target_abi
     Path_location.staging_files_source ~staging_default ~opam_context_opt
       ~staging_files_opt
   in
-  let* global_context, _fl = Global_context.create ~install_direction reg in
+  let* global_context, _fl = Global_context.create reg install_direction in
   let* interpreter, _fl =
     Interpreter.create global_context ~install_direction ~self_component_name
       ~abi:target_abi ~staging_files_source ~prefix_dir ~archive_dir
@@ -292,10 +292,11 @@ let to_selector component_selector =
     Dkml_install_register.Component_registry.All_components
   else Just_named_components_plus_their_dependencies component_selector
 
-let component_selector_t ~install_direction =
+let component_selector_t
+    ~(install_direction : Dkml_install_register.install_direction) =
   let doc =
     match install_direction with
-    | Path_eval.Global_context.Install ->
+    | Install ->
         "A component to install; all the components it depends on are \
          implicitly added. May be repeated. If no components are specified, \
          then all components are installed."

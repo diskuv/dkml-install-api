@@ -7,8 +7,8 @@
 open Bos
 open Dkml_install_runner.Error_handling.Monad_syntax
 
-let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
-    ~program_name ~program_version =
+let generate ~(install_direction : Dkml_install_register.install_direction)
+    ~archive_dir ~target_dir ~abi_selector ~program_name ~program_version =
   let abi_name =
     Dkml_install_runner.Path_location.show_abi_selector abi_selector
   in
@@ -16,9 +16,7 @@ let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
     program_name.Dkml_package_console_common.Author_types.name_kebab_lower_case
   in
   let direction =
-    match install_direction with
-    | Dkml_install_runner.Path_eval.Global_context.Install -> "i"
-    | Uninstall -> "u"
+    match install_direction with Install -> "i" | Uninstall -> "u"
   in
   let installer_basename_with_direction_and_ver =
     Fmt.str "%s-%s-%s-%s" program_name_kebab_lower_case abi_name direction

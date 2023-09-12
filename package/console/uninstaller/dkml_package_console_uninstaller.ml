@@ -66,7 +66,7 @@ let uninstall target_abi program_name package_args : unit =
       if needs then spawn ec else Forward_progress.return ((), fl)
     in
     (* Validate *)
-    Component_registry.validate reg;
+    Component_registry.validate reg Dkml_install_register.Uninstall;
     (* Diagnostics *)
     let* (_ : unit list), _fl =
       Component_registry.uninstall_eval reg ~selector

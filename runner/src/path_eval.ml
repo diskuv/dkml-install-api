@@ -22,9 +22,7 @@ module Global_context = struct
     reg : Component_registry.t;
   }
 
-  type install_direction = Install | Uninstall
-
-  let create ~install_direction reg =
+  let create reg (install_direction : Dkml_install_register.install_direction) =
     let* var_list, _fl =
       let eval =
         match install_direction with
@@ -96,8 +94,9 @@ module Interpreter = struct
 
     return { all_vars = local_vars; all_pathonly_vars = local_pathonly_vars }
 
-  let create global_ctx ~install_direction ~self_component_name ~abi
-      ~staging_files_source ~prefix_dir ~archive_dir =
+  let create global_ctx
+      ~(install_direction : Dkml_install_register.install_direction)
+      ~self_component_name ~abi ~staging_files_source ~prefix_dir ~archive_dir =
     let name_var = ("name", self_component_name) in
     let* temp_val, _fl =
       Error_handling.map_msg_error_to_progress
@@ -138,7 +137,7 @@ module Interpreter = struct
     in
     let eval =
       match install_direction with
-      | Global_context.Install -> Component_registry.install_eval
+      | Install -> Component_registry.install_eval
       | Uninstall -> Component_registry.uninstall_eval
     in
     let* self_component_vars, _fl =

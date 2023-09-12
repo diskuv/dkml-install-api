@@ -90,7 +90,8 @@ let test_validate_failure () =
     (let reg = Component_registry.get () in
      Component_registry.add_component ~raise_on_error:true reg (module A);
      try
-       Component_registry.validate ~raise_on_error:true reg;
+       Component_registry.validate ~raise_on_error:true reg
+         Dkml_install_register.Install;
        "expected to raise an exception but didn't"
      with Invalid_argument s -> s)
 
@@ -103,7 +104,8 @@ let test_validate_success () =
      Component_registry.add_component ~raise_on_error:true reg (module A);
      Component_registry.add_component ~raise_on_error:true reg (module B);
      Component_registry.add_component ~raise_on_error:true reg (module C);
-     Component_registry.validate ~raise_on_error:true reg)
+     Component_registry.validate ~raise_on_error:true reg
+       Dkml_install_register.Install)
 
 let () =
   let open Alcotest in

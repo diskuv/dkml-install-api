@@ -14,19 +14,18 @@ let generate_installer_from_archive_dir ~install_direction ~archive_dir
      See CROSSPLATFORM-TODO.md *)
   let uninstallers = ref None in
   (if Sys.win32 then
-   match abi_selector with
-   | Dkml_install_runner.Path_location.Abi abi
-     when Dkml_install_api.Context.Abi_v2.is_windows abi ->
-       Logs.debug (fun l -> l "Generating self-extracting executable (SFX)");
-       let installer_path =
-         Installer_sfx.generate ~install_direction ~archive_dir ~target_dir
-           ~abi_selector ~organization ~program_name ~program_version ~work_dir
-       in
-       if
-         install_direction
-         = Dkml_install_runner.Path_eval.Global_context.Uninstall
-       then uninstallers := Some installer_path
-   | _ -> ());
+     match abi_selector with
+     | Dkml_install_runner.Path_location.Abi abi
+       when Dkml_install_api.Context.Abi_v2.is_windows abi ->
+         Logs.debug (fun l -> l "Generating self-extracting executable (SFX)");
+         let installer_path =
+           Installer_sfx.generate ~install_direction ~archive_dir ~target_dir
+             ~abi_selector ~organization ~program_name ~program_version
+             ~work_dir
+         in
+         if install_direction = Dkml_install_register.Uninstall then
+           uninstallers := Some installer_path
+     | _ -> ());
   (* All operating systems can have an archive *)
   Logs.debug (fun l -> l "Generating tar.gz capable archive");
   let* (), _fl =
@@ -121,8 +120,8 @@ let create_forone_abi ~abi_selector ~install_component_names
   let uninstall_archive_dir = get_archive_dir "u" in
   Logs.debug (fun l -> l "Creating uninstaller");
   let* uninstaller_opt, _fl =
-    create_installer Dkml_install_runner.Path_eval.Global_context.Uninstall
-      uninstall_archive_dir uninstall_component_names packager_uninstall_exe
+    create_installer Dkml_install_register.Uninstall uninstall_archive_dir
+      uninstall_component_names packager_uninstall_exe
       packager_uninstaller_bytecode
   in
   (match
@@ -142,9 +141,8 @@ let create_forone_abi ~abi_selector ~install_component_names
   | Some _, _, _, _ | None, _, _, _ -> ());
   Logs.debug (fun l -> l "Creating installer");
   let* _uninstallers, _fl =
-    create_installer Dkml_install_runner.Path_eval.Global_context.Install
-      install_archive_dir install_component_names packager_install_exe
-      packager_setup_bytecode
+    create_installer Dkml_install_register.Install install_archive_dir
+      install_component_names packager_install_exe packager_setup_bytecode
   in
   return ()
 

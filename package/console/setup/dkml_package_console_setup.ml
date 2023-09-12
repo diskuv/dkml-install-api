@@ -80,7 +80,7 @@ let setup target_abi program_version organization program_name program_assets
     in
 
     (* Validate *)
-    Component_registry.validate reg;
+    Component_registry.validate reg Dkml_install_register.Install;
     (* Diagnostics *)
     let* (_ : unit list), _fl =
       Component_registry.install_eval reg ~selector

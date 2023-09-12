@@ -19,8 +19,7 @@ let setup_cmd =
       $ Dkml_package_console_common.package_args_t
           ~program_name:Private_common.program_name
           ~target_abi:(failwith "TEMPLATE: target_abi")
-          ~install_direction:
-            Dkml_install_runner.Path_eval.Global_context.Install)
+          ~install_direction:Dkml_install_register.Install)
 
 let () =
   Logs.set_reporter (Logs.format_reporter ());

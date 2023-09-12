@@ -29,7 +29,7 @@ let wait_for_user_confirmation_if_popup_terminal ?info_ci { ci }
   match (ci, abi_will_popup_terminal host_abi, Unix.isatty Unix.stdin) with
   | false, true, true ->
       if
-        install_direction = Dkml_install_runner.Path_eval.Global_context.Install
+        install_direction = Dkml_install_register.Install
         && (info_ci = None || info_ci = Some true)
       then (
         prerr_newline ();
@@ -47,7 +47,7 @@ let wait_for_user_confirmation_if_popup_terminal ?info_ci { ci }
       let rec helper () =
         let installer_what =
           match install_direction with
-          | Dkml_install_runner.Path_eval.Global_context.Install -> "installer"
+          | Install -> "installer"
           | Uninstall -> "uninstaller"
         in
         prerr_newline ();

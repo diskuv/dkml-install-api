@@ -18,8 +18,9 @@ let sevenz_log_level_opts =
   | Some Info -> Cmd.(output_log_level_min %% disable_stdout_stream)
   | _ -> disable_stdout_stream
 
-let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~work_dir
-    ~archive_path ~archive_dir =
+let create_7z_archive ~sevenz_exe
+    ~(install_direction : Dkml_install_register.install_direction) ~abi_selector
+    ~work_dir ~archive_path ~archive_dir =
   let ( let* ) = Rresult.R.bind in
   let pwd =
     Dkml_package_console_common.get_ok_or_failwith_rresult (OS.Dir.current ())
@@ -96,9 +97,8 @@ let create_7z_archive ~sevenz_exe ~install_direction ~abi_selector ~work_dir
       % "bin/dkml-package-entry.exe"
       %
       match install_direction with
-      | Dkml_install_runner.Path_eval.Global_context.Install -> "setup.exe"
-      | Dkml_install_runner.Path_eval.Global_context.Uninstall ->
-          "uninstall.exe")
+      | Install -> "setup.exe"
+      | Uninstall -> "uninstall.exe")
   in
   Logs.debug (fun l ->
       l "Renaming within a 7z archive with: %a" Cmd.pp cmd_rename);
@@ -302,8 +302,9 @@ let modify_manifest ~pe_file ~work_dir ~organization ~program_name
       Logs.err (fun l -> l "FATAL: %s" msg);
       failwith msg
 
-let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
-    ~organization ~program_name ~program_version ~work_dir =
+let generate ~(install_direction : Dkml_install_register.install_direction)
+    ~archive_dir ~target_dir ~abi_selector ~organization ~program_name
+    ~program_version ~work_dir =
   let abi_name =
     Dkml_install_runner.Path_location.show_abi_selector abi_selector
   in
@@ -311,9 +312,7 @@ let generate ~install_direction ~archive_dir ~target_dir ~abi_selector
     program_name.Dkml_package_console_common.Author_types.name_kebab_lower_case
   in
   let direction =
-    match install_direction with
-    | Dkml_install_runner.Path_eval.Global_context.Install -> "i"
-    | Uninstall -> "u"
+    match install_direction with Install -> "i" | Uninstall -> "u"
   in
   let installer_basename =
     Fmt.str "unsigned-%s-%s-%s-%s.exe" program_name_kebab_lower_case abi_name

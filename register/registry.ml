@@ -46,10 +46,16 @@ let add_component ?raise_on_error reg cfg =
           Hashtbl.add reg Cfg.component_name cfg)
   | Error s -> on_error (Fmt.str "FATAL [7c039d7e]. %s" s) raise_on_error
 
-let validate ?raise_on_error reg =
+let validate ?raise_on_error reg
+    (install_direction : Register_types.install_direction) =
   Hashtbl.to_seq_values reg |> List.of_seq
   |> List.iter (fun cfg ->
          let module Cfg = (val cfg : Component_config) in
+         let depends_on =
+           match install_direction with
+           | Install -> Cfg.install_depends_on
+           | Uninstall -> Cfg.uninstall_depends_on
+         in
          List.iter
            (fun dependency ->
              if Hashtbl.mem reg dependency then ()
@@ -69,7 +75,7 @@ let validate ?raise_on_error reg =
                    Fmt.Dump.string dependency Cfg.component_name dependency
                in
                on_error msg raise_on_error)
-           (Cfg.install_depends_on @ Cfg.uninstall_depends_on))
+           depends_on)
 
 let toposort reg ~dependency_getter ~selector ~fl =
   let vertex_map =

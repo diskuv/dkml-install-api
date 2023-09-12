@@ -203,8 +203,7 @@ type package_args = {
 val package_args_t :
   program_name:Author_types.program_name ->
   target_abi:Dkml_install_api__Types.Context.Abi_v2.t ->
-  install_direction:
-    Dkml_install_runner.Path_eval.Global_context.install_direction ->
+  install_direction:Dkml_install_register.install_direction ->
   package_args Cmdliner.Term.t
 (** {!Cmdliner.Term.t} for the common options between setup.exe and
     uninstaller.exe *)

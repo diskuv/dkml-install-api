@@ -50,8 +50,8 @@ let main ~target_abi ~program_version =
   (* Get all the available components *)
   let reg = Component_registry.get () in
   let open Dkml_install_runner.Error_handling in
-  Component_registry.validate reg;
-  let doc = "the OCaml CLI user installer" in
+  Component_registry.validate reg Dkml_install_register.Install;
+  let doc = "the user CLI installer" in
   let sdocs = Cmdliner.Manpage.s_common_options in
   exit
     (catch_and_exit_on_error ~id:"f59b4702" (fun () ->
