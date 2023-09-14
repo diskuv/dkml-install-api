@@ -52,7 +52,8 @@
  (depends
   (alcotest (and (>= 1.4.0) :with-test))
   (dkml-install (= :version))
-  (dkml-install-runner (= :version))))
+  (dkml-install-runner (= :version))
+  (crunch (>= 3.3.1))))
 
 (package
  (name dkml-package-console)
