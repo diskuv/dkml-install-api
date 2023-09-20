@@ -9,7 +9,7 @@
 (maintainers "opensource+dkml@support.diskuv.com")
 
 (name dkml-install)
-(version 0.5.1)
+(version 0.5.2)
 
 (package
  (name dkml-install)

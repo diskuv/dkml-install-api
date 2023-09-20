@@ -210,6 +210,7 @@ let main () project_root package_name install_components uninstall_components
         rule
           [
             alias "runtest";
+            package package_name;
             deps
               [
                 named_dep ~name:"ps" "package_setup.bc";

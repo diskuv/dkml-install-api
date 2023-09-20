@@ -1,5 +1,11 @@
 # Changes
 
+## 0.5.2
+
+* Attach `(package)` to auto-generated test so other packages in
+  the same project do not fail the build with missing, unsatisfiable
+  rules to generate artifacts needed by the auto-generated test.
+
 ## 0.5.1
 
 * Add `%{archive}%` expansion variable
