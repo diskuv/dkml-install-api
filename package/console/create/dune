@@ -25,12 +25,11 @@
  (action
   (progn
    (run diskuvbox copy-file-into %{assets} assets-to-crunch -vv)
-   (run
-    env
-    OCAMLRUNPARAM=b
-    ocaml-crunch
-    -m
-    plain
-    -o
-    %{target}
-    assets-to-crunch))))
+   (setenv OCAMLRUNPARAM b
+    (run
+     ocaml-crunch
+     -m
+     plain
+     -o
+     %{target}
+     assets-to-crunch)))))
