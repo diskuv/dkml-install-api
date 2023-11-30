@@ -271,7 +271,7 @@ module type Intf = sig
 
   val uninstall_directory_onerror_exit :
     id:string -> dir:Fpath.t -> wait_seconds_if_stuck:float -> unit
-  (** [uninstall_directory ~id ~dir ~wait_seconds_if_stuck] removes the directory [dir] and, if any process
+  (** [uninstall_directory_onerror_exit ~id ~dir ~wait_seconds_if_stuck] removes the directory [dir] and, if any process
     is using the files in [dir], will give the [wait_seconds_if_stuck] seconds to stop using the
     program. If the directory cannot be removed then prints an error on the
     fatal logger [fl ~id] and exists with a transient error code.
@@ -280,6 +280,18 @@ module type Intf = sig
     machines the file can be removed since the inode lives on. Consequently
     only on Windows machines will trigger the logic to check if a process
     is using a file or directory. This behavior may change in the future. *)
+
+  val uninstall_file_onerror_exit :
+    id:string -> file:Fpath.t -> wait_seconds_if_stuck:float -> unit
+  (** [uninstall_file_onerror_exit ~id ~dir ~wait_seconds_if_stuck] removes the file [file] and, if the file
+    is currently in use, will give the [wait_seconds_if_stuck] seconds to stop using the
+    file. If the file cannot be removed then prints an error on the
+    fatal logger [fl ~id] and exists with a transient error code.
+    
+    For Windows machines a file cannot be removed if it is in use. For most *nix
+    machines the file can be removed since the inode lives on. Consequently
+    only on Windows machines will trigger the logic to check if a process
+    is using the file. This behavior may change in the future. *)
 
   (**
   {2 Logging}

@@ -1,5 +1,9 @@
 # Changes
 
+## Pending
+
+* Add `uninstall_file_onerror_exit` to API
+
 ## 0.5.2
 
 * Attach `(package)` to auto-generated test so other packages in

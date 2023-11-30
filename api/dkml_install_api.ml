@@ -153,6 +153,16 @@ struct
   let ( let+ ) f x = Rresult.R.map x f
 end
 
+let chmod_plus_readwrite_path ~id path =
+  let open Immediate_fail (struct
+    let id = id
+  end) in
+  let* mode = Bos.OS.Path.Mode.get path in
+  if mode land 0o600 <> 0o600 then
+    let+ () = Bos.OS.Path.Mode.set path (mode lor 0o600) in
+    ()
+  else Ok ()
+
 let chmod_plus_readwrite_dir ~id dir =
   let open Immediate_fail (struct
     let id = id
@@ -166,21 +176,13 @@ let chmod_plus_readwrite_dir ~id dir =
          ~error:Rresult.R.pp_msg)
       result
   in
-  let chmod_u_rw rel = function
+  let f rel = function
     | Error _ as e ->
         (* no more chmod if we had an error *)
         e
-    | Ok () ->
-        let path = Fpath.(dir // rel) in
-        let* mode = Bos.OS.Path.Mode.get path in
-        if mode land 0o600 <> 0o600 then
-          let+ () = Bos.OS.Path.Mode.set path (mode lor 0o600) in
-          ()
-        else Ok ()
+    | Ok () -> chmod_plus_readwrite_path ~id Fpath.(dir // rel)
   in
-  let* res =
-    Bos.OS.Path.fold ~err:raise_fold_error chmod_u_rw (Ok ()) [ dir ]
-  in
+  let* res = Bos.OS.Path.fold ~err:raise_fold_error f (Ok ()) [ dir ] in
   match res with
   | Ok () -> Ok ()
   | Error s ->
@@ -208,6 +210,144 @@ let styled_stuck_detail fmt =
   let pp2 = Fmt.styled (`Bg `Black) pp1 in
   let pp3 = Fmt.styled `Bold pp2 in
   Fmt.styled `Underline pp3
+
+let delete_path_on_windows ~id ~path ~wait_seconds_if_stuck ~comspec ~cmd
+    ~options =
+  let open Immediate_fail (struct
+    let id = id
+  end) in
+  (*
+          https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/rd
+
+          Example:
+
+            rd "C:\Temp\abc" /s /q
+          
+          And instead of dealing with insane OCaml + DOS quoting issues, will
+          create a temporary batch file and execute that.
+
+          Other complexity is we won't get any error codes from `rd`. But we will get:
+            C:\Users\beckf\AppData\Local\Temp\f46f0508-df03-40e8-8661-728f1be41647\UninstallBlueGreenDeploy2\0\cmd.exe - Access is denied.
+          So any output on the error console indicates a problem.
+          *)
+  let cmd =
+    Printf.sprintf "@%s %s %s" cmd options
+      (Filename.quote (Fpath.to_string path))
+  in
+  let* batchfile = Bos.OS.File.tmp "delpath_%s.bat" in
+  let* () = Bos.OS.File.write batchfile cmd in
+  let start_secs = Unix.time () in
+  let rec helper () =
+    match
+      Bos.OS.Cmd.run_out ~err:Bos.OS.Cmd.err_run_out
+        Bos.Cmd.(v comspec % "/c" % Fpath.to_string batchfile)
+      |> Bos.OS.Cmd.out_string
+    with
+    | Ok ("", (_, `Exited 0)) -> Ok ()
+    | Ok (text, (_, `Exited 0)) ->
+        (* Exit 0 with any stdout/stderr is a problem. We used 'rd /q' or 'del /q'
+           to suppress output, so any output is an error. *)
+        let now_secs = Unix.time () in
+        let elapsed_secs = now_secs -. start_secs in
+        if elapsed_secs > wait_seconds_if_stuck then
+          Error
+            (Rresult.R.msgf "The DOS command '%s' did not succeed.@,@[<v>%a@]"
+               cmd Fmt.lines (dos2unix text))
+        else (
+          (* Retry until time complete *)
+          Fmt.epr
+            "@[<v>@,\
+             Stuck during uninstallation of %a@,\
+             Waited already %5.1f seconds; will wait at most %5.1f seconds.@,\
+             %a@,\
+             @[  %a@]@]@,\
+             @."
+            Fpath.pp path elapsed_secs wait_seconds_if_stuck
+            (styled_stuck_info Fmt.string)
+            "Please stop and exit the program:"
+            (styled_stuck_detail Fmt.lines)
+            (dos2unix text);
+          Unix.sleep 5;
+          helper ())
+    | Ok (text, (_, `Exited v)) ->
+        Error
+          (Rresult.R.msgf
+             "The DOS command DOS '%s' exited with exit code %d.@,@[<v>%a@]" cmd
+             v Fmt.lines (dos2unix text))
+    | Ok (text, (_, `Signaled v)) ->
+        Error
+          (Rresult.R.msgf
+             "The DOS command DOS '%s' was killed by signal %d.@,@[<v>%a@]" cmd
+             v Fmt.lines (dos2unix text))
+    | Error msg -> Error msg
+  in
+  helper ()
+(*
+                     let helper () =
+                       match
+                         Bos.OS.Cmd.run_out Bos.Cmd.(v comspec % "/c" % cmd)
+                         |> Bos.OS.Cmd.out_string
+                       with
+                       | Ok ("", (_, `Exited 0)) -> Ok ()
+                       | Ok (text, (_, `Exited 0)) ->
+                           Error
+                             (Rresult.R.msgf
+                                "DOS 'rd' exited with exit code 0, but should not have \
+                                 produced output.@,\
+                                 @[<v>%a@]"
+                                Fmt.lines (dos2unix text))
+                       | Ok (text, (_, `Exited v)) ->
+                           Error
+                             (Rresult.R.msgf
+                                "DOS 'rd' exited with exit code %d.@,@[<v>%a@]" v Fmt.lines
+                                (dos2unix text))
+                       | Ok (text, (_, `Signaled v)) ->
+                           Error
+                             (Rresult.R.msgf "DOS 'rd' killed by signal %d.@,@[<v>%a@]" v
+                                Fmt.lines (dos2unix text))
+                       | Error msg -> Error msg
+                     in
+                     helper () 
+                     
+                     *)
+(* let ic =
+     Unix.open_process_args_in comspec
+       [| "/s"; "/c"; cmd  |]
+   in
+   let rd_output = really_input_string ic 0 |> dos2unix in
+   match Unix.close_process_in ic with
+   | WEXITED 0 when rd_output = "" -> Ok ()
+   | WEXITED 0 ->
+       Error
+         (Rresult.R.msgf
+            "DOS 'rd' exited with exit code 0, but should not have \
+             produced output.@,\
+             @[<v>%a@]"
+            Fmt.lines rd_output)
+   | WEXITED v ->
+       Error
+         (Rresult.R.msgf "DOS 'rd' exited with exit code %d.@,@[<v>%a@]"
+            v Fmt.lines rd_output)
+   | WSIGNALED v ->
+       Error
+         (Rresult.R.msgf "DOS 'rd' killed by signal %d.@,@[<v>%a@]" v
+            Fmt.lines rd_output)
+   | WSTOPPED v ->
+       Error
+         (Rresult.R.msgf "DOS 'rd' stopped by signal %d.@,@[<v>%a@]" v
+            Fmt.lines rd_output))
+*)
+
+(*
+                    (match Unix.system cmd with
+                    | WEXITED 0 -> Ok ()
+                    | WEXITED v ->
+                        Error (Rresult.R.msgf "DOS 'rd' exited with exit code %d" v)
+                    | WSIGNALED v ->
+                        Error (Rresult.R.msgf "DOS 'rd' killed by signal %d" v)
+                    | WSTOPPED v ->
+                        Error (Rresult.R.msgf "DOS 'rd' stopped by signal %d" v))
+      *)
 
 let uninstall_directory_onerror_exit ~id ~dir ~wait_seconds_if_stuck =
   let open Immediate_fail (struct
@@ -245,127 +385,8 @@ let uninstall_directory_onerror_exit ~id ~dir ~wait_seconds_if_stuck =
             C:\Users\beckf\AppData\Local\Temp\f46f0508-df03-40e8-8661-728f1be41647\UninstallBlueGreenDeploy2\0\cmd.exe - Access is denied.
           So any output on the error console indicates a problem.
           *)
-          let cmd =
-            Printf.sprintf "@rd /s /q %s" (Filename.quote (Fpath.to_string dir))
-          in
-          let* batchfile = Bos.OS.File.tmp "rd_%s.bat" in
-          let* () = Bos.OS.File.write batchfile cmd in
-          let start_secs = Unix.time () in
-          let rec helper () =
-            match
-              Bos.OS.Cmd.run_out ~err:Bos.OS.Cmd.err_run_out
-                Bos.Cmd.(v comspec % "/c" % Fpath.to_string batchfile)
-              |> Bos.OS.Cmd.out_string
-            with
-            | Ok ("", (_, `Exited 0)) -> Ok ()
-            | Ok (text, (_, `Exited 0)) ->
-                (* Exit 0 with any stdout/stderr is a problem. We used 'rd /q'
-                   to suppress output, so any output is an error. *)
-                let now_secs = Unix.time () in
-                let elapsed_secs = now_secs -. start_secs in
-                if elapsed_secs > wait_seconds_if_stuck then
-                  Error
-                    (Rresult.R.msgf
-                       "The DOS command 'rd' did not succeed.@,@[<v>%a@]"
-                       Fmt.lines (dos2unix text))
-                else (
-                  (* Retry until time complete *)
-                  Fmt.epr
-                    "@[<v>@,\
-                     Stuck during uninstallation of %a@,\
-                     Waited already %5.1f seconds; will wait at most %5.1f \
-                     seconds.@,\
-                     %a@,\
-                     @[  %a@]@]@,\
-                     @."
-                    Fpath.pp dir elapsed_secs wait_seconds_if_stuck
-                    (styled_stuck_info Fmt.string)
-                    "Please stop and exit the program:"
-                    (styled_stuck_detail Fmt.lines)
-                    (dos2unix text);
-                  Unix.sleep 5;
-                  helper ())
-            | Ok (text, (_, `Exited v)) ->
-                Error
-                  (Rresult.R.msgf
-                     "The DOS command DOS 'rd' exited with exit code %d.@,\
-                      @[<v>%a@]"
-                     v Fmt.lines (dos2unix text))
-            | Ok (text, (_, `Signaled v)) ->
-                Error
-                  (Rresult.R.msgf
-                     "The DOS command DOS 'rd' was killed by signal %d.@,\
-                      @[<v>%a@]"
-                     v Fmt.lines (dos2unix text))
-            | Error msg -> Error msg
-          in
-          helper ()
-      (*
-                     let helper () =
-                       match
-                         Bos.OS.Cmd.run_out Bos.Cmd.(v comspec % "/c" % cmd)
-                         |> Bos.OS.Cmd.out_string
-                       with
-                       | Ok ("", (_, `Exited 0)) -> Ok ()
-                       | Ok (text, (_, `Exited 0)) ->
-                           Error
-                             (Rresult.R.msgf
-                                "DOS 'rd' exited with exit code 0, but should not have \
-                                 produced output.@,\
-                                 @[<v>%a@]"
-                                Fmt.lines (dos2unix text))
-                       | Ok (text, (_, `Exited v)) ->
-                           Error
-                             (Rresult.R.msgf
-                                "DOS 'rd' exited with exit code %d.@,@[<v>%a@]" v Fmt.lines
-                                (dos2unix text))
-                       | Ok (text, (_, `Signaled v)) ->
-                           Error
-                             (Rresult.R.msgf "DOS 'rd' killed by signal %d.@,@[<v>%a@]" v
-                                Fmt.lines (dos2unix text))
-                       | Error msg -> Error msg
-                     in
-                     helper () 
-                     
-                     *)
-      (* let ic =
-           Unix.open_process_args_in comspec
-             [| "/s"; "/c"; cmd  |]
-         in
-         let rd_output = really_input_string ic 0 |> dos2unix in
-         match Unix.close_process_in ic with
-         | WEXITED 0 when rd_output = "" -> Ok ()
-         | WEXITED 0 ->
-             Error
-               (Rresult.R.msgf
-                  "DOS 'rd' exited with exit code 0, but should not have \
-                   produced output.@,\
-                   @[<v>%a@]"
-                  Fmt.lines rd_output)
-         | WEXITED v ->
-             Error
-               (Rresult.R.msgf "DOS 'rd' exited with exit code %d.@,@[<v>%a@]"
-                  v Fmt.lines rd_output)
-         | WSIGNALED v ->
-             Error
-               (Rresult.R.msgf "DOS 'rd' killed by signal %d.@,@[<v>%a@]" v
-                  Fmt.lines rd_output)
-         | WSTOPPED v ->
-             Error
-               (Rresult.R.msgf "DOS 'rd' stopped by signal %d.@,@[<v>%a@]" v
-                  Fmt.lines rd_output))
-      *)
-
-      (*
-                    (match Unix.system cmd with
-                    | WEXITED 0 -> Ok ()
-                    | WEXITED v ->
-                        Error (Rresult.R.msgf "DOS 'rd' exited with exit code %d" v)
-                    | WSIGNALED v ->
-                        Error (Rresult.R.msgf "DOS 'rd' killed by signal %d" v)
-                    | WSTOPPED v ->
-                        Error (Rresult.R.msgf "DOS 'rd' stopped by signal %d" v))
-      *)
+          delete_path_on_windows ~id ~path:dir ~wait_seconds_if_stuck ~comspec
+            ~cmd:"rd" ~options:"/s /q"
       | _ -> Bos.OS.Dir.delete ~recurse:true dir)
     else Ok ()
   in
@@ -375,4 +396,53 @@ let uninstall_directory_onerror_exit ~id ~dir ~wait_seconds_if_stuck =
       fl ~id
         (Fmt.str "The directory@ %a@ could not be uninstalled due to: %a"
            Fpath.pp dir Rresult.R.pp_msg rmsg);
+      exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)
+
+let uninstall_file_onerror_exit ~id ~file ~wait_seconds_if_stuck =
+  let open Immediate_fail (struct
+    let id = id
+  end) in
+  (* On Windows we need to get write access before you can delete the file. *)
+  let fl = Forward_progress.stderr_fatallog in
+  let sequence =
+    let* exists = Bos.OS.Path.exists file in
+    if exists then (
+      Logs.info (fun m -> m "Uninstalling file: %a" Fpath.pp file);
+      let* () = chmod_plus_readwrite_path ~id file in
+      (*
+               OS.Dir.delete has bizarre error messages, like:
+      
+                 C:\Users\beckf\AppData\Local\Temp\build999583.dune\test_uninstall_7b4501\cmd.exe: The directory name is invalid.
+      
+               when the above cmd.exe is being used. So we use cmd.exe on Windows instead which
+               has user-friendly DOS error messages.
+            *)
+      match (Sys.win32, Bos.OS.Env.var "COMSPEC") with
+      | true, Some comspec when comspec != "" ->
+          (*
+                https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/del
+      
+                Example:
+      
+                  del "C:\Temp\abc" /f /q
+                
+                And instead of dealing with insane OCaml + DOS quoting issues, will
+                create a temporary batch file and execute that.
+      
+                Other complexity is we won't get any error codes from `del`. But we will get:
+                  Y:\temp\ocamllsp.exe
+                  Access is denied.
+                So any output on the error console indicates a problem.
+                *)
+          delete_path_on_windows ~id ~path:file ~wait_seconds_if_stuck ~comspec
+            ~cmd:"del" ~options:"/f /q"
+      | _ -> Bos.OS.File.delete file)
+    else Ok ()
+  in
+  match sequence with
+  | Ok () -> ()
+  | Error rmsg ->
+      fl ~id
+        (Fmt.str "The file@ %a@ could not be uninstalled due to: %a" Fpath.pp
+           file Rresult.R.pp_msg rmsg);
       exit (Forward_progress.Exit_code.to_int_exitcode Exit_transient_failure)
