@@ -36,7 +36,6 @@
  (depends
   (alcotest (and (>= 1.4.0) :with-test))
   (dkml-install (= :version))
-  (ppx_expect (>= v0.14.1))
   (astring (>= 0.8.5))
   (bos (>= 0.2.0))
   (cmdliner (>= 1.1.1))
