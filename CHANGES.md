@@ -1,6 +1,6 @@
 # Changes
 
-## Pending
+## 0.5.3
 
 * Add `uninstall_file_onerror_exit` to API
 * Enable Windows long path support for `setup.exe` and `dkml-package-entry.exe` in application manifest. Confer <https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation>
