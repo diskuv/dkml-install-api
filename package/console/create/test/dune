@@ -10,8 +10,18 @@
 
 (cram
  (package dkml-package-console)
+ ;    We skip this test if within `opam install --with-test`.
+ ;
+ ;    That mitigates long path error on Windows caused by extraneous and long `.sandbox/xxxx` directory:
+ ;     diff --git a/_build/.sandbox/5a5ca82f40ca37723ecf95ad5e7239ed/default/package/console/create/test/test_windows_create_installers.t b/_build/.sandbox/5a5ca82f40ca37723ecf95ad5e7239ed/default/package/console/create/test/test_windows_create_installers.t.corrected
+ ;     index 63d1dee..72e7e7a 100644
+ ;     --- a/_build/.sandbox/5a5ca82f40ca37723ecf95ad5e7239ed/default/package/console/create/test/test_windows_create_installers.t
+ ;     +++ b/_build/.sandbox/5a5ca82f40ca37723ecf95ad5e7239ed/default/package/console/create/test/test_windows_create_installers.t.corrected
+ ;        $ diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/bin/ocamlrun.exe
+ ;        $ diskuvbox touch _opam/share/dkml-component-staging-ocamlrun/staging-files/windows_x86_64/lib/ocaml/stublibs/dllthreads.dll
+ ;     +  diskuvbox.exe: [ERROR] FATAL: create temporary file _opam\share\dkml-component-staging-ocamlrun\staging-files\windows_x86_64\lib\ocaml\stublibs\bos-6609d3.tmp: No such file or directory
  (enabled_if
-  (= %{os_type} Win32))
+  (and (= %{os_type} Win32) (not (= %{env:OPAM_PACKAGE_NAME=} dkml-package-console))))
  (deps
   ./test_windows_create_installers.ml
   ./test_windows_create_installers.exe
