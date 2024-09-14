@@ -6,7 +6,7 @@ This is the Windows prerequisite for any development listed on this page:
 
 ```powershell
 dkml init
-opam install . --deps-only --with-test --yes
+opam install . --with-test --yes
 ```
 
 On Unix:

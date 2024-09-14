@@ -23,7 +23,7 @@ jobs:
           opam-pin: true
           opam-depext: false # will complain that diskuvbox is missing
       - name: Install Opam dependencies
-        run: opam install . --deps-only --with-doc
+        run: opam install . --with-doc
 
       - name: Cache conda
         uses: actions/cache@v3

@@ -30,5 +30,6 @@ opamrun exec -- ocamlc -config
 opamrun update
 
 # Make your own build logic! It may look like ...
-opamrun install . --deps-only --with-test --yes
+# note: --deps-only is buggy. That, at least in opam 2.2.1, uses the dependencies from the repository rather than the local package when doing opam install . --deps-only
+opamrun install . --with-test --yes
 opamrun exec -- dune runtest
