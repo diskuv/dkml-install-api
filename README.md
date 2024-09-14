@@ -31,7 +31,7 @@ On Windows with Diskuv OCaml:
 
 ```powershell
 dkml init
-with-dkml opam install . --with-test --with-doc --deps-only
+with-dkml opam install . --with-test --with-doc
 with-dkml dune build
 with-dkml dune build `@doc
 ```
@@ -39,7 +39,7 @@ with-dkml dune build `@doc
 On Unix:
 
 ```bash
-opam install .--with-test --with-doc --deps-only
+opam install .--with-test --with-doc
 dune build
 dune build @doc
 ```
