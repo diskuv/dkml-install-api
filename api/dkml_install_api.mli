@@ -44,7 +44,7 @@ end
 include Dkml_install_api_intf.Intf [@@inline]
 
 (** [Forward_progress] provides common functions to handle graceful and
-    informative exits from the nested chain of subprocesses typical in DKML
+    informative exits from the nested chain of subprocesses typical in DkML
     Install API and many other applications. *)
 module Forward_progress : sig
   include module type of Forward_progress [@@inline]

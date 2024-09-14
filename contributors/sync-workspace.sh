@@ -107,7 +107,7 @@ if [ "$SKIP_UPGRADE" = 0 ]; then
         alcotest
     )
     if ! opam list --short | grep '^ocaml$'; then
-        # If switch does not have an OCaml compiler, add the DKML base compiler
+        # If switch does not have an OCaml compiler, add the DkML base compiler
         PKGS+=(
             dkml-base-compiler ocaml ocaml-config conf-dkml-cross-toolchain
         )

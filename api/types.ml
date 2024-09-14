@@ -57,7 +57,7 @@ module Context = struct
       | Windows_arm32 -> "Windows_arm32"
 
     (** [to_canonical_string abi] will give the canonical representation of
-        the ABI to DKML tools and APIs. *)
+        the ABI to DkML tools and APIs. *)
     let to_canonical_string = function
       | Android_arm64v8a -> "android_arm64v8a"
       | Android_arm32v7a -> "android_arm32v7a"

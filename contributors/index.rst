@@ -1,7 +1,7 @@
-Getting Started with the DKML Install API
+Getting Started with the DkML Install API
 =========================================
 
-The DKML Install API lets you take the tools you know (OCaml and Opam) and
+The DkML Install API lets you take the tools you know (OCaml and Opam) and
 well-known¹ installer generators, to generate a installer for your OCaml
 project.
 
@@ -10,7 +10,7 @@ project.
    generator is available, but other well-known installer generators like
    0install or cpack could be added in the future.
 
-Specifically the DKML Install API lets you take a) pre-designed packages from
+Specifically the DkML Install API lets you take a) pre-designed packages from
 Opam and b) installation instructions written in OCaml source code, and
 assembles binary artifacts that act as the primary materials to installer
 generators.
@@ -43,14 +43,14 @@ database or compile assets at installation time. Now you have several options:
    `Chocolatey <https://docs.chocolatey.org/en-us/create/create-packages>`_.
 
 By now you should see that you can rapidly accumulate technical debt when your
-installation logic gets complex quick. The original author of the DKML Install
+installation logic gets complex quick. The original author of the DkML Install
 API followed option #3 when developing a
 Windows-friendly installer for OCaml. The installer worked well but other
 developers would have difficulty contributing to
 `its Unix and Windows portable scripts <https://gitlab.com/diskuv/diskuv-ocaml/-/tree/v0.3.3/installtime>`_.
 
 As OCaml application developers, you already know how to embed complex
-logic in OCaml. With the DKML Install API you:
+logic in OCaml. With the DkML Install API you:
 
 * inform your users of setup problems early during installation rather than
   at runtime. That avoids the tradeoff for option #1
@@ -61,7 +61,7 @@ logic in OCaml. With the DKML Install API you:
 
 but you will need to accept a learning curve for:
 
-* how to use this DKML Install API
+* how to use this DkML Install API
 * how to write Opam packages that install artifacts to non-standard locations
 * how to use OCaml libraries like `Daniel Bünzli's Bos library <https://erratique.ch/software/bos>`_
   for cross-platform portable file and directory handling and

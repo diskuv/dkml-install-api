@@ -18,7 +18,7 @@ import sphinx_rtd_theme
 
 # -- Project information -----------------------------------------------------
 
-project = 'DKML Install API'
+project = 'DkML Install API'
 copyright = '2022, Diskuv, Inc.'
 author = 'Diskuv, Inc.'
 
