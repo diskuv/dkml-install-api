@@ -4,7 +4,6 @@ open More_testables
 
 let ( let* ) = Forward_progress.bind
 let return = Forward_progress.return
-let fatallog = Dkml_install_api.Forward_progress.stderr_fatallog
 let ops = Queue.create ()
 
 module A = struct

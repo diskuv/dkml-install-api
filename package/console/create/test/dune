@@ -9,9 +9,9 @@
  (libraries dkml-package-console.create))
 
 (cram
+ (package dkml-package-console)
  (enabled_if
   (= %{os_type} Win32))
- (package dkml-package-console)
  (deps
   ./test_windows_create_installers.ml
   ./test_windows_create_installers.exe
