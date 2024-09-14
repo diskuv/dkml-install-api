@@ -529,8 +529,12 @@ contents is exactly the same as the archive tree, except that
 (the *packager entry* setup.exe) has been renamed to
 `setup.exe`.
 
+We'll skip showing vcruntime140_threads.dll since that depends on the
+Visual Studio version. Confer:
+https://devblogs.microsoft.com/cppblog/c11-threads-in-visual-studio-2022-version-17-8-preview-2/#new-runtime-components
+
 [setup_exe_list_7z]
-  $ ../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-i-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
+  $ ../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-i-0.1.0.7z | grep -v vcruntime140_threads.dll | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
   bin
@@ -563,7 +567,7 @@ contents is exactly the same as the archive tree, except that
   ------------------------
   folders
 
-  $ ../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-u-0.1.0.7z | awk '$1=="Date"{mode=1} mode==1{print $NF}'
+  $ ../assets/lzma2107/bin/7zr.exe l target/full-name-windows_x86_64-u-0.1.0.7z | grep -v vcruntime140_threads.dll | awk '$1=="Date"{mode=1} mode==1{print $NF}'
   Name
   ------------------------
   bin
