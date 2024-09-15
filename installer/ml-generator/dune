@@ -4,7 +4,8 @@
   (glob_files code/*.manifest))
  (target code.ml)
  (action
-  (run ocaml-crunch -m plain -e ml -e manifest -o %{target} code/)))
+  ; crunch the code/ directory
+  (run ocaml-crunch -m plain -e ml -e manifest -o %{target} code)))
 
 (library
  (name code)
