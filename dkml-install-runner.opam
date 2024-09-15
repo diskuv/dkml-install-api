@@ -11,6 +11,7 @@ homepage: "https://github.com/diskuv/dkml-install-api"
 bug-reports: "https://github.com/diskuv/dkml-install-api/issues"
 depends: [
   "dune" {>= "3.2"}
+  "ocaml" {>= "4.08.0"}
   "alcotest" {>= "1.4.0" & with-test}
   "dkml-install" {= version}
   "astring" {>= "0.8.5"}

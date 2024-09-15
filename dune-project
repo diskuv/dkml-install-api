@@ -34,6 +34,7 @@
  (description
   "The runner executable is responsible for loading and running all DkML installation components.")
  (depends
+  (ocaml (>= 4.08.0))
   (alcotest (and (>= 1.4.0) :with-test))
   (dkml-install (= :version))
   (astring (>= 0.8.5))
@@ -49,9 +50,11 @@
  (description
   "Build-time executables that can generate Dune include files which will compile essential end-user executables.")
  (depends
+  (ocaml (>= 4.08.0))
   (alcotest (and (>= 1.4.0) :with-test))
   (dkml-install (= :version))
   (dkml-install-runner (= :version))
+  (re (>= 1.3.0))
   (crunch (>= 3.3.1))))
 
 (package
@@ -59,6 +62,7 @@
  (synopsis "Console setup and uninstall executables for DkML installation")
  (description "The setup and uninstall executables are responsible for launching the DkML runners.")
  (depends
+  (ocaml (>= 4.08.0))
   (alcotest (and (>= 1.4.0) :with-test))
   (dkml-install (= :version))
   ; runner/console/bin/dune site requires dkml-install-runner package
